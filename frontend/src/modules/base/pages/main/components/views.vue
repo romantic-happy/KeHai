@@ -51,6 +51,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .app-views {
 	flex: 1;
+	min-height: 0;
 	overflow: hidden;
 	margin: 0 10px 10px 10px;
 	width: calc(100% - 20px);

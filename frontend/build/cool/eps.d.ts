@@ -2310,6 +2310,35 @@ declare namespace Eps {
 		request: Request;
 	}
 
+	interface CompanyContract {
+		/**
+		 * 生成合同（触发 Dify）
+		 */
+		generate(data?: any): Promise<any>;
+
+		/**
+		 * 下载合同 Word 文件
+		 */
+		download(data?: any): Promise<any>;
+
+		/**
+		 * 查询合同生成状态
+		 */
+		poll(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { generate: string; download: string; poll: string };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { generate: boolean; download: boolean; poll: boolean };
+
+		request: Request;
+	}
+
 	interface CompanyCustomer {
 		/**
 		 * 删除
@@ -3141,7 +3170,12 @@ declare namespace Eps {
 				user: BaseSysUser;
 			};
 		};
-		company: { customer: CompanyCustomer; inquiry: CompanyInquiry; quote: CompanyQuote };
+		company: {
+			contract: CompanyContract;
+			customer: CompanyCustomer;
+			inquiry: CompanyInquiry;
+			quote: CompanyQuote;
+		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };
 		dict: { info: DictInfo; type: DictType };
 		plugin: { info: PluginInfo };

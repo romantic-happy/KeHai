@@ -6,6 +6,14 @@ import { TenantSubscriber } from '../modules/base/db/tenant';
  * 本地开发 npm run dev 读取的配置文件
  */
 export default {
+  // 本地开发可在此覆盖；生产请用环境变量
+  contract: {
+    difyWebhookUrl:
+      process.env.DIFY_CONTRACT_WEBHOOK_URL ||
+      'http://localhost/triggers/webhook/qbuu-XEXmwu0foyqZJvbdJJP',
+    callbackSecret:
+      process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',
+  },
   typeorm: {
     dataSource: {
       default: {
