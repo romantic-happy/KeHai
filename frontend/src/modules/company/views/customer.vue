@@ -851,6 +851,16 @@ const Upsert = useUpsert<any>({
 			...data,
 		};
 
+		// 保存负责人时更新上一次负责人
+		if (Upsert.value?.mode === 'edit' && Upsert.value?.data) {
+			const originalOwner = Upsert.value.data.backgroundOwnerUserId;
+			const newOwner = data.backgroundOwnerUserId;
+			if (originalOwner && newOwner && originalOwner !== newOwner) {
+				payload.backgroundPreviousOwnerUserId = originalOwner;
+				payload.backgroundOwnerChangeTime = new Date().toISOString();
+			}
+		}
+
 		delete payload.customerNo;
 		delete payload.dealStatus;
 		delete payload.contractCount;
@@ -870,8 +880,6 @@ const Upsert = useUpsert<any>({
 		delete payload.createTime;
 		delete payload.updateTime;
 		delete payload.backgroundLastModifyUserId;
-		delete payload.backgroundPreviousOwnerUserId;
-		delete payload.backgroundOwnerChangeTime;
 
 		next(payload);
 	},

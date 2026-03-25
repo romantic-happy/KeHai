@@ -70,6 +70,31 @@
                 "childMenus": []
               }
             ]
+          },
+          {
+            "name": "合同管理",
+            "router": "/company/contract",
+            "perms": null,
+            "type": 1,
+            "icon": "icon-menu",
+            "orderNum": 3,
+            "viewPath": "modules/company/views/contract.vue",
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": [
+              {
+                "name": "权限",
+                "router": null,
+                "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                "type": 2,
+                "icon": null,
+                "orderNum": 0,
+                "viewPath": null,
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": []
+              }
+            ]
           }
         ]
       },

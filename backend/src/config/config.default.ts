@@ -37,6 +37,11 @@ export default {
     fileSize: '200mb',
     whitelist: null,
   },
+  // 合同生成（Dify Webhook + 回调）
+  contract: {
+    difyWebhookUrl: process.env.DIFY_CONTRACT_WEBHOOK_URL || '',
+    callbackSecret: process.env.DIFY_CONTRACT_CALLBACK_SECRET || '',
+  },
   // 缓存 可切换成其他缓存如：redis http://www.midwayjs.org/docs/extensions/caching
   cacheManager: {
     clients: {
