@@ -1,5 +1,5 @@
 <template>
-	<sales_agent />
+
 	<cl-crud ref="Crud">
 		<cl-row>
 			<cl-refresh-btn />
@@ -237,11 +237,15 @@ import { useCool } from "/@/cool";
 import { useI18n } from "vue-i18n";
 import { onMounted, reactive, ref } from "vue";
 import { Document } from "@element-plus/icons-vue";
+<<<<<<< HEAD
 import { ElMessage } from "element-plus";
 import { request } from "/@/cool/service/request";
 import { config } from "/@/config";
 import Sales_agent from "./sales_agent.vue";
 import { useBase } from "/$/base";
+=======
+
+>>>>>>> 76fe87262f2e4a5026f3dc1bd870e974919d9640
 
 const { service, router, mitt } = useCool();
 const { t } = useI18n();
