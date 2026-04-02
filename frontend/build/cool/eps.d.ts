@@ -835,6 +835,11 @@ declare namespace Eps {
 		quoteId?: number;
 
 		/**
+		 * 待重报标记 0-否 1-是
+		 */
+		requotePending?: number;
+
+		/**
 		 * 加工要求
 		 */
 		processingRequirement?: string;
@@ -950,6 +955,11 @@ declare namespace Eps {
 		quotePriceInclTax?: number;
 
 		/**
+		 * 是否已拒绝
+		 */
+		quoteIsRejected?: number;
+
+		/**
 		 * 任意键值
 		 */
 		[key: string]: any;
@@ -1045,6 +1055,11 @@ declare namespace Eps {
 		 * 创建人ID
 		 */
 		createUserId?: number;
+
+		/**
+		 * 是否已拒绝
+		 */
+		isRejected?: number;
 
 		/**
 		 * 创建时间
@@ -2399,6 +2414,26 @@ declare namespace Eps {
 
 	interface CompanyInquiry {
 		/**
+		 * 同步报价操作权限
+		 */
+		syncQuotePerms(data?: any): Promise<any>;
+
+		/**
+		 * 报价单进度分页（含负责人）
+		 */
+		progressPage(data?: any): Promise<any>;
+
+		/**
+		 * 接受报价
+		 */
+		accept(data?: any): Promise<any>;
+
+		/**
+		 * 拒绝报价
+		 */
+		reject(data?: any): Promise<any>;
+
+		/**
 		 * 删除
 		 */
 		delete(data?: any): Promise<any>;
@@ -2432,6 +2467,10 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
+			syncQuotePerms: string;
+			progressPage: string;
+			accept: string;
+			reject: string;
 			delete: string;
 			update: string;
 			info: string;
@@ -2444,6 +2483,10 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: {
+			syncQuotePerms: boolean;
+			progressPage: boolean;
+			accept: boolean;
+			reject: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;

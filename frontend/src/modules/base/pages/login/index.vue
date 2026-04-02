@@ -9,7 +9,7 @@
 				<span>{{ app.info.name }}</span>
 			</div>
 
-			<p class="desc">{{ $t('快速开发后台权限管理系统') }}</p>
+			<p class="desc">{{ $t('智能助手支持') }}</p>
 
 			<div class="form">
 				<el-form label-position="top" class="form" :disabled="saving">

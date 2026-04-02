@@ -53,21 +53,20 @@ export default defineComponent({
 					}
 
 					const item = (e: Menu.Item) => {
-						const arr = [
-							<cl-svg name={e.icon} size={18} />,
-							<span class="ml-4 tracking-wider text-[14px] mr-auto text-ellipsis overflow-hidden whitespace-nowrap">
-								{e.meta?.label}
-							</span>
-						];
+						return (
+							<div class="flex items-center w-full">
+								<cl-svg name={e.icon} size={18} />
+								<span class="ml-4 tracking-wider text-[14px] mr-auto text-ellipsis overflow-hidden whitespace-nowrap">
+									{e.meta?.label}
+								</span>
 
-						if (e.type == 1 && e.badge) {
-							arr.push(
-								<div class={['b-menu__badge', `is-${e.badgeColor}`]}>
-									<span>{e.badge}</span>
-								</div>
-							);
-						}
-						return arr;
+								{e.type == 1 && e.badge ? (
+									<div class={['b-menu__badge', `is-${e.badgeColor}`, 'ml-auto']}>
+										<span>{e.badge}</span>
+									</div>
+								) : null}
+							</div>
+						);
 					};
 
 					if (e.type == 0) {
@@ -80,7 +79,19 @@ export default defineComponent({
 							},
 							{
 								title() {
-									return item(e);
+									// 对于带 router 的“目录”节点：点击标题时也直接跳转到对应页面
+									// （这样它在交互上就更符合“菜单”的预期，同时仍保留子菜单展开能力）
+									const router = (e as any).router as string | null | undefined;
+
+									return (
+										<div
+											onClick={() => {
+												if (router) onSelect((e as any).path || router);
+											}}
+										>
+											{item(e)}
+										</div>
+									);
 								},
 								default() {
 									return deep(e.children || [], show);

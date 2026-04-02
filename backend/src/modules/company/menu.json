@@ -22,27 +22,65 @@
         "isShow": true,
         "childMenus": [
           {
-            "name": "询价管理",
-            "router": "/company/inquiry",
+            "name": "商务管理",
+            "router": "/company/business",
             "perms": null,
-            "type": 1,
-            "icon": "icon-log",
+            "type": 0,
+            "icon": "icon-menu",
             "orderNum": 1,
-            "viewPath": "modules/company/views/inquiry.vue",
+            "viewPath": null,
             "keepAlive": true,
             "isShow": true,
             "childMenus": [
               {
-                "name": "权限",
-                "router": null,
-                "perms": "company:inquiry:page,company:inquiry:list,company:inquiry:info,company:inquiry:add,company:inquiry:update,company:inquiry:delete",
-                "type": 2,
-                "icon": null,
-                "orderNum": 0,
-                "viewPath": null,
+                "name": "报价单",
+                "router": "/company/business/quote",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-log",
+                "orderNum": 1,
+                "viewPath": "modules/company/views/business/quote.vue",
                 "keepAlive": true,
                 "isShow": true,
-                "childMenus": []
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:inquiry:page,company:inquiry:list,company:inquiry:info,company:inquiry:add,company:inquiry:update,company:inquiry:delete,company:inquiry:accept,company:inquiry:reject",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
+                "name": "合同管理",
+                "router": "/company/business/contract",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 2,
+                "viewPath": "modules/company/views/business/contract.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
               }
             ]
           },
@@ -61,31 +99,6 @@
                 "name": "权限",
                 "router": null,
                 "perms": "company:customer:page,company:customer:list,company:customer:info,company:customer:add,company:customer:update,company:customer:delete",
-                "type": 2,
-                "icon": null,
-                "orderNum": 0,
-                "viewPath": null,
-                "keepAlive": true,
-                "isShow": true,
-                "childMenus": []
-              }
-            ]
-          },
-          {
-            "name": "合同管理",
-            "router": "/company/contract",
-            "perms": null,
-            "type": 1,
-            "icon": "icon-menu",
-            "orderNum": 3,
-            "viewPath": "modules/company/views/contract.vue",
-            "keepAlive": true,
-            "isShow": true,
-            "childMenus": [
-              {
-                "name": "权限",
-                "router": null,
-                "perms": "company:contract:generate,company:contract:poll,company:contract:download",
                 "type": 2,
                 "icon": null,
                 "orderNum": 0,

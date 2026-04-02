@@ -21,6 +21,59 @@ export class CompanyQuoteService extends BaseService {
   companyInquiryEntity: Repository<CompanyInquiryEntity>;
 
   /**
+   * 报价分页（按 inquiryId 仅保留最新一条）
+   */
+  async page(query: any) {
+    const qb = this.companyQuoteEntity.createQueryBuilder('a');
+    qb.leftJoin(CompanyInquiryEntity, 'b', 'a.inquiryId = b.id');
+    qb.where('1=1');
+
+    const latestIdSubQuery = this.companyQuoteEntity
+      .createQueryBuilder('q')
+      .select('MAX(q.id)')
+      .where('q.inquiryId IS NOT NULL')
+      .groupBy('q.inquiryId')
+      .getQuery();
+
+    // 同 inquiryId 仅保留最新报价；无 inquiryId 的记录原样保留
+    qb.andWhere(`(a.inquiryId IS NULL OR a.id IN (${latestIdSubQuery}))`);
+
+    if (query?.keyWord) {
+      qb.andWhere('(a.quoteNo like :kw or b.inquiryNo like :kw or a.supplier like :kw)', {
+        kw: `%${query.keyWord}%`,
+      });
+    }
+
+    const inquiryTypeNum =
+      query?.inquiryType === undefined || query?.inquiryType === null
+        ? null
+        : Number(query.inquiryType);
+    if (inquiryTypeNum !== null && [0, 1, 2, 3, 4].includes(inquiryTypeNum)) {
+      qb.andWhere('a.inquiryType = :inquiryType', { inquiryType: inquiryTypeNum });
+    }
+
+    const inquiryIdNum =
+      query?.inquiryId === undefined || query?.inquiryId === null
+        ? null
+        : Number(query.inquiryId);
+    if (inquiryIdNum !== null && inquiryIdNum > 0) {
+      qb.andWhere('a.inquiryId = :inquiryId', { inquiryId: inquiryIdNum });
+    }
+
+    qb.select([
+      'a.*',
+      'b.inquiryNo as inquiryNo',
+      'b.customer as inquiryCustomer',
+      'b.projectName as inquiryProjectName',
+      'b.projectStartDate as inquiryProjectStartDate',
+      'b.projectEndDate as inquiryProjectEndDate',
+      'b.inquiryType as inquiryInquiryType',
+    ]);
+
+    return this.entityRenderPage(qb, query);
+  }
+
+  /**
    * 新增 / 编辑报价
    * - 无 id：新增报价（自动生成报价单号，并回写询价）
    * - 有 id：在原报价记录上修改，不生成新报价
@@ -54,8 +107,17 @@ export class CompanyQuoteService extends BaseService {
         taxRate: param.taxRate,
         priceInclTax: param.priceInclTax,
         spareQuoteItems: param.spareQuoteItems,
+        isRejected: 0,
         updateTime: new Date(),
       });
+
+      if (exist.inquiryId) {
+        await inquiryRepo.update(exist.inquiryId, {
+          quoteStatus: 1,
+          quoteId: idNum,
+          requotePending: 0,
+        });
+      }
 
       return { id: idNum };
     }
@@ -88,6 +150,9 @@ export class CompanyQuoteService extends BaseService {
       throw new Error('询价不存在');
     }
 
+    const inquiryQuoteStatusNum = Number(inquiry.quoteStatus ?? 0);
+    const shouldOverwrite = inquiryQuoteStatusNum !== 2; // 2=已定：不覆盖 accepted 状态
+
     const dateStr = moment().format('YYYYMMDD');
     // 0-机械加工类 JG，1-机械维修类 WX，2-机械保养类 BY，3-项目类 XM，4-备件类 BJ
     const typeCodeMap = ['JG', 'WX', 'BY', 'XM', 'BJ'];
@@ -99,19 +164,43 @@ export class CompanyQuoteService extends BaseService {
       .getCount();
     const seq = String(count + 1).padStart(4, '0');
 
+    // 若询价未进入“报价已定”，则新报价到来会让旧报价失效（标记为已拒绝）
+    if (shouldOverwrite) {
+      await quoteRepo.update(
+        { inquiryId, isRejected: 0 },
+        { isRejected: 1 }
+      );
+    }
+
     const saved = await quoteRepo.save({
       ...param,
       inquiryId,
       inquiryType: inquiry.inquiryType,
       quoteNo: `${prefix}-${seq}`,
+      isRejected: shouldOverwrite ? 0 : 1,
     });
 
-    await inquiryRepo.update(inquiryId, {
-      quoteStatus: 1,
-      quoteId: saved.id,
-    });
+    if (shouldOverwrite) {
+      await inquiryRepo.update(inquiryId, {
+        quoteStatus: 1,
+        quoteId: saved.id,
+        requotePending: 0,
+      });
+    }
 
     return { id: saved.id };
+  }
+
+  /**
+   * 编辑报价（覆盖默认 update）
+   * 复用 add 的有 id 分支，确保重新报价时状态联动一致
+   */
+  @CoolTransaction({ isolation: 'SERIALIZABLE' })
+  async update(param: any, queryRunner?: QueryRunner): Promise<void> {
+    if (!param?.id) {
+      throw new Error('缺少报价ID');
+    }
+    await this.add(param, queryRunner);
   }
 
   /**
@@ -198,6 +287,7 @@ export class CompanyQuoteService extends BaseService {
         .set({
           quoteStatus: 0,
           quoteId: null,
+          requotePending: 0,
         })
         .whereInIds(needReset)
         .execute();
@@ -214,10 +304,17 @@ export class CompanyQuoteService extends BaseService {
 
     const quoteStatusNum =
       query?.quoteStatus === undefined || query?.quoteStatus === null
-        ? 0
+        ? null
         : Number(query.quoteStatus);
-    const quoteStatus = [0, 1].includes(quoteStatusNum) ? quoteStatusNum : 0;
-    qb.andWhere('a.quoteStatus = :quoteStatus', { quoteStatus });
+    if (quoteStatusNum === null) {
+      qb.andWhere('(a.quoteStatus = :waitQuoteStatus OR a.requotePending = :requotePending)', {
+        waitQuoteStatus: 0,
+        requotePending: 1,
+      });
+    } else {
+      const quoteStatus = [0, 1, 2].includes(quoteStatusNum) ? quoteStatusNum : 0;
+      qb.andWhere('a.quoteStatus = :quoteStatus', { quoteStatus });
+    }
 
     const inquiryTypeNum =
       query?.inquiryType === undefined || query?.inquiryType === null

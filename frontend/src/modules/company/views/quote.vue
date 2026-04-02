@@ -48,20 +48,31 @@
 				>
 					<div class="inquiry-item__top">
 						<div class="no">{{ item.inquiryNo || '-' }}</div>
-						<el-tag
-							disable-transitions
-							size="small"
-							effect="plain"
-							:type="
-								options.inquiryType.find(e => e.value === item.inquiryType)?.type ||
-								'info'
-							"
-						>
-							{{
-								(options.inquiryType.find(e => e.value === item.inquiryType)
-									?.label as string) || '-'
-							}}
-						</el-tag>
+						<div class="inquiry-item__top-tags">
+							<el-tag
+								disable-transitions
+								size="small"
+								effect="plain"
+								:type="
+									options.inquiryType.find(e => e.value === item.inquiryType)?.type ||
+									'info'
+								"
+							>
+								{{
+									(options.inquiryType.find(e => e.value === item.inquiryType)
+										?.label as string) || '-'
+								}}
+							</el-tag>
+							<el-tag
+								v-if="Number(item.requotePending ?? item.a_requotePending ?? 0) === 1"
+								disable-transitions
+								size="small"
+								effect="plain"
+								type="warning"
+							>
+								{{ $t('待重报') }}
+							</el-tag>
+						</div>
 					</div>
 
 					<div class="inquiry-item__row">
@@ -86,7 +97,11 @@
 							plain
 							@click.stop="openAddQuote(item)"
 						>
-							{{ $t('新增报价') }}
+							{{
+								Number(item.requotePending ?? item.a_requotePending ?? 0) === 1
+									? $t('重新报价')
+									: $t('新增报价')
+							}}
 						</el-button>
 					</div>
 				</div>
@@ -964,7 +979,7 @@ const inquiryParams = reactive({
 	size: 10,
 	keyWord: '',
 	inquiryType: undefined as number | undefined,
-	quoteStatus: 0
+	quoteStatus: undefined as number | undefined
 });
 
 async function refreshInquiryPage(params?: Partial<typeof inquiryParams>) {
@@ -977,7 +992,7 @@ async function refreshInquiryPage(params?: Partial<typeof inquiryParams>) {
 			...inquiryParams,
 			keyWord: inquiryParams.keyWord || undefined,
 			inquiryType: inquiryParams.inquiryType ?? undefined,
-			quoteStatus: 0
+			quoteStatus: inquiryParams.quoteStatus ?? undefined
 		})
 		.then((res: any) => {
 			// 后端返回的是 a_xxx 前缀字段，这里统一映射成前端使用的字段名
@@ -1261,7 +1276,7 @@ function normalizeLaborItems(val: any): Array<{ name: string; cost?: any }> {
 	});
 }
 
-function openAddQuote(inquiry: Eps.CompanyInquiryEntity) {
+async function openAddQuote(inquiry: Eps.CompanyInquiryEntity) {
 	const inquiryId = inquiry.id;
 	const inquiryNo = inquiry.inquiryNo;
 
@@ -1276,6 +1291,27 @@ function openAddQuote(inquiry: Eps.CompanyInquiryEntity) {
 
 	// 用 id 优先，否则用单号做选中标识
 	inquirySelectedKey.value = inquiryId || inquiryNo || null;
+
+	const isRequote = Number((inquiry as any).requotePending ?? (inquiry as any).a_requotePending ?? 0) === 1;
+
+	// 待重报：直接打开最新一条报价的编辑页，自动带出上次已填写字段
+	if (isRequote && inquiryId) {
+		try {
+			const pageRes: any = await service.company.quote.page({
+				inquiryId,
+				page: 1,
+				size: 1
+			});
+			const latest = pageRes?.list?.[0];
+			if (latest?.id) {
+				const detail: any = await service.company.quote.info({ id: latest.id });
+				Crud.value?.rowEdit(detail || latest);
+				return;
+			}
+		} catch (err: any) {
+			ElMessage.error(err?.message || t('获取历史报价失败'));
+		}
+	}
 
 	Crud.value?.rowAppend({
 		inquiryId: inquiryId || undefined,
@@ -1776,6 +1812,12 @@ onMounted(() => {
 			text-overflow: ellipsis;
 			padding-right: 10px;
 		}
+	}
+
+	&__top-tags {
+		display: flex;
+		align-items: center;
+		gap: 6px;
 	}
 
 	&__row {

@@ -24,7 +24,35 @@ const routes: RouteRecordRaw[] = [
 		path: '/',
 		name: 'index',
 		component: () => import('/$/base/pages/main/index.vue'),
-		children: []
+		children: [
+			{
+				path: 'company/business',
+				name: 'company-business',
+				component: () => import('/$/company/views/business.vue'),
+				meta: {
+					keepAlive: true,
+					label: '商务管理'
+				}
+			},
+			{
+				path: 'company/business/quote',
+				name: 'company-business-quote',
+				component: () => import('/$/company/views/business/quote.vue'),
+				meta: {
+					keepAlive: true,
+					label: '报价单'
+				}
+			},
+			{
+				path: 'company/business/contract',
+				name: 'company-business-contract',
+				component: () => import('/$/company/views/business/contract.vue'),
+				meta: {
+					keepAlive: true,
+					label: '合同管理'
+				}
+			}
+		]
 	},
 	{
 		path: '/:catchAll(.*)',

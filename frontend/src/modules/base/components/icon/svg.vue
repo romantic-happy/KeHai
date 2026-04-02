@@ -37,5 +37,6 @@ const svgClass = computed(() => {
 	height: 1em;
 	fill: currentColor;
 	overflow: hidden;
+	vertical-align: middle;
 }
 </style>
