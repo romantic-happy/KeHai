@@ -8,18 +8,43 @@
 			<cl-flex1 />
 
 			<!-- 关键字搜索：按 inquiryNo/customer/projectName -->
-			<cl-search-key :placeholder="$t('搜索询价单号/客户/项目名称')" :width="260" />
+			<cl-search-key :placeholder="$t('搜索报价单号/客户/项目名称')" :width="260" />
 		</cl-row>
 
 		<cl-row>
-			<cl-table ref="Table">
+			<cl-table :key="permRenderKey" ref="Table">
 				<template #column-quoteSummary="{ scope }">
-					<template v-if="scope.row.quoteNo">
+					<template v-if="getQuoteStatus(scope.row) === 0">
+						<el-tag disable-transitions effect="plain" type="danger">
+							{{ $t("待报价") }}
+						</el-tag>
+					</template>
+
+					<template v-else>
 						<div class="quote-summary">
-							<div class="quote-summary__no">{{ scope.row.quoteNo }}</div>
+							<div class="quote-summary__top">
+								<div class="quote-summary__no">{{ scope.row.quoteNo || '-' }}</div>
+
+								<el-tag
+									disable-transitions
+									effect="plain"
+									:type="getQuoteStatus(scope.row) === 1 ? 'warning' : 'success'"
+								>
+									{{
+										getQuoteStatus(scope.row) === 1 ? $t("报价中") : $t("报价已定")
+									}}
+								</el-tag>
+							</div>
+
+							<template v-if="isQuoteRejected(scope.row)">
+								<div class="quote-summary__row">
+									<span class="label">{{ $t("报价信息") }}</span>
+									<span class="value">-</span>
+								</div>
+							</template>
 
 							<!-- 非备件类：显示供应商 + 未税/税率/含税/总成本 -->
-							<template v-if="scope.row.inquiryType !== 4">
+							<template v-else-if="scope.row.inquiryType !== 4">
 								<div class="quote-summary__row">
 									<span class="label">{{ $t("供应商") }}</span>
 									<span class="value">{{ scope.row.quoteSupplier || "-" }}</span>
@@ -53,13 +78,42 @@
 									<span class="value">{{ scope.row.quoteTotalCost ?? "-" }}</span>
 								</div>
 							</template>
-						</div>
-					</template>
 
-					<template v-else>
-						<el-tag disable-transitions effect="plain" type="danger">
-							{{ $t("待报价") }}
-						</el-tag>
+							<div
+								class="quote-summary__actions"
+								v-if="getQuoteStatus(scope.row) === 1 && getQuoteId(scope.row) > 0 && !isQuoteRejected(scope.row)"
+							>
+								<el-button
+									type="primary"
+									size="small"
+									@click="onAccept(getQuoteId(scope.row))"
+									v-permission="'company:inquiry:accept'"
+								>
+									{{ $t("接受报价") }}
+								</el-button>
+								<el-button
+									type="danger"
+									size="small"
+									@click="onReject(getQuoteId(scope.row))"
+									v-permission="'company:inquiry:reject'"
+								>
+									{{ $t("拒绝报价") }}
+								</el-button>
+							</div>
+
+							<div
+								class="quote-summary__actions"
+								v-else-if="getQuoteStatus(scope.row) === 2"
+							>
+								<el-button
+									type="success"
+									size="small"
+									@click="goContract(scope.row)"
+								>
+									{{ $t("转合同") }}
+								</el-button>
+							</div>
+						</div>
 					</template>
 				</template>
 			</cl-table>
@@ -181,12 +235,18 @@ defineOptions({
 import { useCrud, useTable, useUpsert } from "@cool-vue/crud";
 import { useCool } from "/@/cool";
 import { useI18n } from "vue-i18n";
-import { reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { Document } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+import { request } from "/@/cool/service/request";
+import { config } from "/@/config";
 import Sales_agent from "./sales_agent.vue";
+import { useBase } from "/$/base";
 
-const { service } = useCool();
+const { service, router, mitt } = useCool();
 const { t } = useI18n();
+const { menu } = useBase();
+const permRenderKey = ref(0);
 
 const options = reactive({
 	inquiryType: [
@@ -275,7 +335,7 @@ const Upsert = useUpsert<Eps.CompanyInquiryEntity>({
 		() => {
 			return () => {
 				return {
-					label: t("询价单号"),
+					label: t("报价单号"),
 					prop: "inquiryNo",
 					span: 12,
 					hidden: Upsert.value?.mode == "add",
@@ -349,9 +409,9 @@ const Upsert = useUpsert<Eps.CompanyInquiryEntity>({
 			hidden: ({ scope }: any) => scope.inquiryType == 4,
 		},
 
-		// 询价类型（放在项目工期之后）
+		// 报价类型（放在项目工期之后）
 		{
-			label: t("询价类型"),
+			label: t("报价类型"),
 			prop: "inquiryType",
 			value: 3,
 			required: true,
@@ -367,7 +427,7 @@ const Upsert = useUpsert<Eps.CompanyInquiryEntity>({
 			},
 		},
 
-		// 各类型专属字段（夹在询价类型和交付标准之间）
+		// 各类型专属字段（夹在报价类型和交付标准之间）
 
 		// 加工类专属（扁平字段）
 		{
@@ -590,7 +650,7 @@ const Upsert = useUpsert<Eps.CompanyInquiryEntity>({
 			hidden: ({ scope }: any) => scope.inquiryType == 4,
 		},
 
-		// 询价类别字段仅作为内部映射使用，不再单独展示
+		// 报价类别字段仅作为内部映射使用，不再单独展示
 		{
 			label: t("销售类别"),
 			prop: "salesCategory",
@@ -778,7 +838,7 @@ const Upsert = useUpsert<Eps.CompanyInquiryEntity>({
 			data.spareItems = undefined;
 		}
 
-		// 统一修正询价类型，确保为数字并与 salesCategory 对齐
+		// 统一修正报价类型，确保为数字并与 salesCategory 对齐
 		const fixedInquiryType = Number((data as any).inquiryType);
 
 		// 统一写入后端期望的 siteEnvironment 字段（维修 / 保养）
@@ -831,9 +891,9 @@ function removeSpareItem(form: any, index: number) {
 const Table = useTable<Eps.CompanyInquiryEntity>({
 	columns: [
 		{ type: "selection", width: 60 },
-		{ label: t("询价单号"), prop: "inquiryNo", minWidth: 160 },
+			{ label: t("报价单号"), prop: "inquiryNo", minWidth: 160 },
 		{
-			label: t("询价类型"),
+				label: t("报价类型"),
 			prop: "inquiryType",
 			minWidth: 120,
 			dict: options.inquiryType,
@@ -889,18 +949,138 @@ const Crud = useCrud(
 	},
 );
 
+function apiUrl(path: string) {
+	return `${config.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
+async function syncQuoteActionPerms() {
+	try {
+		await request({
+			url: apiUrl('/admin/company/inquiry/syncQuotePerms'),
+			method: 'post'
+		} as any);
+		const res: any = await service.base.comm.permmenu();
+		menu.setPerms(res?.perms || []);
+		permRenderKey.value += 1;
+		refresh();
+	} catch (e: any) {
+		console.warn('[company] sync quote perms failed', e?.message || e);
+	}
+}
+
+function getQuoteStatus(row: any) {
+	const value = row?.quoteStatus ?? row?.a_quoteStatus;
+	const status = Number(value);
+	return Number.isFinite(status) ? status : 0;
+}
+
+function getQuoteId(row: any) {
+	const value = row?.quoteId ?? row?.a_quoteId;
+	const id = Number(value);
+	return Number.isFinite(id) ? id : 0;
+}
+
+function isQuoteRejected(row: any) {
+	const value = row?.quoteIsRejected ?? row?.b_isRejected;
+	return Number(value) === 1;
+}
+
+function refreshAfterQuoteAction() {
+	refresh();
+	mitt.emit('company.business.refreshProgress');
+}
+
+async function onAccept(quoteId: number) {
+	const idNum = Number(quoteId);
+	if (!Number.isFinite(idNum) || idNum <= 0) {
+		ElMessage.error(t('缺少/无效的 quoteId'));
+		return;
+	}
+
+	try {
+		await request({
+			url: apiUrl('/admin/company/inquiry/accept'),
+			method: 'post',
+			data: { quoteId: idNum }
+		} as any);
+
+		ElMessage.success(t('报价已接受'));
+		refreshAfterQuoteAction();
+	} catch (e: any) {
+		ElMessage.error(e?.message || t('操作失败'));
+	}
+}
+
+async function onReject(quoteId: number) {
+	const idNum = Number(quoteId);
+	if (!Number.isFinite(idNum) || idNum <= 0) {
+		ElMessage.error(t('缺少/无效的 quoteId'));
+		return;
+	}
+
+	try {
+		await request({
+			url: apiUrl('/admin/company/inquiry/reject'),
+			method: 'post',
+			data: { quoteId: idNum }
+		} as any);
+
+		ElMessage.success(t('已拒绝报价'));
+		refreshAfterQuoteAction();
+	} catch (e: any) {
+		ElMessage.error(e?.message || t('操作失败'));
+	}
+}
+
+function goContract(row: any) {
+	const contractName = row?.quoteNo || row?.inquiryNo || '';
+	const customerName = row?.customer || '';
+	const amount = row?.quoteTotalCost ?? row?.quotePriceInclTax ?? '';
+	const contractDetails = [row?.deliverStandard, row?.afterSalesRequirement]
+		.filter(Boolean)
+		.join('\n');
+
+	router.push({
+		path: '/company/business/contract',
+		query: {
+			contractName,
+			customerName,
+			amount: amount === '' ? '' : String(amount),
+			contractDetails
+		}
+	});
+}
+
 function refresh(params?: any) {
 	Crud.value?.refresh(params);
 }
+
+onMounted(() => {
+	syncQuoteActionPerms();
+});
 </script>
 
 <style lang="scss" scoped>
 .quote-summary {
 	line-height: 18px;
 
+	&__top {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 6px;
+	}
+
 	&__no {
 		font-weight: 600;
 		margin-bottom: 4px;
+	}
+
+	&__actions {
+		margin-top: 8px;
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
 	}
 
 	&__row {

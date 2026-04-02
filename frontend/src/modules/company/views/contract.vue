@@ -98,10 +98,12 @@ import { request } from '/@/cool/service/request';
 import { config } from '/@/config';
 import { useBase } from '/$/base';
 import { useI18n } from 'vue-i18n';
+import { useCool } from '/@/cool';
 import ContractReviewAgent from './contract_review_agent.vue';
 
 const { t } = useI18n();
 const { user } = useBase();
+const { route } = useCool();
 
 const FormRef = ref<FormInstance>();
 const previewRef = ref<HTMLElement | null>(null);
@@ -120,6 +122,22 @@ const form = reactive({
 	contractType: '' as string,
 	contractDetails: ''
 });
+
+// 从报价页“转合同”跳转过来时，回填关键信息（不自动带入 contractType）
+const q = route.query as Record<string, any>;
+if (q.contractName) {
+	form.contractName = String(q.contractName);
+}
+if (q.customerName) {
+	form.customerName = String(q.customerName);
+}
+if (q.amount !== undefined && q.amount !== null && q.amount !== '') {
+	const n = Number(q.amount);
+	form.amount = Number.isFinite(n) ? n : undefined;
+}
+if (q.contractDetails) {
+	form.contractDetails = String(q.contractDetails);
+}
 
 const rules: FormRules = {
 	contractName: [{ required: true, message: () => t('请输入合同名称'), trigger: 'blur' }],

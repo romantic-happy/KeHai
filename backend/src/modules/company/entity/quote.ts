@@ -124,5 +124,15 @@ export class CompanyQuoteEntity extends BaseEntity {
 
   @Column({ comment: '创建人ID', nullable: true })
   createUserId: number;
+
+  @Index()
+  @Column({
+    comment: '是否已拒绝',
+    // 0：有效（当前报价或候选）
+    // 1：已被销售拒绝（不再作为进度展示的当前报价）
+    type: 'tinyint',
+    default: 0,
+  })
+  isRejected: number;
 }
 

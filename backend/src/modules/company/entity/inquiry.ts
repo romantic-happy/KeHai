@@ -131,7 +131,10 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Index()
   @Column({
     comment: '报价状态',
-    dict: ['待报价', '已报价'],
+    // 0：待报价（未收到供应链报价）
+    // 1：报价中（已收到供应链报价，销售尚未接受）
+    // 2：报价已定（销售已接受供应链报价，可转合同）
+    dict: ['待报价', '报价中', '报价已定'],
     type: 'tinyint',
     default: 0,
   })
@@ -140,6 +143,15 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Index()
   @Column({ comment: '最新报价ID', nullable: true })
   quoteId: number;
+
+  @Index()
+  @Column({
+    comment: '待重报标记 0-否 1-是',
+    dict: ['否', '是'],
+    type: 'tinyint',
+    default: 0,
+  })
+  requotePending: number;
 
   // ===================== 机械加工类 =====================
 
