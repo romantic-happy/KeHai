@@ -1,5 +1,5 @@
 <template>
-	<supple_agent />
+
 	<div class="company-quote">
 		<!-- 待报价询价列表 -->
 		<div class="company-quote__left">
@@ -701,6 +701,38 @@
 											prop="brand"
 											min-width="120"
 										/>
+										<el-table-column
+											:label="$t('未含税单价估计')"
+											min-width="120"
+										>
+											<template #default="{ row }">
+												{{ getSpareItemPrice(row, 'unitPriceExclTax') }}
+											</template>
+										</el-table-column>
+										<el-table-column
+											:label="$t('含税单价估计')"
+											min-width="120"
+										>
+											<template #default="{ row }">
+												{{ getSpareItemPrice(row, 'unitPriceInclTax') }}
+											</template>
+										</el-table-column>
+										<el-table-column
+											:label="$t('操作')"
+											width="140"
+											align="center"
+										>
+											<template #default="{ row }">
+												<el-button
+													type="primary"
+													size="small"
+													:loading="isLoading(getSpareItemIdentity(row).cacheKey)"
+													@click="handleIntelligentInquiry(row)"
+												>
+													{{ $t('智能询价') }}
+												</el-button>
+											</template>
+										</el-table-column>
 									</el-table>
 								</el-descriptions-item>
 							</el-descriptions>
@@ -741,15 +773,70 @@
 
 									<el-form :model="m" label-width="80px" size="small">
 										<el-row :gutter="10">
-											<el-col :span="12">
+											<el-col :span="10">
 												<el-form-item :label="$t('物料名称')" required>
 													<el-input v-model="m.materialName" clearable />
 												</el-form-item>
 											</el-col>
-											<el-col :span="12">
+											<el-col :span="10">
 												<el-form-item :label="$t('规格型号')" required>
 													<el-input v-model="m.spec" clearable />
 												</el-form-item>
+											</el-col>
+											<el-col :span="4">
+												<el-form-item :label="$t('操作')">
+													<el-button
+														type="primary"
+														size="small"
+														:loading="isLoading(getMaterialCacheKey(m, mIndex))"
+														@click="handleRecommendSupplier(m, mIndex)"
+													>
+														{{ $t('推荐供应商') }}
+													</el-button>
+												</el-form-item>
+											</el-col>
+										</el-row>
+
+										<!-- 推荐供应商结果展示 -->
+										<el-row
+											v-if="m.supplierRecommendation"
+											:gutter="10"
+											class="supplier-recommendation-row"
+										>
+											<el-col :span="24">
+												<el-card shadow="never" class="supplier-recommendation-card">
+													<template #header>
+														<div class="supplier-recommendation-header">
+															<span>{{ $t('推荐供应商结果') }}</span>
+														</div>
+													</template>
+													<el-descriptions :column="1" size="small" border>
+														<el-descriptions-item
+															v-if="m.supplierRecommendation.Supplier_Recommendation1"
+															:label="$t('推荐供应商1')"
+														>
+															{{ m.supplierRecommendation.Supplier_Recommendation1 }}
+														</el-descriptions-item>
+														<el-descriptions-item
+															v-if="m.supplierRecommendation.Supplier_Recommendation2"
+															:label="$t('推荐供应商2')"
+														>
+															{{ m.supplierRecommendation.Supplier_Recommendation2 }}
+														</el-descriptions-item>
+														<el-descriptions-item
+															v-if="m.supplierRecommendation.Supplier_Recommendation3"
+															:label="$t('推荐供应商3')"
+														>
+															{{ m.supplierRecommendation.Supplier_Recommendation3 }}
+														</el-descriptions-item>
+														<el-descriptions-item
+															v-if="m.supplierRecommendation.judge"
+															:label="$t('判断结果')"
+														>
+															{{ m.supplierRecommendation.judge }}
+														</el-descriptions-item>
+													</el-descriptions>
+												</el-card>
 											</el-col>
 										</el-row>
 									</el-form>
@@ -940,13 +1027,20 @@ import { useCrud, useTable, useUpsert } from '@cool-vue/crud';
 import { useCool } from '/@/cool';
 import { useI18n } from 'vue-i18n';
 import { reactive, ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import type { TagProps } from 'element-plus';
 
-import Supple_agent from './supple_agent.vue';
+
+import { useDifyApi } from '../api/dify';
+import { useAsyncLoading } from '/@/composables/useAsyncLoading';
 
 const { service } = useCool();
 const { t } = useI18n();
+
+const { queryMaterialPrice, getSupplierRecommend } = useDifyApi();
+
+// 每个物料独立的 loading 状态，使用 cacheKey 作为 key
+const { isLoading, runWithLoading } = useAsyncLoading();
 
 type InquiryTypeOption = {
 	label: string;
@@ -973,6 +1067,31 @@ const inquiryTotal = ref(0);
 const inquirySelectedKey = ref<string | number | null>(null);
 // 当前在报价弹窗中展示的询价详情
 const currentInquiryInfo = ref<any | null>(null);
+
+// 智能询价结果缓存，用于显示价格（支持 number 和 string 类型）
+const inquiryPriceCache = ref<
+	Record<string, { unitPriceExclTax?: number | string; unitPriceInclTax?: number | string }>
+>({});
+
+function getSpareItemIdentity(row: any) {
+	const name = row?.name ?? row?.materialName ?? '';
+	const spec = row?.spec ?? row?.dimension ?? '';
+	return {
+		name,
+		spec,
+		cacheKey: `${name}||${spec}`
+	};
+}
+
+// 获取备件项的价格（优先从缓存读取，否则回退到 row 本身）
+function getSpareItemPrice(row: any, key: 'unitPriceExclTax' | 'unitPriceInclTax'): any {
+	const { cacheKey } = getSpareItemIdentity(row);
+	const cached = inquiryPriceCache.value[cacheKey];
+	if (cached && cached[key] !== undefined) {
+		return cached[key];
+	}
+	return row[key] ?? '-';
+}
 
 const inquiryParams = reactive({
 	page: 1,
@@ -1106,29 +1225,38 @@ function formatHoistingRequirement(v: any) {
 	return typeof v === 'number' ? (map[v] ?? v) : (v ?? '-');
 }
 
+// 缓存 normalized 后的 spareItems 数组，用于响应式更新
+const spareItemsCache = ref<any[] | null>(null);
+
 function normalizeSpareItems(info: any): Array<any> {
 	const raw = getInquiryField(info, 'spareItems');
-	if (!raw) return [];
+	if (!raw) {
+		spareItemsCache.value = [];
+		return [];
+	}
 	let list = raw;
 	if (typeof raw === 'string') {
 		try {
 			const parsed = JSON.parse(raw);
 			list = parsed;
 		} catch {
+			spareItemsCache.value = [];
 			return [];
 		}
 	}
-	if (!Array.isArray(list)) return [];
-	return list.map((e: any) => {
-		return {
-			name: e?.name ?? '',
-			categoryBig: e?.categoryBig ?? e?.bigCategory ?? e?.category ?? '',
-			categorySmall: e?.categorySmall ?? e?.subCategory ?? '',
-			spec: e?.spec ?? '',
-			quantity: e?.quantity ?? '',
-			brand: e?.brand ?? e?.remark ?? ''
-		};
+	if (!Array.isArray(list)) {
+		spareItemsCache.value = [];
+		return [];
+	}
+	// 保留原始对象引用，确保修改可以触发响应式更新
+	const result = list.map((e: any) => {
+		// 确保 unitPriceExclTax 和 unitPriceInclTax 属性存在
+		if (e.unitPriceExclTax === undefined) e.unitPriceExclTax = null;
+		if (e.unitPriceInclTax === undefined) e.unitPriceInclTax = null;
+		return e;
 	});
+	spareItemsCache.value = result;
+	return result;
 }
 
 function normalizeFiles(val: any): string[] {
@@ -1323,6 +1451,112 @@ async function openAddQuote(inquiry: Eps.CompanyInquiryEntity) {
 			(inquiry as any).projectStartDate ?? (inquiry as any).inquiryProjectStartDate,
 		inquiryProjectEndDate:
 			(inquiry as any).projectEndDate ?? (inquiry as any).inquiryProjectEndDate
+	});
+}
+
+// 智能询价处理函数（每个按钮独立运行，互不干扰）
+async function handleIntelligentInquiry(row: any) {
+	const { name, spec, cacheKey } = getSpareItemIdentity(row);
+
+	// 校验必要参数
+	if (!row?.brand || !name || !spec) {
+		ElMessage.warning(t('品牌、物料名称、规格型号均为必填项'));
+		return;
+	}
+
+	// 使用独立的 loading 状态，每个按钮互不干扰
+	await runWithLoading(cacheKey, async () => {
+		const result = await queryMaterialPrice({
+			brand: row?.brand || '',
+			name: name || '',
+			dimension: spec || ''
+		});
+
+		console.log('[智能询价] 返回结果:', result);
+		if (result) {
+			const unitPriceExclTax =
+				result.unitPriceExclTax ?? result.pricewithouttax ?? result.priceWithTax;
+			const unitPriceInclTax =
+				result.unitPriceInclTax ?? result.pricewithtax ?? result.priceWithTax;
+
+			// 使用缓存存储询价结果，key 为 name||spec（兼容 name/materialName）
+			inquiryPriceCache.value[cacheKey] = {
+				unitPriceExclTax,
+				unitPriceInclTax
+			};
+			// 同步更新当前行，确保表格在不同字段结构下都能立即显示
+			row.unitPriceExclTax = unitPriceExclTax;
+			row.unitPriceInclTax = unitPriceInclTax;
+			// 强制触发响应式更新，确保表格重新渲染
+			inquiryPriceCache.value = { ...inquiryPriceCache.value };
+
+			// 显示 explanation 提示
+			if (result.explanation) {
+				ElMessage.info(result.explanation);
+			}
+		}
+
+		return result;
+	}, {
+		loadingText: t('正在询价...'),
+		successText: t('询价成功'),
+		errorText: t('询价失败')
+	});
+}
+
+// 生成物料的缓存 key，用于推荐供应商的 loading 状态
+function getMaterialCacheKey(m: any, mIndex: number): string {
+	const name = m?.materialName || '';
+	const spec = m?.spec || '';
+	return `supplier_recommend||${mIndex}||${name}||${spec}`;
+}
+
+// 推荐供应商处理函数（每个物料独立运行，互不干扰）
+async function handleRecommendSupplier(m: any, mIndex: number) {
+	const name = m?.materialName || '';
+	const spec = m?.spec || '';
+
+	// 校验必要参数
+	if (!name || !spec) {
+		ElMessage.warning(t('物料名称和规格型号均为必填项'));
+		return;
+	}
+
+	// 使用独立的 loading 状态，每个物料按钮互不干扰
+	await runWithLoading(getMaterialCacheKey(m, mIndex), async () => {
+		const result = await getSupplierRecommend({
+			name: name,
+			dimension: spec
+		});
+
+		console.log('[推荐供应商] 返回结果:', result);
+
+		// 从 result.outputs 中提取供应商推荐信息
+		if (result && result.outputs) {
+			m.supplierRecommendation = {
+				Supplier_Recommendation1: result.outputs.Supplier_Recommendation1 || '',
+				Supplier_Recommendation2: result.outputs.Supplier_Recommendation2 || '',
+				Supplier_Recommendation3: result.outputs.Supplier_Recommendation3 || '',
+				judge: result.outputs.judge || ''
+			};
+			// 强制触发响应式更新
+			m.supplierRecommendation = { ...m.supplierRecommendation };
+		} else if (result) {
+			// 兼容直接返回的情况
+			m.supplierRecommendation = {
+				Supplier_Recommendation1: result.Supplier_Recommendation1 || '',
+				Supplier_Recommendation2: result.Supplier_Recommendation2 || '',
+				Supplier_Recommendation3: result.Supplier_Recommendation3 || '',
+				judge: result.judge || ''
+			};
+			m.supplierRecommendation = { ...m.supplierRecommendation };
+		}
+
+		return result;
+	}, {
+		loadingText: t('正在推荐供应商...'),
+		successText: t('推荐成功'),
+		errorText: t('推荐失败')
 	});
 }
 
