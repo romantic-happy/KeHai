@@ -1449,7 +1449,11 @@ async function handleIntelligentInquiry(row: any) {
 
 			// 显示 explanation 提示
 			if (result.explanation) {
-				ElMessage.info(result.explanation);
+				ElMessage.info({
+					message: `${t('报价原因')}：${result.explanation}`,
+					duration: 0,
+					showClose: true
+				});
 			}
 		}
 
