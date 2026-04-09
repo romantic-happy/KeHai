@@ -788,58 +788,15 @@
 											</el-col>
 											<el-col :span="4">
 												<el-form-item :label="$t('操作')">
-													<el-button
-														type="primary"
-														size="small"
-														:loading="isLoading(getMaterialCacheKey(m, mIndex))"
-														@click="handleRecommendSupplier(m, mIndex)"
-													>
-														{{ $t('推荐供应商') }}
-													</el-button>
+<el-button
+	type="primary"
+	size="small"
+	:loading="isLoading(getMaterialCacheKey(m, mIndex))"
+	@click="handleRecommendSupplier(m, mIndex, scope)"
+>
+	{{ $t('推荐供应商') }}
+</el-button>
 												</el-form-item>
-											</el-col>
-										</el-row>
-
-										<!-- 推荐供应商结果展示 -->
-										<el-row
-											v-if="m.supplierRecommendation"
-											:gutter="10"
-											class="supplier-recommendation-row"
-										>
-											<el-col :span="24">
-												<el-card shadow="never" class="supplier-recommendation-card">
-													<template #header>
-														<div class="supplier-recommendation-header">
-															<span>{{ $t('推荐供应商结果') }}</span>
-														</div>
-													</template>
-													<el-descriptions :column="1" size="small" border>
-														<el-descriptions-item
-															v-if="m.supplierRecommendation.Supplier_Recommendation1"
-															:label="$t('推荐供应商1')"
-														>
-															{{ m.supplierRecommendation.Supplier_Recommendation1 }}
-														</el-descriptions-item>
-														<el-descriptions-item
-															v-if="m.supplierRecommendation.Supplier_Recommendation2"
-															:label="$t('推荐供应商2')"
-														>
-															{{ m.supplierRecommendation.Supplier_Recommendation2 }}
-														</el-descriptions-item>
-														<el-descriptions-item
-															v-if="m.supplierRecommendation.Supplier_Recommendation3"
-															:label="$t('推荐供应商3')"
-														>
-															{{ m.supplierRecommendation.Supplier_Recommendation3 }}
-														</el-descriptions-item>
-														<el-descriptions-item
-															v-if="m.supplierRecommendation.judge"
-															:label="$t('判断结果')"
-														>
-															{{ m.supplierRecommendation.judge }}
-														</el-descriptions-item>
-													</el-descriptions>
-												</el-card>
 											</el-col>
 										</el-row>
 									</el-form>
@@ -1495,7 +1452,11 @@ async function handleIntelligentInquiry(row: any) {
 
 			// 显示 explanation 提示
 			if (result.explanation) {
-				ElMessage.info(result.explanation);
+				ElMessage.info({
+					message: `${t('报价原因')}：${result.explanation}`,
+					duration: 0,
+					showClose: true
+				});
 			}
 		}
 
@@ -1515,7 +1476,7 @@ function getMaterialCacheKey(m: any, mIndex: number): string {
 }
 
 // 推荐供应商处理函数（每个物料独立运行，互不干扰）
-async function handleRecommendSupplier(m: any, mIndex: number) {
+async function handleRecommendSupplier(m: any, mIndex: number, form: any) {
 	const name = m?.materialName || '';
 	const spec = m?.spec || '';
 
@@ -1534,25 +1495,64 @@ async function handleRecommendSupplier(m: any, mIndex: number) {
 
 		console.log('[推荐供应商] 返回结果:', result);
 
-		// 从 result.outputs 中提取供应商推荐信息
+		// 提取推荐供应商列表
+		const suppliers: string[] = [];
 		if (result && result.outputs) {
-			m.supplierRecommendation = {
-				Supplier_Recommendation1: result.outputs.Supplier_Recommendation1 || '',
-				Supplier_Recommendation2: result.outputs.Supplier_Recommendation2 || '',
-				Supplier_Recommendation3: result.outputs.Supplier_Recommendation3 || '',
-				judge: result.outputs.judge || ''
-			};
-			// 强制触发响应式更新
-			m.supplierRecommendation = { ...m.supplierRecommendation };
+			if (result.outputs.Supplier_Recommendation1) {
+				suppliers.push(result.outputs.Supplier_Recommendation1);
+			}
+			if (result.outputs.Supplier_Recommendation2) {
+				suppliers.push(result.outputs.Supplier_Recommendation2);
+			}
+			if (result.outputs.Supplier_Recommendation3) {
+				suppliers.push(result.outputs.Supplier_Recommendation3);
+			}
 		} else if (result) {
 			// 兼容直接返回的情况
-			m.supplierRecommendation = {
-				Supplier_Recommendation1: result.Supplier_Recommendation1 || '',
-				Supplier_Recommendation2: result.Supplier_Recommendation2 || '',
-				Supplier_Recommendation3: result.Supplier_Recommendation3 || '',
-				judge: result.judge || ''
-			};
-			m.supplierRecommendation = { ...m.supplierRecommendation };
+			if (result.Supplier_Recommendation1) {
+				suppliers.push(result.Supplier_Recommendation1);
+			}
+			if (result.Supplier_Recommendation2) {
+				suppliers.push(result.Supplier_Recommendation2);
+			}
+			if (result.Supplier_Recommendation3) {
+				suppliers.push(result.Supplier_Recommendation3);
+			}
+		}
+
+		// 如果有推荐供应商，自动添加到供应商列表
+		if (suppliers.length > 0) {
+			// 为每个推荐供应商添加一行
+			for (const supplierName of suppliers) {
+				// 使用 addSpareSupplier 函数添加供应商行
+				addSpareSupplier(form, mIndex);
+				// 获取刚添加的供应商行，自动填充供应商名称
+				const material = form.spareQuoteItems[mIndex];
+				if (material && Array.isArray(material.suppliers) && material.suppliers.length > 0) {
+					const lastSupplier = material.suppliers[material.suppliers.length - 1];
+					lastSupplier.supplier = supplierName;
+				}
+			}
+			ElMessage.success(t('已添加') + suppliers.length + t('个推荐供应商'));
+
+			// 提取核心判断（judge）并以弹窗形式展示
+			let judgeText = '';
+			if (result && result.outputs && result.outputs.judge) {
+				judgeText = result.outputs.judge;
+			} else if (result && result.judge) {
+				judgeText = result.judge;
+			}
+
+			if (judgeText) {
+				// 使用 ElMessage.info 展示核心判断
+				ElMessage.info({
+					message: `${t('核心判断')}：${judgeText}`,
+					duration: 0,
+					showClose: true
+				});
+			}
+		} else {
+			ElMessage.warning(t('未找到推荐供应商'));
 		}
 
 		return result;
