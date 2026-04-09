@@ -22,7 +22,7 @@
         "isShow": true,
         "childMenus": [
           {
-            "name": "商务管理",
+            "name": "销售管理",
             "router": "/company/business",
             "perms": null,
             "type": 0,
@@ -33,13 +33,13 @@
             "isShow": true,
             "childMenus": [
               {
-                "name": "报价单",
-                "router": "/company/business/quote",
+                "name": "交付管理",
+                "router": "/company/business/delivery",
                 "perms": null,
                 "type": 1,
-                "icon": "icon-log",
-                "orderNum": 1,
-                "viewPath": "modules/company/views/business/quote.vue",
+                "icon": "icon-menu",
+                "orderNum": 3,
+                "viewPath": "modules/company/views/business/delivery.vue",
                 "keepAlive": true,
                 "isShow": true,
                 "childMenus": [
@@ -48,6 +48,31 @@
                     "router": null,
                     "perms": "company:inquiry:page,company:inquiry:list,company:inquiry:info,company:inquiry:add,company:inquiry:update,company:inquiry:delete,company:inquiry:accept,company:inquiry:reject",
                     "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
+                "name": "报价单",
+                "router": "/company/business/quote",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-log",
+                "orderNum": 2,
+                "viewPath": "modules/company/views/business/quote.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:inquiry:page,company:inquiry:list,company:inquiry:info,company:inquiry:add,company:inquiry:update,company:inquiry:delete,company:inquiry:accept,company:inquiry:reject",
+                    "type": 1,
                     "icon": null,
                     "orderNum": 0,
                     "viewPath": null,
@@ -72,6 +97,31 @@
                     "name": "权限",
                     "router": null,
                     "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
+                "name": "开票管理",
+                "router": "/company/business/invoice",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 4,
+                "viewPath": "modules/company/views/business/invoice.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:invoice:page,company:invoice:list,company:invoice:info,company:invoice:add,company:invoice:update,company:invoice:delete",
                     "type": 2,
                     "icon": null,
                     "orderNum": 0,

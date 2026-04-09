@@ -665,75 +665,78 @@
 								class="mb-3"
 							>
 								<el-descriptions-item :label="$t('物料列表')">
-									<el-table
-										:data="normalizeSpareItems(currentInquiryInfo || scope)"
-										size="small"
-										border
-										style="width: 100%"
-									>
-										<el-table-column
-											:label="$t('物料名称')"
-											prop="name"
-											min-width="140"
-										/>
-										<el-table-column
-											:label="$t('物料大类')"
-											prop="categoryBig"
-											min-width="120"
-										/>
-										<el-table-column
-											:label="$t('物料小类')"
-											prop="categorySmall"
-											min-width="140"
-										/>
-										<el-table-column
-											:label="$t('规格型号')"
-											prop="spec"
-											min-width="120"
-										/>
-										<el-table-column
-											:label="$t('数量')"
-											prop="quantity"
-											min-width="100"
-										/>
-										<el-table-column
-											:label="$t('品牌')"
-											prop="brand"
-											min-width="120"
-										/>
-										<el-table-column
-											:label="$t('未含税单价估计')"
-											min-width="120"
+									<div class="spare-items-table-wrap">
+										<el-table
+											:data="normalizeSpareItems(currentInquiryInfo || scope)"
+											size="small"
+											border
+											table-layout="auto"
+											style="width: 100%; min-width: 1120px"
 										>
-											<template #default="{ row }">
-												{{ getSpareItemPrice(row, 'unitPriceExclTax') }}
-											</template>
-										</el-table-column>
-										<el-table-column
-											:label="$t('含税单价估计')"
-											min-width="120"
-										>
-											<template #default="{ row }">
-												{{ getSpareItemPrice(row, 'unitPriceInclTax') }}
-											</template>
-										</el-table-column>
-										<el-table-column
-											:label="$t('操作')"
-											width="140"
-											align="center"
-										>
-											<template #default="{ row }">
-												<el-button
-													type="primary"
-													size="small"
-													:loading="isLoading(getSpareItemIdentity(row).cacheKey)"
-													@click="handleIntelligentInquiry(row)"
-												>
-													{{ $t('智能询价') }}
-												</el-button>
-											</template>
-										</el-table-column>
-									</el-table>
+											<el-table-column
+												:label="$t('物料名称')"
+												prop="name"
+												min-width="140"
+											/>
+											<el-table-column
+												:label="$t('物料大类')"
+												prop="categoryBig"
+												min-width="120"
+											/>
+											<el-table-column
+												:label="$t('物料小类')"
+												prop="categorySmall"
+												min-width="140"
+											/>
+											<el-table-column
+												:label="$t('规格型号')"
+												prop="spec"
+												min-width="120"
+											/>
+											<el-table-column
+												:label="$t('数量')"
+												prop="quantity"
+												min-width="100"
+											/>
+											<el-table-column
+												:label="$t('品牌')"
+												prop="brand"
+												min-width="120"
+											/>
+											<el-table-column
+												:label="$t('未含税单价估计')"
+												min-width="120"
+											>
+												<template #default="{ row }">
+													{{ getSpareItemPrice(row, 'unitPriceExclTax') }}
+												</template>
+											</el-table-column>
+											<el-table-column
+												:label="$t('含税单价估计')"
+												min-width="120"
+											>
+												<template #default="{ row }">
+													{{ getSpareItemPrice(row, 'unitPriceInclTax') }}
+												</template>
+											</el-table-column>
+											<el-table-column
+												:label="$t('操作')"
+												width="140"
+												align="center"
+											>
+												<template #default="{ row }">
+													<el-button
+														type="primary"
+														size="small"
+														:loading="isLoading(getSpareItemIdentity(row).cacheKey)"
+														@click="handleIntelligentInquiry(row)"
+													>
+														{{ $t('智能询价') }}
+													</el-button>
+												</template>
+											</el-table-column>
+										</el-table>
+									</div>
 								</el-descriptions-item>
 							</el-descriptions>
 						</div>
@@ -1562,7 +1565,7 @@ async function handleRecommendSupplier(m: any, mIndex: number) {
 
 const Upsert = useUpsert<Eps.CompanyQuoteEntity>({
 	dialog: {
-		width: '1000px'
+		width: 'min(1400px, 92vw)'
 	},
 	props: {
 		labelWidth: '120px'
@@ -2018,6 +2021,16 @@ onMounted(() => {
 .company-quote__right {
 	flex: 1;
 	min-width: 0;
+}
+
+.spare-items-table-wrap {
+	width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.spare-items-table-wrap :deep(.el-table .cell) {
+	white-space: nowrap;
 }
 
 .inquiry-item {
