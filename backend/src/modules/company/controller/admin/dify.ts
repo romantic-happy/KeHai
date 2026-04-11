@@ -69,4 +69,21 @@ export class DifyController {
       return { code: 500, message: error.message };
     }
   }
+
+  @Post('/analyzeLead')
+  async analyzeLead(@Body() body: { title: string; detail: string }) {
+    if (!body.title || !body.detail) {
+      return { code: 400, message: '线索题目和详情均为必填项' };
+    }
+    try {
+      const result = await this.difyService.analyzeLead(
+        body.title,
+        body.detail
+      );
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      console.info(error);
+      return { code: 500, message: error.message };
+    }
+  }
 }

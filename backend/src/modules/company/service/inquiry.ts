@@ -185,7 +185,9 @@ export class CompanyInquiryService extends BaseService {
         ? null
         : Number(query.quoteStatus);
     if (quoteStatusNum !== null && [0, 1, 2].includes(quoteStatusNum)) {
-      qb.andWhere('a.quoteStatus = :quoteStatus', { quoteStatus: quoteStatusNum });
+      qb.andWhere('a.quoteStatus = :quoteStatus', {
+        quoteStatus: quoteStatusNum,
+      });
     }
 
     qb.select(['a.*', 'b.quoteNo as quoteNo', 'c.nickName as createUserName']);
@@ -329,7 +331,9 @@ export class CompanyInquiryService extends BaseService {
       }
     }
 
-    const quoteRoleMenus = await this.baseSysRoleMenuEntity.findBy({ menuId: quoteMenu.id });
+    const quoteRoleMenus = await this.baseSysRoleMenuEntity.findBy({
+      menuId: quoteMenu.id,
+    });
     const roleIds = Array.from(new Set(quoteRoleMenus.map(e => e.roleId)));
 
     if (roleIds.length > 0) {
@@ -374,4 +378,3 @@ export class CompanyInquiryService extends BaseService {
     };
   }
 }
-

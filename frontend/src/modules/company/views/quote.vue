@@ -1428,8 +1428,6 @@ async function handleIntelligentInquiry(row: any) {
 			name: name || '',
 			dimension: spec || ''
 		});
-
-		console.log('[智能询价] 返回结果:', result);
 		if (result) {
 			const unitPriceExclTax =
 				result.unitPriceExclTax ?? result.pricewithouttax ?? result.priceWithTax;

@@ -7,33 +7,41 @@ import { service } from '/@/cool/service';
 export function useDifyApi() {
 	async function queryMaterialPrice(params: { brand: string; name: string; dimension: string }) {
 		return service.request({
-			url: '/company/dify/intelligentPriceInquiry',
+			url: 'company/dify/intelligentPriceInquiry',
 			method: 'POST',
-			data: params,
+			data: params
 		});
 	}
 
 	async function getCustomerInfo(params: { name: string }) {
 		return service.request({
-			url: '/company/dify/customerInfo',
+			url: 'company/dify/customerInfo',
 			method: 'POST',
-			data: params,
+			data: params
 		});
 	}
 
 	async function getReceptionScript(params: { user_name: string }) {
 		return service.request({
-			url: '/company/dify/receptionScript',
+			url: 'company/dify/receptionScript',
 			method: 'POST',
-			data: params,
+			data: params
 		});
 	}
 
 	async function getSupplierRecommend(params: { name: string; dimension: string }) {
 		return service.request({
-			url: '/company/dify/supplierRecommend',
+			url: 'company/dify/supplierRecommend',
 			method: 'POST',
-			data: params,
+			data: params
+		});
+	}
+
+	async function analyzeLead(params: { title: string; detail: string }) {
+		return service.request({
+			url: 'company/dify/analyzeLead',
+			method: 'POST',
+			data: params
 		});
 	}
 
@@ -42,5 +50,6 @@ export function useDifyApi() {
 		getCustomerInfo,
 		getReceptionScript,
 		getSupplierRecommend,
+		analyzeLead
 	};
 }

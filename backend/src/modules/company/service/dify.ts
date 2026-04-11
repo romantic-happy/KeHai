@@ -126,4 +126,13 @@ export class DifyService {
     if (!result.success) throw new Error(result.error);
     return result.data;
   }
+
+  async analyzeLead(title: string, detail: string) {
+    const result = await this.runWorkflow('leadAnalysis', {
+      title,
+      detail,
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  }
 }

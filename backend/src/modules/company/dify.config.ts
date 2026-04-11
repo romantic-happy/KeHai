@@ -47,4 +47,13 @@ export default [
       { name: 'dimension', required: true, type: 'string' },
     ],
   },
+  {
+    key: 'leadAnalysis',
+    name: '线索智能分析',
+    apiKey: 'app-wvN7QZhMFjMa808dEWEDszCN', // TODO: 替换为实际的API Key
+    inputs: [
+      { name: 'title', required: true, type: 'string' },
+      { name: 'detail', required: true, type: 'string' },
+    ],
+  },
 ] as DifyWorkflowConfig[];

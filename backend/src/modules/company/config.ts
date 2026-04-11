@@ -17,4 +17,3 @@ export default () => {
     order: 0,
   } as ModuleConfig;
 };
-
