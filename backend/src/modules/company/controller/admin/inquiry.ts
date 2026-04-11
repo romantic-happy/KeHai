@@ -1,4 +1,8 @@
-import { BaseController, CoolController, CoolCommException } from '@cool-midway/core';
+import {
+  BaseController,
+  CoolController,
+  CoolCommException,
+} from '@cool-midway/core';
 import { Body, Inject, Post } from '@midwayjs/core';
 import { CompanyInquiryEntity } from '../../entity/inquiry';
 import { CompanyQuoteEntity } from '../../entity/quote';
@@ -14,8 +18,8 @@ import { CompanyInquiryService } from '../../service/inquiry';
   serviceApis: [
     {
       method: 'progressPage',
-      summary: '报价单进度分页（含负责人）'
-    }
+      summary: '报价单进度分页（含负责人）',
+    },
   ],
   insertParam: ctx => {
     return {
@@ -87,4 +91,3 @@ export class AdminCompanyInquiryController extends BaseController {
     return this.ok(await this.companyInquiryService.syncQuotePerms());
   }
 }
-

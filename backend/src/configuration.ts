@@ -58,13 +58,13 @@ import * as upload from '@midwayjs/upload';
 })
 export class MainConfiguration {
   @App()
-  app: IMidwayApplication;
+  app!: IMidwayApplication;
 
   @Inject()
-  webRouterService: MidwayWebRouterService;
+  webRouterService!: MidwayWebRouterService;
 
   @Inject()
-  logger: ILogger;
+  logger!: ILogger;
 
   async onReady() {}
 }

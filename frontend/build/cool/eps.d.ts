@@ -965,6 +965,73 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
+	interface CompanyLeadEntity {
+		/**
+		 * ID
+		 */
+		id?: number;
+
+		/**
+		 * 线索编号
+		 */
+		leadNo?: string;
+
+		/**
+		 * 线索题目
+		 */
+		leadTitle?: string;
+
+		/**
+		 * 线索详情
+		 */
+		leadDetail?: string;
+
+		/**
+		 * 线索状态
+		 */
+		leadStatus?: number;
+
+		/**
+		 * AI线索分析
+		 */
+		aiAnalysis?: string;
+
+		/**
+		 * 负责人ID
+		 */
+		ownerUserId?: number;
+
+		/**
+		 * 负责人
+		 */
+		ownerName?: string;
+
+		/**
+		 * 最后编辑人ID
+		 */
+		lastEditUserId?: number;
+
+		/**
+		 * 最后编辑人
+		 */
+		lastEditName?: string;
+
+		/**
+		 * 创建时间
+		 */
+		createTime?: string;
+
+		/**
+		 * 更新时间
+		 */
+		updateTime?: string;
+
+		/**
+		 * 任意键值
+		 */
+		[key: string]: any;
+	}
+
 	interface CompanyQuoteEntity {
 		/**
 		 * ID
@@ -1784,6 +1851,11 @@ declare namespace Eps {
 		list: CompanyInquiryEntity[];
 	}
 
+	interface CompanyLeadPageResponse {
+		pagination: PagePagination;
+		list: CompanyLeadEntity[];
+	}
+
 	interface CompanyQuotePageResponse {
 		pagination: PagePagination;
 		list: CompanyQuoteEntity[];
@@ -2487,6 +2559,99 @@ declare namespace Eps {
 			progressPage: boolean;
 			accept: boolean;
 			reject: boolean;
+			delete: boolean;
+			update: boolean;
+			info: boolean;
+			list: boolean;
+			page: boolean;
+			add: boolean;
+		};
+
+		request: Request;
+	}
+
+	interface CompanyLead {
+		/**
+		 * 线索开发分页（进行中）
+		 */
+		developmentPage(data?: any): Promise<any>;
+
+		/**
+		 * 线索管理分页（结果态）
+		 */
+		managementPage(data?: any): Promise<any>;
+
+		/**
+		 * 线索转化成功
+		 */
+		toSuccess(data?: any): Promise<any>;
+
+		/**
+		 * 线索放弃
+		 */
+		toDiscard(data?: any): Promise<any>;
+
+		/**
+		 * 线索AI分析
+		 */
+		aiAnalyze(data?: any): Promise<any>;
+
+		/**
+		 * 删除
+		 */
+		delete(data?: any): Promise<any>;
+
+		/**
+		 * 修改
+		 */
+		update(data?: any): Promise<any>;
+
+		/**
+		 * 单个信息
+		 */
+		info(data?: any): Promise<CompanyLeadEntity>;
+
+		/**
+		 * 列表查询
+		 */
+		list(data?: any): Promise<CompanyLeadEntity[]>;
+
+		/**
+		 * 分页查询
+		 */
+		page(data?: any): Promise<CompanyLeadPageResponse>;
+
+		/**
+		 * 新增
+		 */
+		add(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: {
+			developmentPage: string;
+			managementPage: string;
+			toSuccess: string;
+			toDiscard: string;
+			aiAnalyze: string;
+			delete: string;
+			update: string;
+			info: string;
+			list: string;
+			page: string;
+			add: string;
+		};
+
+		/**
+		 * 权限状态
+		 */
+		_permission: {
+			developmentPage: boolean;
+			managementPage: boolean;
+			toSuccess: boolean;
+			toDiscard: boolean;
+			aiAnalyze: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;
@@ -3217,6 +3382,7 @@ declare namespace Eps {
 			contract: CompanyContract;
 			customer: CompanyCustomer;
 			inquiry: CompanyInquiry;
+			lead: CompanyLead;
 			quote: CompanyQuote;
 		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };

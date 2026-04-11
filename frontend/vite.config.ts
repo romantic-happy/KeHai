@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { proxy } from './src/config/proxy';
 import { cool } from '@cool-vue/vite-plugin';
-import Inspector from 'vite-plugin-vue-inspector'
+import Inspector from 'vite-plugin-vue-inspector';
 
 function toPath(dir: string) {
 	return fileURLToPath(new URL(dir, import.meta.url));
@@ -21,8 +21,9 @@ export default ({ mode }: ConfigEnv): UserConfig => {
 	return {
 		plugins: [
 			Inspector({
-      			toggleComboKey: 'control-shift', // 快捷键开启
-    		}),
+				toggleComboKey: 'control-shift',
+				launchEditor: 'trae-cn'
+			}),
 			vue(),
 			compression(),
 			vueJsx(),
