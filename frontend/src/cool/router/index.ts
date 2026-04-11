@@ -31,7 +31,16 @@ const routes: RouteRecordRaw[] = [
 				component: () => import('/$/company/views/business.vue'),
 				meta: {
 					keepAlive: true,
-					label: '商务管理'
+					label: '销售管理'
+				}
+			},
+			{
+				path: 'company/business/delivery',
+				name: 'company-business-delivery',
+				component: () => import('/$/company/views/business/delivery.vue'),
+				meta: {
+					keepAlive: true,
+					label: '交付管理'
 				}
 			},
 			{
@@ -50,6 +59,15 @@ const routes: RouteRecordRaw[] = [
 				meta: {
 					keepAlive: true,
 					label: '合同管理'
+				}
+			},
+			{
+				path: 'company/business/invoice',
+				name: 'company-business-invoice',
+				component: () => import('/$/company/views/business/invoice.vue'),
+				meta: {
+					keepAlive: true,
+					label: '开票管理'
 				}
 			}
 		]
