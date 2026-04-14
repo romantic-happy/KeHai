@@ -42,7 +42,15 @@ export class CompanyCustomerEntity extends BaseEntity {
   @Column({
     comment:
       '管理状态（系统关联生成：背调中/初次接触/需求确认/合作中/合作结束/目前无需求/放弃）',
-    dict: ['背调中', '初次接触', '需求确认', '合作中', '合作结束', '目前无需求', '放弃'],
+    dict: [
+      '背调中',
+      '初次接触',
+      '需求确认',
+      '合作中',
+      '合作结束',
+      '目前无需求',
+      '放弃',
+    ],
     type: 'tinyint',
     default: 0,
   })
@@ -166,149 +174,151 @@ export class CompanyCustomerEntity extends BaseEntity {
     nullable: true,
   })
   contractConvertRate: number;
-// ===================== 客户背调信息 =====================
+  // ===================== 客户背调信息 =====================
+  @Column({
+    comment: '来源（公司资源/自由开拓/客户介绍/电话咨询）',
+    dict: ['公司资源', '自由开拓', '客户介绍', '电话咨询'],
+    type: 'tinyint',
+    default: 0,
+  })
+  backgroundSource: number;
 
-@Column({
-  comment: '来源（公司资源/自由开拓/客户介绍/电话咨询）',
-  dict: ['公司资源', '自由开拓', '客户介绍', '电话咨询'],
-  type: 'tinyint',
-  default: 0,
-})
-backgroundSource: number;
+  @Column({ comment: '公司背景（简短介绍）', type: 'text' })
+  backgroundCompanyProfile: string;
 
-@Column({ comment: '公司背景（简短介绍）', type: 'text' })
-backgroundCompanyProfile: string;
+  @Column({ comment: '成立时间', type: 'date' })
+  backgroundEstablishDate: Date;
 
-@Column({ comment: '成立时间', type: 'date' })
-backgroundEstablishDate: Date;
+  @Column({
+    comment: '企业注册资金',
+    type: 'decimal',
+    precision: 16,
+    scale: 2,
+    nullable: true,
+  })
+  backgroundRegisteredCapital: number;
 
-@Column({
-  comment: '企业注册资金',
-  type: 'decimal',
-  precision: 16,
-  scale: 2,
-  nullable: true,
-})
-backgroundRegisteredCapital: number;
+  @Column({ comment: '企业性质', length: 100 })
+  backgroundEnterpriseType: string;
 
-@Column({ comment: '企业性质', length: 100 })
-backgroundEnterpriseType: string;
+  @Column({
+    comment: '是否上市（0-否 1-是）',
+    dict: ['否', '是'],
+    type: 'tinyint',
+    default: 0,
+  })
+  backgroundIsListed: number;
 
-@Column({
-  comment: '是否上市（0-否 1-是）',
-  dict: ['否', '是'],
-  type: 'tinyint',
-  default: 0,
-})
-backgroundIsListed: number;
+  @Column({
+    comment: '当年营业额',
+    type: 'decimal',
+    precision: 16,
+    scale: 2,
+    nullable: true,
+  })
+  backgroundTurnoverCurrent: number;
 
-@Column({
-  comment: '当年营业额',
-  type: 'decimal',
-  precision: 16,
-  scale: 2,
-  nullable: true,
-})
-backgroundTurnoverCurrent: number;
+  @Column({
+    comment: '上一年营业额',
+    type: 'decimal',
+    precision: 16,
+    scale: 2,
+    nullable: true,
+  })
+  backgroundTurnoverLast: number;
 
-@Column({
-  comment: '上一年营业额',
-  type: 'decimal',
-  precision: 16,
-  scale: 2,
-  nullable: true,
-})
-backgroundTurnoverLast: number;
+  @Column({
+    comment: '上上年营业额',
+    type: 'decimal',
+    precision: 16,
+    scale: 2,
+    nullable: true,
+  })
+  backgroundTurnoverPrev: number;
 
-@Column({
-  comment: '上上年营业额',
-  type: 'decimal',
-  precision: 16,
-  scale: 2,
-  nullable: true,
-})
-backgroundTurnoverPrev: number;
+  @Column({ comment: '行业（必填，文本）', length: 100 })
+  backgroundIndustry: string;
 
-@Column({ comment: '行业（必填，文本）', length: 100 })
-backgroundIndustry: string;
+  @Column({ comment: '企业经营项目', type: 'text' })
+  backgroundBusinessItems: string;
 
-@Column({ comment: '企业经营项目', type: 'text' })
-backgroundBusinessItems: string;
+  @Column({ comment: '上级客户', length: 255, nullable: true })
+  backgroundSuperiorCustomer: string;
 
-@Column({ comment: '上级客户', length: 255, nullable: true })
-backgroundSuperiorCustomer: string;
+  @Column({ comment: '下游客户', length: 255, nullable: true })
+  backgroundDownstreamCustomer: string;
 
-@Column({ comment: '下游客户', length: 255, nullable: true })
-backgroundDownstreamCustomer: string;
+  @Column({ comment: '机器人工艺', type: 'text' })
+  backgroundRobotProcess: string;
 
-@Column({ comment: '机器人工艺', type: 'text' })
-backgroundRobotProcess: string;
+  @Column({ comment: '公司网址', length: 255, nullable: true })
+  backgroundWebsite: string;
 
-@Column({ comment: '公司网址', length: 255, nullable: true })
-backgroundWebsite: string;
+  @Column({ comment: '电话', length: 50 })
+  backgroundPhone: string;
 
-@Column({ comment: '电话', length: 50 })
-backgroundPhone: string;
+  @Column({ comment: '电子邮件', length: 100 })
+  backgroundEmail: string;
 
-@Column({ comment: '电子邮件', length: 100 })
-backgroundEmail: string;
+  @Column({ comment: '备注', type: 'text', nullable: true })
+  backgroundRemark: string;
 
-@Column({ comment: '备注', type: 'text', nullable: true })
-backgroundRemark: string;
+  @Column({ comment: '国家', length: 50, default: '中国' })
+  backgroundCountry: string;
 
-@Column({ comment: '国家', length: 50, default: '中国' })
-backgroundCountry: string;
+  @Column({ comment: '省', length: 50 })
+  backgroundProvince: string;
 
-@Column({ comment: '省', length: 50 })
-backgroundProvince: string;
+  @Column({ comment: '市', length: 50 })
+  backgroundCity: string;
 
-@Column({ comment: '市', length: 50 })
-backgroundCity: string;
+  @Column({ comment: '区', length: 50, nullable: true })
+  backgroundDistrict: string;
 
-@Column({ comment: '区', length: 50, nullable: true })
-backgroundDistrict: string;
+  @Column({ comment: '详细地址', length: 255 })
+  backgroundAddressDetail: string;
 
-@Column({ comment: '详细地址', length: 255 })
-backgroundAddressDetail: string;
+  // ===================== 负责人及协作人
 
-// 负责人及协作人
+  @Index()
+  @Column({ comment: '负责人（文本，如姓名）', length: 50, nullable: true })
+  backgroundOwnerUserId: string;
 
-@Index()
-@Column({ comment: '负责人（文本，如姓名）', length: 50, nullable: true })
-backgroundOwnerUserId: string;
+  @Column({ comment: '负责人所在部门', length: 50, default: '销售部' })
+  backgroundOwnerDept: string;
 
-@Column({ comment: '负责人所在部门', length: 50, default: '销售部' })
-backgroundOwnerDept: string;
+  @Column({
+    comment: '协作人列表（文本数组，如姓名列表）',
+    type: 'json',
+    nullable: true,
+    transformer: transformerJson,
+  })
+  backgroundCollaboratorUserIds: string[];
 
-@Column({
-  comment: '协作人列表（文本数组，如姓名列表）',
-  type: 'json',
-  nullable: true,
-  transformer: transformerJson,
-})
-backgroundCollaboratorUserIds: string[];
+  // ===================== 系统自动生成信息
 
-// 系统自动生成信息
+  @Index()
+  @Column({ comment: '最后修改人（文本，如姓名）', length: 50, nullable: true })
+  backgroundLastModifyUserId: string;
 
-@Index()
-@Column({ comment: '最后修改人（文本，如姓名）', length: 50, nullable: true })
-backgroundLastModifyUserId: string;
+  // 创建人
+  @Column({ comment: '创建人（文本，如姓名）', length: 50, nullable: true })
+  createUserId: string;
 
-// 创建人
-@Column({ comment: '创建人（文本，如姓名）', length: 50, nullable: true })
-createUserId: string;
+  @Index()
+  @Column({
+    comment: '上一次负责人（文本，如姓名）',
+    length: 50,
+    nullable: true,
+  })
+  backgroundPreviousOwnerUserId: string;
 
-@Index()
-@Column({ comment: '上一次负责人（文本，如姓名）', length: 50, nullable: true })
-backgroundPreviousOwnerUserId: string;
-
-@Column({
-  comment: '负责人变更时间',
-  type: 'datetime',
-  nullable: true,
-})
-backgroundOwnerChangeTime: Date;
-
+  @Column({
+    comment: '负责人变更时间',
+    type: 'datetime',
+    nullable: true,
+  })
+  backgroundOwnerChangeTime: Date;
 
   // ===================== 客户拜访信息 =====================
 
@@ -400,6 +410,4 @@ backgroundOwnerChangeTime: Date;
     default: 0,
   })
   cooperationIntention: number;
-  
 }
-

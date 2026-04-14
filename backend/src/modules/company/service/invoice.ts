@@ -45,7 +45,9 @@ export class CompanyInvoiceService extends BaseService {
       }
       const detailRows = this.normalizeDetailRows(param.detailRows);
       const contractOrderIds = this.normalizeIdArray(param.contractOrderIds);
-      const collaboratorUserIds = this.normalizeIdArray(param.collaboratorUserIds);
+      const collaboratorUserIds = this.normalizeIdArray(
+        param.collaboratorUserIds
+      );
 
       await invRepo.update(idNum, {
         customerId,
@@ -55,8 +57,11 @@ export class CompanyInvoiceService extends BaseService {
         expectedPaybackDate: String(param.expectedPaybackDate ?? ''),
         invoiceAmount: Number(param.invoiceAmount) || 0,
         invoiceType: param.invoiceType ?? null,
-        ownerUserId: param.ownerUserId != null ? Number(param.ownerUserId) : null,
-        collaboratorUserIds: collaboratorUserIds.length ? collaboratorUserIds : null,
+        ownerUserId:
+          param.ownerUserId != null ? Number(param.ownerUserId) : null,
+        collaboratorUserIds: collaboratorUserIds.length
+          ? collaboratorUserIds
+          : null,
         remark: param.remark ?? null,
         detailRows,
         taxNo: param.taxNo ?? null,
@@ -78,7 +83,9 @@ export class CompanyInvoiceService extends BaseService {
     const invoiceNo = await this.nextInvoiceNo(invRepo);
     const detailRows = this.normalizeDetailRows(param.detailRows);
     const contractOrderIds = this.normalizeIdArray(param.contractOrderIds);
-    const collaboratorUserIds = this.normalizeIdArray(param.collaboratorUserIds);
+    const collaboratorUserIds = this.normalizeIdArray(
+      param.collaboratorUserIds
+    );
 
     const saved = await invRepo.save({
       invoiceNo,
@@ -90,7 +97,9 @@ export class CompanyInvoiceService extends BaseService {
       invoiceAmount: Number(param.invoiceAmount) || 0,
       invoiceType: param.invoiceType ?? null,
       ownerUserId: param.ownerUserId != null ? Number(param.ownerUserId) : null,
-      collaboratorUserIds: collaboratorUserIds.length ? collaboratorUserIds : null,
+      collaboratorUserIds: collaboratorUserIds.length
+        ? collaboratorUserIds
+        : null,
       remark: param.remark ?? null,
       detailRows,
       taxNo: param.taxNo ?? null,
