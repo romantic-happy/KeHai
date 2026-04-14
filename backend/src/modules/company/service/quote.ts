@@ -39,9 +39,12 @@ export class CompanyQuoteService extends BaseService {
     qb.andWhere(`(a.inquiryId IS NULL OR a.id IN (${latestIdSubQuery}))`);
 
     if (query?.keyWord) {
-      qb.andWhere('(a.quoteNo like :kw or b.inquiryNo like :kw or a.supplier like :kw)', {
-        kw: `%${query.keyWord}%`,
-      });
+      qb.andWhere(
+        '(a.quoteNo like :kw or b.inquiryNo like :kw or a.supplier like :kw)',
+        {
+          kw: `%${query.keyWord}%`,
+        }
+      );
     }
 
     const inquiryTypeNum =
@@ -49,7 +52,9 @@ export class CompanyQuoteService extends BaseService {
         ? null
         : Number(query.inquiryType);
     if (inquiryTypeNum !== null && [0, 1, 2, 3, 4].includes(inquiryTypeNum)) {
-      qb.andWhere('a.inquiryType = :inquiryType', { inquiryType: inquiryTypeNum });
+      qb.andWhere('a.inquiryType = :inquiryType', {
+        inquiryType: inquiryTypeNum,
+      });
     }
 
     const inquiryIdNum =
@@ -166,10 +171,7 @@ export class CompanyQuoteService extends BaseService {
 
     // 若询价未进入“报价已定”，则新报价到来会让旧报价失效（标记为已拒绝）
     if (shouldOverwrite) {
-      await quoteRepo.update(
-        { inquiryId, isRejected: 0 },
-        { isRejected: 1 }
-      );
+      await quoteRepo.update({ inquiryId, isRejected: 0 }, { isRejected: 1 });
     }
 
     const saved = await quoteRepo.save({
@@ -256,7 +258,7 @@ export class CompanyQuoteService extends BaseService {
       },
     });
     const inquiryIds = Array.from(
-      new Set(relatedQuotes.map(e => e.inquiryId).filter(e => !!e)),
+      new Set(relatedQuotes.map(e => e.inquiryId).filter(e => !!e))
     );
 
     // 在同一事务中直接删除报价记录，避免嵌套事务导致锁等待
@@ -275,7 +277,7 @@ export class CompanyQuoteService extends BaseService {
       .getRawMany();
 
     const stillHasQuote = new Set<number>(
-      remain.map(r => Number(r.inquiryId)).filter(e => !!e),
+      remain.map(r => Number(r.inquiryId)).filter(e => !!e)
     );
 
     const needReset = inquiryIds.filter(id => !stillHasQuote.has(id));
@@ -307,12 +309,17 @@ export class CompanyQuoteService extends BaseService {
         ? null
         : Number(query.quoteStatus);
     if (quoteStatusNum === null) {
-      qb.andWhere('(a.quoteStatus = :waitQuoteStatus OR a.requotePending = :requotePending)', {
-        waitQuoteStatus: 0,
-        requotePending: 1,
-      });
+      qb.andWhere(
+        '(a.quoteStatus = :waitQuoteStatus OR a.requotePending = :requotePending)',
+        {
+          waitQuoteStatus: 0,
+          requotePending: 1,
+        }
+      );
     } else {
-      const quoteStatus = [0, 1, 2].includes(quoteStatusNum) ? quoteStatusNum : 0;
+      const quoteStatus = [0, 1, 2].includes(quoteStatusNum)
+        ? quoteStatusNum
+        : 0;
       qb.andWhere('a.quoteStatus = :quoteStatus', { quoteStatus });
     }
 
@@ -336,4 +343,3 @@ export class CompanyQuoteService extends BaseService {
     return this.entityRenderPage(qb, query);
   }
 }
-
