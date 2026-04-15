@@ -174,8 +174,6 @@ export class CompanyLeadService extends BaseService {
       ...param,
       ...base,
       leadStatus: this.normalizeDevelopStatus(param?.leadStatus),
-      ownerUserId: userId,
-      ownerName: userName,
       lastEditUserId: userId,
       lastEditName: userName,
     });
@@ -246,12 +244,21 @@ export class CompanyLeadService extends BaseService {
 
   /**
    * 线索全部分页（支持状态筛选）
+   * @param query.isPool - 如果为true，筛选负责人为空的线索（公海）
    */
   async page(query: any) {
     const qb = this.companyLeadEntity.createQueryBuilder('a');
 
+    // 公海页面：负责人为空
+    if (query?.isPool) {
+      qb.andWhere('a.ownerUserId IS NULL');
+    } else {
+      // 线索页面：负责人不为空
+      qb.andWhere('a.ownerUserId IS NOT NULL');
+    }
+
     if (query?.leadStatuses && Array.isArray(query.leadStatuses)) {
-      qb.where('a.leadStatus IN (:...statuses)', {
+      qb.andWhere('a.leadStatus IN (:...statuses)', {
         statuses: query.leadStatuses,
       });
     }
