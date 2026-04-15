@@ -20,11 +20,14 @@ export class CompanyLeadEntity extends BaseEntity {
   @Index()
   @Column({
     comment: '线索状态',
-    dict: ['待跟进', '跟进中', '转化成功', '已放弃'],
+    dict: ['待跟进', '跟进中', '转化成功', '已放弃', '已失效'],
     type: 'tinyint',
     default: 0,
   })
   leadStatus: number;
+
+  @Column({ comment: '跟进详情', type: 'text' })
+  followupDetail!: string;
 
   @Column({ comment: 'AI线索分析', type: 'text', nullable: true })
   aiAnalysis: string;
@@ -35,6 +38,7 @@ export class CompanyLeadEntity extends BaseEntity {
 
   @Column({ comment: '负责人', length: 50, nullable: true })
   ownerName: string;
+  
 
   @Index()
   @Column({ comment: '最后编辑人ID', nullable: true })

@@ -2,51 +2,8 @@
 	<cl-crud ref="Crud">
 		<cl-row>
 			<cl-refresh-btn />
-			<cl-add-btn />
 			<cl-multi-delete-btn />
 			<cl-flex1 />
-			<el-select
-				v-model="searchStatus"
-				:placeholder="$t('线索状态')"
-				clearable
-				style="width: 140px"
-				@change="onFirstLevelChange"
-			>
-				<el-option :label="$t('全部')" :value="'all'" />
-				<el-option :label="$t('待跟进')" :value="'pending'" />
-				<el-option :label="$t('进行中')" :value="'ongoing'" />
-				<el-option :label="$t('结果态')" :value="'result'" />
-			</el-select>
-			<el-select
-				v-model="searchStatusSecond"
-				:placeholder="$t('请选择')"
-				clearable
-				style="width: 140px; margin-left: 8px"
-				@change="onSecondLevelChange"
-			>
-				<template v-if="searchStatus === 'all' || searchStatus === undefined">
-					<el-option :label="$t('全部')" :value="'all'" />
-					<el-option :label="$t('待跟进')" :value="0" />
-					<el-option :label="$t('跟进中')" :value="1" />
-					<el-option :label="$t('转化成功')" :value="2" />
-					<el-option :label="$t('已放弃')" :value="3" />
-					<el-option :label="$t('已失效')" :value="4" />
-				</template>
-				<template v-else-if="searchStatus === 'pending'">
-					<el-option :label="$t('全部')" :value="'all'" />
-					<el-option :label="$t('待跟进')" :value="0" />
-				</template>
-				<template v-else-if="searchStatus === 'ongoing'">
-					<el-option :label="$t('全部')" :value="'all'" />
-					<el-option :label="$t('跟进中')" :value="1" />
-					<el-option :label="$t('已失效')" :value="4" />
-				</template>
-				<template v-else-if="searchStatus === 'result'">
-					<el-option :label="$t('全部')" :value="'all'" />
-					<el-option :label="$t('转化成功')" :value="2" />
-					<el-option :label="$t('已放弃')" :value="3" />
-				</template>
-			</el-select>
 			<cl-search-key :placeholder="$t('搜索线索编号/线索题目/线索详情')" :width="300" />
 		</cl-row>
 
@@ -117,12 +74,12 @@
 
 <script lang="ts" setup>
 defineOptions({
-	name: 'company-lead-develop'
+	name: 'company-lead-pool'
 });
 
 import { useCrud, useTable, useUpsert } from '@cool-vue/crud';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { reactive, ref, defineComponent, h } from 'vue';
+import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCool } from '/@/cool';
 import { useAsyncLoading } from '/@/composables/useAsyncLoading';
@@ -137,9 +94,6 @@ const leadApi = (service as any).company?.lead;
 const difyApi = useDifyApi();
 
 const loadingMap = useAsyncLoading();
-
-const searchStatus = ref<string | number>();
-const searchStatusSecond = ref<string | number>();
 
 // 用户选项列表
 const ownerUserOptions = ref<{ label: string; value: number }[]>([]);
@@ -229,12 +183,13 @@ const developCrudService = {
 	async page(params: any) {
 		const api = ensureLeadApi();
 		if (!api) return Promise.resolve(emptyPage(params));
-		const res = await api.page(params);
+		// 公海页面：筛选负责人为空的线索
+		const res = await api.page({ ...params, isPool: true });
 		return normalizePageResult(res, params);
 	},
 	list(params: any) {
 		const api = ensureLeadApi();
-		return api ? api.list(params) : Promise.resolve([]);
+		return api ? api.list({ ...params, isPool: true }) : Promise.resolve([]);
 	},
 	info(params: any) {
 		const api = ensureLeadApi();
@@ -475,53 +430,6 @@ function refresh(params?: any) {
 	Crud.value?.refresh(params);
 }
 
-function onFirstLevelChange(val: string | number | undefined) {
-	// 重置第二级选择
-	searchStatusSecond.value = undefined;
-	// 一级清空时，两级都为空，展示全部 - 显式传 undefined 清除旧过滤
-	refresh({ page: 1, leadStatuses: undefined });
-}
-
-function onSecondLevelChange(val: string | number | undefined) {
-	const params: any = { page: 1 };
-
-	// 分类对应的状态范围
-	const categoryStatusMap: Record<string, number[]> = {
-		pending: [0],
-		ongoing: [1, 4],
-		result: [2, 3]
-	};
-
-	// 一级为全部时
-	if (searchStatus.value === 'all' || searchStatus.value === undefined) {
-		if (val === 'all' || val === undefined) {
-			// 不过滤，展示全部 - 显式传 undefined 清除旧过滤
-			params.leadStatuses = undefined;
-		} else {
-			// 按具体值过滤
-			params.leadStatuses = [Number(val)];
-		}
-	} else {
-		// 一级为具体分类时
-		const statusRange = categoryStatusMap[searchStatus.value];
-		if (!statusRange) {
-			params.leadStatuses = undefined;
-			refresh(params);
-			return;
-		}
-
-		if (val === 'all' || val === undefined) {
-			// 二级为全部，展示该分类下的全部
-			params.leadStatuses = statusRange;
-		} else {
-			// 按具体值过滤
-			params.leadStatuses = [Number(val)];
-		}
-	}
-
-	refresh(params);
-}
-
 async function onToSuccess(row: any) {
 	const target = normalizeLeadRow(row);
 	const idNum = Number(target.id);
@@ -593,9 +501,7 @@ async function onDifyAnalyze() {
 	await loadingMap.runWithLoading(
 		'ai-analyze',
 		async () => {
-
 			const res = await difyApi.analyzeLead({ title, detail });
-
 
 			if (!res) {
 				throw new Error('AI分析失败');
@@ -603,11 +509,9 @@ async function onDifyAnalyze() {
 			let analysisResult = '';
 			analysisResult = res.text || JSON.stringify(res, null, 2);
 
-
 			Upsert.value?.setForm('aiAnalysis', analysisResult);
 
 			ElMessage.success('AI分析完成');
-
 		},
 		{
 			loadingText: '正在调用AI分析，请稍候...',
