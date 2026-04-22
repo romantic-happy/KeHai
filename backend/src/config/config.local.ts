@@ -18,8 +18,8 @@ export default {
     dataSource: {
       default: {
         type: 'mysql',
-        host: '127.0.0.1',
-        port: 3306,
+        host: 'localhost',
+        port: 9563,
         username: 'root',
         password: 'root',
         database: 'cool-admin',
