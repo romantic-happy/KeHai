@@ -13,7 +13,7 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = 'http://10.10.2.103:6859/v1/workflows/run'; // TODO
+  private readonly DIFY_API_URL = 'http://localhost:6859/v1/workflows/run'; // TODO
   private readonly RESPONSE_MODE = 'blocking';
   private readonly DIFY_USER = 'smallrespon';
 
