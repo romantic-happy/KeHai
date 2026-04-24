@@ -4,3 +4,12 @@ memory
 CLAUDE.md
 .trae/
 .claude/
+temp/
+backend/lock/
+plan.md
+temp_menu_*.json
+*.mp4
+*.xlsx
+*.docx
+*.pdf
+*.csv
