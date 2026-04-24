@@ -69,6 +69,15 @@ const routes: RouteRecordRaw[] = [
 					keepAlive: true,
 					label: '开票管理'
 				}
+			},
+			{
+				path: 'company/key-person',
+				name: 'company-key-person',
+				component: () => import('/$/company/views/key-person.vue'),
+				meta: {
+					keepAlive: true,
+					label: '客户管理-关键人'
+				}
 			}
 		]
 	},

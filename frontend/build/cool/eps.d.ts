@@ -1958,6 +1958,11 @@ declare namespace Eps {
 		list: CompanyInquiryEntity[];
 	}
 
+	interface CompanyInvoicePageResponse {
+		pagination: PagePagination;
+		list: CompanyInvoiceEntity[];
+	}
+
 	interface CompanyLeadPageResponse {
 		pagination: PagePagination;
 		list: CompanyLeadEntity[];
@@ -1966,11 +1971,6 @@ declare namespace Eps {
 	interface CompanyQuotePageResponse {
 		pagination: PagePagination;
 		list: CompanyQuoteEntity[];
-	}
-
-	interface CompanyInvoicePageResponse {
-		pagination: PagePagination;
-		list: CompanyInvoiceEntity[];
 	}
 
 	interface DemoGoodsPageResponse {
@@ -2682,6 +2682,78 @@ declare namespace Eps {
 		request: Request;
 	}
 
+	interface CompanyInvoice {
+		/**
+		 * 按客户读取最近一次开票的发票抬头信息
+		 */
+		invoiceProfileByCustomer(data?: any): Promise<any>;
+
+		/**
+		 * 按客户分页查询合同订单（开票选单）
+		 */
+		contractOrderPage(data?: any): Promise<any>;
+
+		/**
+		 * 删除
+		 */
+		delete(data?: any): Promise<any>;
+
+		/**
+		 * 修改
+		 */
+		update(data?: any): Promise<any>;
+
+		/**
+		 * 单个信息
+		 */
+		info(data?: any): Promise<CompanyInvoiceEntity>;
+
+		/**
+		 * 列表查询
+		 */
+		list(data?: any): Promise<CompanyInvoiceEntity[]>;
+
+		/**
+		 * 分页查询
+		 */
+		page(data?: any): Promise<CompanyInvoicePageResponse>;
+
+		/**
+		 * 新增
+		 */
+		add(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: {
+			invoiceProfileByCustomer: string;
+			contractOrderPage: string;
+			delete: string;
+			update: string;
+			info: string;
+			list: string;
+			page: string;
+			add: string;
+		};
+
+		/**
+		 * 权限状态
+		 */
+		_permission: {
+			invoiceProfileByCustomer: boolean;
+			contractOrderPage: boolean;
+			delete: boolean;
+			update: boolean;
+			info: boolean;
+			list: boolean;
+			page: boolean;
+			add: boolean;
+		};
+
+		request: Request;
+	}
+
 	interface CompanyLead {
 		/**
 		 * 线索开发分页（进行中）
@@ -2829,78 +2901,6 @@ declare namespace Eps {
 		 */
 		_permission: {
 			inquiryPage: boolean;
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
-	interface CompanyInvoice {
-		/**
-		 * 按客户读取最近一次开票的发票抬头信息
-		 */
-		invoiceProfileByCustomer(data?: any): Promise<any>;
-
-		/**
-		 * 按客户分页查询合同订单（开票选单）
-		 */
-		contractOrderPage(data?: any): Promise<any>;
-
-		/**
-		 * 删除
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * 修改
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * 单个信息
-		 */
-		info(data?: any): Promise<CompanyInvoiceEntity>;
-
-		/**
-		 * 列表查询
-		 */
-		list(data?: any): Promise<CompanyInvoiceEntity[]>;
-
-		/**
-		 * 分页查询
-		 */
-		page(data?: any): Promise<CompanyInvoicePageResponse>;
-
-		/**
-		 * 新增
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			invoiceProfileByCustomer: string;
-			contractOrderPage: string;
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			invoiceProfileByCustomer: boolean;
-			contractOrderPage: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;
@@ -3566,9 +3566,9 @@ declare namespace Eps {
 			contract: CompanyContract;
 			customer: CompanyCustomer;
 			inquiry: CompanyInquiry;
+			invoice: CompanyInvoice;
 			lead: CompanyLead;
 			quote: CompanyQuote;
-			invoice: CompanyInvoice;
 		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };
 		dict: { info: DictInfo; type: DictType };
