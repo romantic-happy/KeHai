@@ -135,4 +135,12 @@ export class DifyService {
     if (!result.success) throw new Error(result.error);
     return result.data;
   }
+
+  async getCustomerPortrait(name: string) {
+    const result = await this.runWorkflow('customerPortrait', {
+      name,
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  }
 }

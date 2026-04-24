@@ -12,7 +12,7 @@
 					clearable
 					filterable
 					class="toolbar-row__select"
-					placeholder="客户名称"
+					:placeholder="TEXT.customer"
 					@change="onSearchChange"
 				>
 					<el-option
@@ -27,7 +27,7 @@
 					v-model="searchForm.roleType"
 					clearable
 					class="toolbar-row__select toolbar-row__select--sm"
-					placeholder="角色类型"
+					:placeholder="TEXT.role"
 					@change="onSearchChange"
 				>
 					<el-option
@@ -42,7 +42,7 @@
 					v-model="searchForm.relationStatus"
 					clearable
 					class="toolbar-row__select toolbar-row__select--sm"
-					placeholder="关系状态"
+					:placeholder="TEXT.status"
 					@change="onSearchChange"
 				>
 					<el-option
@@ -53,7 +53,7 @@
 					/>
 				</el-select>
 
-				<cl-search-key placeholder="搜索关键人编号/姓名/手机号/微信/客户名称" :width="240" />
+				<cl-search-key :placeholder="TEXT.searchPlaceholder" :width="260" />
 			</div>
 		</cl-row>
 
@@ -81,37 +81,37 @@
 	>
 		<div v-loading="analysisDialog.loading" class="analysis-dialog">
 			<el-descriptions border :column="2" class="analysis-dialog__summary">
-				<el-descriptions-item label="客户名称">
+				<el-descriptions-item :label="TEXT.customer">
 					{{ analysisDialog.row?.customerName || "-" }}
 				</el-descriptions-item>
-				<el-descriptions-item label="关键人">
+				<el-descriptions-item :label="TEXT.keyPerson">
 					{{ analysisDialog.row?.name || "-" }}
 				</el-descriptions-item>
-				<el-descriptions-item label="职位">
+				<el-descriptions-item :label="TEXT.position">
 					{{ analysisDialog.row?.position || "-" }}
 				</el-descriptions-item>
-				<el-descriptions-item label="角色类型">
+				<el-descriptions-item :label="TEXT.role">
 					{{ analysisDialog.roleTypeLabel || "-" }}
 				</el-descriptions-item>
 			</el-descriptions>
 
 			<el-descriptions border :column="1" class="analysis-dialog__result">
-				<el-descriptions-item label="性格分析">
+				<el-descriptions-item :label="TEXT.personality">
 					<div class="analysis-dialog__text">
 						{{ analysisDialog.personalityAnalysis || "-" }}
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="销售建议">
+				<el-descriptions-item :label="TEXT.salesSuggestion">
 					<div class="analysis-dialog__text">
 						{{ analysisDialog.salesSuggestion || "-" }}
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="话术建议">
+				<el-descriptions-item :label="TEXT.talkingPoints">
 					<div class="analysis-dialog__text">
 						{{ analysisDialog.talkingPoints || "-" }}
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="生日提醒">
+				<el-descriptions-item :label="TEXT.birthdayReminder">
 					<div class="analysis-dialog__text">
 						{{ analysisDialog.birthdayReminder || "-" }}
 					</div>
@@ -151,34 +151,83 @@ type KeyPersonItem = {
 	updateTime: string;
 };
 
+const TEXT = {
+	customer: "\u5ba2\u6237\u540d\u79f0",
+	role: "\u89d2\u8272\u7c7b\u578b",
+	status: "\u5173\u7cfb\u72b6\u6001",
+	searchPlaceholder:
+		"\u641c\u7d22\u5173\u952e\u4eba\u7f16\u53f7 / \u59d3\u540d / \u624b\u673a\u53f7 / \u5fae\u4fe1 / \u5ba2\u6237\u540d\u79f0",
+	keyPerson: "\u5173\u952e\u4eba",
+	position: "\u804c\u4f4d",
+	personality: "\u6027\u683c\u5206\u6790",
+	salesSuggestion: "\u9500\u552e\u5efa\u8bae",
+	talkingPoints: "\u8bdd\u672f\u5efa\u8bae",
+	birthdayReminder: "\u751f\u65e5\u63d0\u9192",
+	title: "AI\u9500\u552e\u6307\u5bfc",
+	code: "\u5173\u952e\u4eba\u7f16\u53f7",
+	codePlaceholder: "\u4fdd\u5b58\u540e\u81ea\u52a8\u751f\u6210",
+	name: "\u59d3\u540d",
+	phone: "\u624b\u673a\u53f7",
+	wechat: "\u5fae\u4fe1",
+	email: "\u90ae\u7bb1",
+	influence: "\u5f71\u54cd\u529b\u7b49\u7ea7",
+	lastContact: "\u6700\u8fd1\u8054\u7cfb\u65f6\u95f4",
+	nextFollow: "\u4e0b\u6b21\u8ddf\u8fdb\u65f6\u95f4",
+	owner: "\u8d1f\u8d23\u4eba",
+	lastContactContent: "\u6700\u8fd1\u8054\u7cfb\u5185\u5bb9",
+	aiGuide: "AI\u9500\u552e\u6307\u5bfc",
+	remark: "\u5907\u6ce8",
+	createTime: "\u521b\u5efa\u65f6\u95f4",
+	updateTime: "\u66f4\u65b0\u65f6\u95f4",
+	dialogTitlePrefix: "AI\u9500\u552e\u6307\u5bfc - ",
+	birthdayPromptPrefix: "\u5efa\u8bae\u5728 ",
+	birthdayPromptSuffix:
+		" \u524d\u540e\u786e\u8ba4\u662f\u5426\u9700\u8981\u751f\u65e5\u6216\u5173\u952e\u8282\u70b9\u5173\u6000\u3002",
+	birthdayEmpty:
+		"\u6682\u672a\u8bbe\u7f6e\u751f\u65e5\uff0c\u53ef\u540e\u7eed\u8865\u5145\u91cd\u8981\u65f6\u95f4\u8282\u70b9\u3002",
+	personalityLineTemplate:
+		"{name} \u76ee\u524d\u62c5\u4efb {position}\uff0c\u5f71\u54cd\u529b {influence}\uff0c\u5173\u7cfb\u72b6\u6001\u4e3a {status}\u3002",
+	personalityFallback:
+		"\u503e\u5411\u7406\u6027\u8c28\u614e\uff0c\u504f\u597d\u770b\u5230\u5177\u4f53\u8d44\u6599\u548c\u6210\u529f\u6848\u4f8b\u3002",
+	salesGuide1:
+		"\u5148\u4ece\u5ba2\u6237\u5f53\u524d\u4e1a\u52a1\u573a\u666f\u5207\u5165\uff0c\u7a81\u51fa\u4ea4\u4ed8\u6548\u7387\u3001\u6210\u672c\u548c\u98ce\u9669\u63a7\u5236\u3002",
+	salesGuide2:
+		"\u5efa\u8bae\u56f4\u7ed5\u6700\u8fd1\u4e00\u6b21\u6c9f\u901a\u5185\u5bb9\u505a\u9488\u5bf9\u6027\u8ddf\u8fdb\u3002",
+	talk1:
+		"\u53ef\u4ee5\u5148\u95ee\u5bf9\u65b9\u73b0\u9636\u6bb5\u6700\u5173\u6ce8\u7684\u6307\u6807\u662f\u4ec0\u4e48\u3002",
+	talk2:
+		"\u518d\u8865\u5145\u540c\u7c7b\u5ba2\u6237\u6210\u529f\u6848\u4f8b\uff0c\u5e76\u5f15\u5bfc\u5230\u4e0b\u4e00\u6b65\u8ddf\u8fdb\u5b89\u6392\u3002",
+	buttonAiGuide: "AI\u9500\u552e\u6307\u5bfc",
+};
+
 const roleTypeOptions = [
-	{ label: "决策人", value: "decision" },
-	{ label: "使用人", value: "user" },
-	{ label: "技术把关人", value: "tech" },
-	{ label: "采购", value: "purchase" },
-	{ label: "影响者", value: "influencer" },
+	{ label: "\u51b3\u7b56\u4eba", value: "decision" },
+	{ label: "\u4f7f\u7528\u4eba", value: "user" },
+	{ label: "\u6280\u672f\u628a\u5173\u4eba", value: "tech" },
+	{ label: "\u91c7\u8d2d", value: "purchase" },
+	{ label: "\u5f71\u54cd\u8005", value: "influencer" },
 ];
 
 const influenceLevelOptions = [
-	{ label: "高", value: "high" },
-	{ label: "中", value: "medium" },
-	{ label: "低", value: "low" },
+	{ label: "\u9ad8", value: "high" },
+	{ label: "\u4e2d", value: "medium" },
+	{ label: "\u4f4e", value: "low" },
 ];
 
 const relationStatusOptions = [
-	{ label: "未接触", value: "new" },
-	{ label: "已建立联系", value: "connected" },
-	{ label: "持续跟进", value: "following" },
-	{ label: "重点维护", value: "vip" },
+	{ label: "\u672a\u63a5\u89e6", value: "new" },
+	{ label: "\u5df2\u5efa\u7acb\u8054\u7cfb", value: "connected" },
+	{ label: "\u6301\u7eed\u8ddf\u8fdb", value: "following" },
+	{ label: "\u91cd\u70b9\u7ef4\u62a4", value: "vip" },
 ];
 
 const mockRows = reactive<KeyPersonItem[]>([
 	{
 		id: 1,
 		keyPersonNo: "KP-20260421-0001",
-		customerName: "华东智造",
-		name: "张工",
-		position: "设备经理",
+		customerName: "\u534e\u4e1c\u667a\u9020",
+		name: "\u5f20\u5de5",
+		position: "\u8bbe\u5907\u7ecf\u7406",
 		roleType: "tech",
 		phone: "13800138001",
 		wechat: "zhanggong01",
@@ -187,19 +236,21 @@ const mockRows = reactive<KeyPersonItem[]>([
 		relationStatus: "following",
 		lastContactDate: "2026-04-18",
 		nextFollowDate: "2026-04-25",
-		lastContactContent: "关注产线改造排期，希望先看成功案例。",
-		ownerUserName: "王琳",
-		remark: "技术判断权强，回复速度快。",
-		aiGuide: "优先从停机成本和交付周期切入，准备两个行业案例。",
+		lastContactContent:
+			"\u5173\u6ce8\u4ea7\u7ebf\u6539\u9020\u6392\u671f\uff0c\u5e0c\u671b\u5148\u770b\u6210\u529f\u6848\u4f8b\u3002",
+		ownerUserName: "\u738b\u7433",
+		remark: "\u6280\u672f\u5224\u65ad\u6743\u5f3a\uff0c\u56de\u590d\u901f\u5ea6\u5feb\u3002",
+		aiGuide:
+			"\u4f18\u5148\u4ece\u505c\u673a\u6210\u672c\u548c\u4ea4\u4ed8\u5468\u671f\u5207\u5165\uff0c\u51c6\u5907\u4e24\u4e2a\u884c\u4e1a\u6848\u4f8b\u3002",
 		createTime: "2026-04-10 10:00:00",
 		updateTime: "2026-04-20 16:30:00",
 	},
 	{
 		id: 2,
 		keyPersonNo: "KP-20260421-0002",
-		customerName: "南方精工",
-		name: "李总",
-		position: "总经理",
+		customerName: "\u5357\u65b9\u7cbe\u5de5",
+		name: "\u674e\u603b",
+		position: "\u603b\u7ecf\u7406",
 		roleType: "decision",
 		phone: "13800138002",
 		wechat: "lizong02",
@@ -208,19 +259,21 @@ const mockRows = reactive<KeyPersonItem[]>([
 		relationStatus: "vip",
 		lastContactDate: "2026-04-16",
 		nextFollowDate: "2026-04-23",
-		lastContactContent: "对年度合作框架感兴趣，关注回款和售后响应。",
-		ownerUserName: "陈涛",
-		remark: "决策快，但对价格敏感。",
-		aiGuide: "先讲合作收益，再补充售后响应和付款节点方案。",
+		lastContactContent:
+			"\u5bf9\u5e74\u5ea6\u5408\u4f5c\u6846\u67b6\u611f\u5174\u8da3\uff0c\u5173\u6ce8\u56de\u6b3e\u548c\u552e\u540e\u54cd\u5e94\u3002",
+		ownerUserName: "\u9648\u6d9b",
+		remark: "\u51b3\u7b56\u5feb\uff0c\u4f46\u5bf9\u4ef7\u683c\u654f\u611f\u3002",
+		aiGuide:
+			"\u5148\u8bb2\u5408\u4f5c\u6536\u76ca\uff0c\u518d\u8865\u5145\u552e\u540e\u54cd\u5e94\u548c\u4ed8\u6b3e\u8282\u70b9\u65b9\u6848\u3002",
 		createTime: "2026-04-09 09:20:00",
 		updateTime: "2026-04-19 11:40:00",
 	},
 	{
 		id: 3,
 		keyPersonNo: "KP-20260421-0003",
-		customerName: "北景自动化",
-		name: "周女士",
-		position: "采购主管",
+		customerName: "\u5317\u666f\u81ea\u52a8\u5316",
+		name: "\u5468\u5973\u58eb",
+		position: "\u91c7\u8d2d\u4e3b\u7ba1",
 		roleType: "purchase",
 		phone: "13800138003",
 		wechat: "zhoucaigou",
@@ -229,10 +282,12 @@ const mockRows = reactive<KeyPersonItem[]>([
 		relationStatus: "connected",
 		lastContactDate: "2026-04-12",
 		nextFollowDate: "2026-04-22",
-		lastContactContent: "已建立微信沟通，等待内部技术确认后推进。",
-		ownerUserName: "王琳",
-		remark: "偏流程导向，资料要准备完整。",
-		aiGuide: "推进时同步准备报价附件和资质文件，减少往返沟通。",
+		lastContactContent:
+			"\u5df2\u5efa\u7acb\u5fae\u4fe1\u6c9f\u901a\uff0c\u7b49\u5f85\u5185\u90e8\u6280\u672f\u786e\u8ba4\u540e\u63a8\u8fdb\u3002",
+		ownerUserName: "\u738b\u7433",
+		remark: "\u504f\u6d41\u7a0b\u5bfc\u5411\uff0c\u8d44\u6599\u8981\u51c6\u5907\u5b8c\u6574\u3002",
+		aiGuide:
+			"\u63a8\u8fdb\u65f6\u540c\u6b65\u51c6\u5907\u62a5\u4ef7\u9644\u4ef6\u548c\u8d44\u8d28\u6587\u4ef6\uff0c\u51cf\u5c11\u5f80\u8fd4\u6c9f\u901a\u3002",
 		createTime: "2026-04-08 14:10:00",
 		updateTime: "2026-04-18 09:15:00",
 	},
@@ -256,7 +311,7 @@ const analysisDialog = reactive<{
 	row: KeyPersonItem | null;
 }>({
 	visible: false,
-	title: "AI销售指导",
+	title: TEXT.title,
 	personalityAnalysis: "",
 	salesSuggestion: "",
 	talkingPoints: "",
@@ -269,9 +324,7 @@ const analysisDialog = reactive<{
 const customerOptions = Array.from(new Set(mockRows.map(e => e.customerName)));
 
 function normalizeKeyword(value: any) {
-	return String(value || "")
-		.trim()
-		.toLowerCase();
+	return String(value || "").trim().toLowerCase();
 }
 
 function roleTypeLabel(value: string) {
@@ -293,33 +346,38 @@ function resetAnalysisDialog() {
 	analysisDialog.birthdayReminder = "";
 }
 
-async function openAiGuide(row: KeyPersonItem) {
+function formatLineTemplate(template: string, row: KeyPersonItem) {
+	return template
+		.replace("{name}", row.name)
+		.replace("{position}", row.position)
+		.replace("{influence}", influenceLevelLabel(row.influenceLevel))
+		.replace("{status}", relationStatusLabel(row.relationStatus));
+}
+
+function openAiGuide(row: KeyPersonItem) {
 	analysisDialog.row = row;
-	analysisDialog.title = `AI销售指导 - ${row.name}`;
+	analysisDialog.title = `${TEXT.dialogTitlePrefix}${row.name}`;
 	analysisDialog.roleTypeLabel = roleTypeLabel(row.roleType);
 	analysisDialog.visible = true;
 	resetAnalysisDialog();
 	analysisDialog.loading = true;
 
-	const influenceLabel = influenceLevelLabel(row.influenceLevel);
-	const relationLabel = relationStatusLabel(row.relationStatus);
 	const birthdayText = row.nextFollowDate
-		? `建议在 ${row.nextFollowDate} 前后确认是否需要生日或关键节点关怀。`
-		: "暂未设置生日，可后续补充重要时间节点。";
+		? `${TEXT.birthdayPromptPrefix}${row.nextFollowDate}${TEXT.birthdayPromptSuffix}`
+		: TEXT.birthdayEmpty;
 
-	setTimeout(() => {
+	window.setTimeout(() => {
 		analysisDialog.personalityAnalysis = [
-			`${row.name} 目前担任${row.position}，影响力 ${influenceLabel}，关系状态为${relationLabel}。`,
-			row.remark || "倾向理性谨慎，偏好看到具体资料和成功案例。"
+			formatLineTemplate(TEXT.personalityLineTemplate, row),
+			row.remark || TEXT.personalityFallback,
 		].join("\n");
+
 		analysisDialog.salesSuggestion = [
-			"先从客户当前业务场景切入，突出交付效率、成本和风险控制。",
-			row.lastContactContent || "建议围绕最近一次沟通内容做针对性跟进。"
+			TEXT.salesGuide1,
+			row.lastContactContent || TEXT.salesGuide2,
 		].join("\n");
-		analysisDialog.talkingPoints = [
-			"可以先问对方现阶段最关注的指标是什么。",
-			"再补充同类客户成功案例，并引导到下一步跟进安排。"
-		].join("\n");
+
+		analysisDialog.talkingPoints = [TEXT.talk1, TEXT.talk2].join("\n");
 		analysisDialog.birthdayReminder = birthdayText;
 		analysisDialog.loading = false;
 	}, 300);
@@ -421,9 +479,7 @@ const keyPersonService = {
 		const id = Number(data.id);
 		const item = mockRows.find(e => e.id === id);
 
-		if (!item) {
-			return;
-		}
+		if (!item) return;
 
 		Object.assign(item, data, {
 			updateTime: new Date().toISOString().slice(0, 19).replace("T", " "),
@@ -452,23 +508,21 @@ const Upsert = useUpsert<KeyPersonItem>({
 		labelWidth: "120px",
 	},
 	items: [
-		() => {
-			return () => ({
-				label: "关键人编号",
-				prop: "keyPersonNo",
-				span: 12,
-				hidden: Upsert.value?.mode == "add",
-				component: {
-					name: "el-input",
-					props: {
-						disabled: true,
-						placeholder: "保存后自动生成",
-					},
+		() => ({
+			label: TEXT.code,
+			prop: "keyPersonNo",
+			span: 12,
+			hidden: Upsert.value?.mode == "add",
+			component: {
+				name: "el-input",
+				props: {
+					disabled: true,
+					placeholder: TEXT.codePlaceholder,
 				},
-			});
-		},
+			},
+		}),
 		{
-			label: "客户名称",
+			label: TEXT.customer,
 			prop: "customerName",
 			span: 12,
 			required: true,
@@ -482,21 +536,21 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "关键人姓名",
+			label: TEXT.name,
 			prop: "name",
 			span: 12,
 			required: true,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "职位",
+			label: TEXT.position,
 			prop: "position",
 			span: 12,
 			required: true,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "角色类型",
+			label: TEXT.role,
 			prop: "roleType",
 			span: 12,
 			required: true,
@@ -507,26 +561,26 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "手机号",
+			label: TEXT.phone,
 			prop: "phone",
 			span: 12,
 			required: true,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "微信",
+			label: TEXT.wechat,
 			prop: "wechat",
 			span: 12,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "邮箱",
+			label: TEXT.email,
 			prop: "email",
 			span: 12,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "影响力等级",
+			label: TEXT.influence,
 			prop: "influenceLevel",
 			span: 12,
 			required: true,
@@ -537,7 +591,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "关系状态",
+			label: TEXT.status,
 			prop: "relationStatus",
 			span: 12,
 			required: true,
@@ -548,7 +602,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "最近联系时间",
+			label: TEXT.lastContact,
 			prop: "lastContactDate",
 			span: 12,
 			component: {
@@ -561,7 +615,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "下次跟进时间",
+			label: TEXT.nextFollow,
 			prop: "nextFollowDate",
 			span: 12,
 			component: {
@@ -574,14 +628,14 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "负责人",
+			label: TEXT.owner,
 			prop: "ownerUserName",
 			span: 12,
 			required: true,
 			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
-			label: "最近联系内容",
+			label: TEXT.lastContactContent,
 			prop: "lastContactContent",
 			span: 24,
 			component: {
@@ -594,7 +648,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "AI销售指导",
+			label: TEXT.aiGuide,
 			prop: "aiGuide",
 			span: 24,
 			component: {
@@ -607,7 +661,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "备注",
+			label: TEXT.remark,
 			prop: "remark",
 			span: 24,
 			component: {
@@ -620,7 +674,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "创建时间",
+			label: TEXT.createTime,
 			prop: "createTime",
 			span: 12,
 			hidden: ({ scope }: any) => !scope?.id,
@@ -630,7 +684,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			},
 		},
 		{
-			label: "更新时间",
+			label: TEXT.updateTime,
 			prop: "updateTime",
 			span: 12,
 			hidden: ({ scope }: any) => !scope?.id,
@@ -645,22 +699,22 @@ const Upsert = useUpsert<KeyPersonItem>({
 const Table = useTable<KeyPersonItem>({
 	columns: [
 		{ type: "selection", width: 60 },
-		{ label: "关键人编号", prop: "keyPersonNo", minWidth: 160 },
-		{ label: "客户名称", prop: "customerName", minWidth: 160 },
-		{ label: "关键人姓名", prop: "name", minWidth: 120 },
-		{ label: "职位", prop: "position", minWidth: 140 },
+		{ label: TEXT.code, prop: "keyPersonNo", minWidth: 160 },
+		{ label: TEXT.customer, prop: "customerName", minWidth: 160 },
+		{ label: TEXT.name, prop: "name", minWidth: 120 },
+		{ label: TEXT.position, prop: "position", minWidth: 140 },
 		{
-			label: "角色类型",
+			label: TEXT.role,
 			prop: "roleType",
 			minWidth: 120,
 			formatter(row: KeyPersonItem) {
 				return roleTypeLabel(row.roleType);
 			},
 		},
-		{ label: "手机号", prop: "phone", minWidth: 140 },
-		{ label: "微信", prop: "wechat", minWidth: 140 },
+		{ label: TEXT.phone, prop: "phone", minWidth: 140 },
+		{ label: TEXT.wechat, prop: "wechat", minWidth: 140 },
 		{
-			label: "影响力等级",
+			label: TEXT.influence,
 			prop: "influenceLevel",
 			minWidth: 120,
 			formatter(row: KeyPersonItem) {
@@ -668,26 +722,26 @@ const Table = useTable<KeyPersonItem>({
 			},
 		},
 		{
-			label: "关系状态",
+			label: TEXT.status,
 			prop: "relationStatus",
 			minWidth: 120,
 			formatter(row: KeyPersonItem) {
 				return relationStatusLabel(row.relationStatus);
 			},
 		},
-		{ label: "最近联系时间", prop: "lastContactDate", minWidth: 140 },
-		{ label: "下次跟进时间", prop: "nextFollowDate", minWidth: 140 },
-		{ label: "负责人", prop: "ownerUserName", minWidth: 120 },
-		{ label: "AI销售指导", prop: "aiGuide", minWidth: 240 },
+		{ label: TEXT.lastContact, prop: "lastContactDate", minWidth: 140 },
+		{ label: TEXT.nextFollow, prop: "nextFollowDate", minWidth: 140 },
+		{ label: TEXT.owner, prop: "ownerUserName", minWidth: 120 },
+		{ label: TEXT.aiGuide, prop: "aiGuide", minWidth: 240 },
 		{
-			label: "创建时间",
+			label: TEXT.createTime,
 			prop: "createTime",
 			minWidth: 170,
 			sortable: "desc",
 			component: { name: "cl-date-text" },
 		},
 		{
-			label: "更新时间",
+			label: TEXT.updateTime,
 			prop: "updateTime",
 			minWidth: 170,
 			sortable: "custom",
@@ -700,7 +754,7 @@ const Table = useTable<KeyPersonItem>({
 				"edit",
 				"delete",
 				{
-					label: "AI销售指导",
+					label: TEXT.buttonAiGuide,
 					type: "success",
 					onClick({ scope }: any) {
 						openAiGuide(scope.row);

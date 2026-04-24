@@ -45,11 +45,20 @@ export function useDifyApi() {
 		});
 	}
 
+	async function getCustomerPortrait(params: { name: string }) {
+		return service.request({
+			url: 'company/dify/customerPortrait',
+			method: 'POST',
+			data: params
+		});
+	}
+
 	return {
 		queryMaterialPrice,
 		getCustomerInfo,
 		getReceptionScript,
 		getSupplierRecommend,
-		analyzeLead
+		analyzeLead,
+		getCustomerPortrait
 	};
 }

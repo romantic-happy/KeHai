@@ -351,6 +351,213 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
+	interface CompanyCustomerEntity {
+		/**
+		 * ID
+		 */
+		id?: number;
+
+		/**
+		 * 客户名称
+		 */
+		customerName?: string;
+
+		/**
+		 * 来源
+		 */
+		backgroundSource?: string;
+
+		/**
+		 * 线索
+		 */
+		clue?: string;
+
+		/**
+		 * 行业大分类
+		 */
+		industryCategoryMajor?: string;
+
+		/**
+		 * 行业小分类
+		 */
+		industryCategoryMinor?: string;
+
+		/**
+		 * 负责人ID
+		 */
+		backgroundOwnerUserId?: string;
+
+		/**
+		 * 协作人列表
+		 */
+		backgroundCollaboratorUserIds?: any;
+
+		/**
+		 * 客户关系
+		 */
+		level?: string;
+
+		/**
+		 * 合作阶段
+		 */
+		manageStatus?: string;
+
+		/**
+		 * 备注
+		 */
+		backgroundRemark?: string;
+
+		/**
+		 * 客户性质
+		 */
+		customerNature?: string;
+
+		/**
+		 * 公司背景
+		 */
+		backgroundCompanyProfile?: string;
+
+		/**
+		 * 经营范围
+		 */
+		businessScope?: string;
+
+		/**
+		 * 成立时间
+		 */
+		backgroundEstablishDate?: string;
+
+		/**
+		 * 注册资金
+		 */
+		backgroundRegisteredCapital?: string;
+
+		/**
+		 * 企业性质
+		 */
+		backgroundEnterpriseType?: string;
+
+		/**
+		 * 是否上市
+		 */
+		backgroundIsListed?: string;
+
+		/**
+		 * 地址
+		 */
+		address?: string;
+
+		/**
+		 * 当年营业额
+		 */
+		backgroundTurnoverCurrent?: string;
+
+		/**
+		 * 上一年营业额
+		 */
+		backgroundTurnoverLast?: string;
+
+		/**
+		 * 上上年营业额
+		 */
+		backgroundTurnoverPrev?: string;
+
+		/**
+		 * 年产值
+		 */
+		annualOutputValue?: string;
+
+		/**
+		 * 预算
+		 */
+		budget?: string;
+
+		/**
+		 * 上级客户
+		 */
+		backgroundSuperiorCustomer?: string;
+
+		/**
+		 * 下游客户
+		 */
+		backgroundDownstreamCustomer?: string;
+
+		/**
+		 * 机器人工艺
+		 */
+		backgroundRobotProcess?: string;
+
+		/**
+		 * 公司网址
+		 */
+		backgroundWebsite?: string;
+
+		/**
+		 * 电话
+		 */
+		backgroundPhone?: string;
+
+		/**
+		 * 电子邮件
+		 */
+		backgroundEmail?: string;
+
+		/**
+		 * 国家
+		 */
+		backgroundCountry?: string;
+
+		/**
+		 * 省
+		 */
+		backgroundProvince?: string;
+
+		/**
+		 * 市
+		 */
+		backgroundCity?: string;
+
+		/**
+		 * 区
+		 */
+		backgroundDistrict?: string;
+
+		/**
+		 * 竞争对手
+		 */
+		competitors?: string;
+
+		/**
+		 * 关键人
+		 */
+		keyContacts?: any;
+
+		/**
+		 * AI 客户画像
+		 */
+		backgroundPortrait?: string;
+
+		/**
+		 * 客户编号
+		 */
+		customerNo?: string;
+
+		/**
+		 * 创建时间
+		 */
+		createTime?: Date;
+
+		/**
+		 * 更新时间
+		 */
+		updateTime?: Date;
+
+		/**
+		 * 任意键值
+		 */
+		[key: string]: any;
+	}
+
 	interface CompanyInquiryEntity {
 		/**
 		 * ID
@@ -1601,6 +1808,11 @@ declare namespace Eps {
 		list: BaseSysUserEntity[];
 	}
 
+	interface CompanyCustomerPageResponse {
+		pagination: PagePagination;
+		list: CompanyCustomerEntity[];
+	}
+
 	interface CompanyInquiryPageResponse {
 		pagination: PagePagination;
 		list: CompanyInquiryEntity[];
@@ -2182,6 +2394,64 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: { generate: boolean; download: boolean; poll: boolean };
+
+		request: Request;
+	}
+
+	interface CompanyCustomer {
+		/**
+		 * 删除
+		 */
+		delete(data?: any): Promise<any>;
+
+		/**
+		 * 修改
+		 */
+		update(data?: any): Promise<any>;
+
+		/**
+		 * 单个信息
+		 */
+		info(data?: any): Promise<CompanyCustomerEntity>;
+
+		/**
+		 * 列表查询
+		 */
+		list(data?: any): Promise<CompanyCustomerEntity[]>;
+
+		/**
+		 * 分页查询
+		 */
+		page(data?: any): Promise<CompanyCustomerPageResponse>;
+
+		/**
+		 * 新增
+		 */
+		add(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: {
+			delete: string;
+			update: string;
+			info: string;
+			list: string;
+			page: string;
+			add: string;
+		};
+
+		/**
+		 * 权限状态
+		 */
+		_permission: {
+			delete: boolean;
+			update: boolean;
+			info: boolean;
+			list: boolean;
+			page: boolean;
+			add: boolean;
+		};
 
 		request: Request;
 	}
@@ -3154,6 +3424,7 @@ declare namespace Eps {
 		};
 		company: {
 			contract: CompanyContract;
+			customer: CompanyCustomer;
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;
