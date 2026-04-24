@@ -78,6 +78,15 @@ const routes: RouteRecordRaw[] = [
 					keepAlive: true,
 					label: '客户管理-关键人'
 				}
+			},
+			{
+				path: 'company/lead/pool',
+				name: 'company-lead-pool',
+				component: () => import('/$/company/views/lead/pool.vue'),
+				meta: {
+					keepAlive: true,
+					label: '公海'
+				}
 			}
 		]
 	},

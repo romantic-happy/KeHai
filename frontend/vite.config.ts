@@ -22,7 +22,7 @@ export default ({ mode }: ConfigEnv): UserConfig => {
 		plugins: [
 			Inspector({
 				toggleComboKey: 'control-shift',
-				launchEditor: 'trae-cn'
+				launchEditor: 'code'
 			}),
 			vue(),
 			compression(),

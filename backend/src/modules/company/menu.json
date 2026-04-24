@@ -196,12 +196,37 @@
             "isShow": true,
             "childMenus": [
               {
+                "name": "公海",
+                "router": "/company/lead/pool",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-time",
+                "orderNum": 1,
+                "viewPath": "modules/company/views/lead/pool.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:lead:page,company:lead:list,company:lead:info,company:lead:add,company:lead:update,company:lead:delete,company:lead:developmentPage,company:lead:managementPage,company:lead:toSuccess,company:lead:toDiscard,company:lead:aiAnalyze",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
                 "name": "线索",
                 "router": "/company/lead",
                 "perms": null,
                 "type": 1,
                 "icon": "icon-time",
-                "orderNum": 1,
+                "orderNum": 2,
                 "viewPath": "modules/company/views/lead/index.vue",
                 "keepAlive": true,
                 "isShow": true,
