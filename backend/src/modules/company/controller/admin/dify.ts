@@ -86,4 +86,17 @@ export class DifyController {
       return { code: 500, message: error.message };
     }
   }
+
+  @Post('/customerPortrait')
+  async getCustomerPortrait(@Body() body: { name: string }) {
+    if (!body.name) {
+      return { code: 400, message: '客户名称不能为空' };
+    }
+    try {
+      const result = await this.difyService.getCustomerPortrait(body.name);
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
 }
