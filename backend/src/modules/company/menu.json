@@ -135,7 +135,7 @@
             ]
           },
           {
-            "name": "客户管理",
+            "name": "\u5ba2\u6237\u7ba1\u7406",
             "router": null,
             "perms": null,
             "type": 0,
@@ -146,7 +146,7 @@
             "isShow": true,
             "childMenus": [
               {
-                "name": "客户管理",
+                "name": "\u5ba2\u6237\u7ba1\u7406",
                 "router": "/company/customer",
                 "perms": null,
                 "type": 1,
@@ -171,7 +171,7 @@
                 ]
               },
               {
-                "name": "关键人",
+                "name": "\u5173\u952e\u4eba",
                 "router": "/company/key-person",
                 "perms": null,
                 "type": 1,
