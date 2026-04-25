@@ -69,6 +69,24 @@ const routes: RouteRecordRaw[] = [
 					keepAlive: true,
 					label: '开票管理'
 				}
+			},
+			{
+				path: 'company/key-person',
+				name: 'company-key-person',
+				component: () => import('/$/company/views/key-person.vue'),
+				meta: {
+					keepAlive: true,
+					label: '客户管理-关键人'
+				}
+			},
+			{
+				path: 'company/lead/pool',
+				name: 'company-lead-pool',
+				component: () => import('/$/company/views/lead/pool.vue'),
+				meta: {
+					keepAlive: true,
+					label: '线索管理-公海池'
+				}
 			}
 		]
 	},
@@ -142,7 +160,7 @@ router.append = function (routeData) {
 					route.meta.iframeUrl = viewPath;
 					route.component = () => import('/$/base/views/frame.vue');
 				} else {
-					// 从文件系统中动态导入组件
+					// 从 file 系统中动态导入组件
 					route.component = files['/src/' + viewPath.replace('cool/', '')];
 				}
 			} else if (!route.redirect) {
@@ -232,6 +250,7 @@ router.find = function (path: string) {
 
 			return true;
 		}
+
 		return false;
 	});
 
