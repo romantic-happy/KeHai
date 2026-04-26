@@ -3,13 +3,43 @@ test
 memory
 CLAUDE.md
 .trae/
-.claude/
+
+# --- Privacy and Local Configs ---
+# Local config files containing secrets
+backend/src/config/config.local.ts
+backend/src/modules/company/dify.config.ts
+*.local.ts
+*.local.js
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# --- Runtime and Temporary Files ---
 temp/
+tmp/
+logs/
+cache/
+run/
 backend/lock/
-plan.md
-temp_menu_*.json
-*.mp4
-*.xlsx
-*.docx
-*.pdf
-*.csv
+backend/run/
+backend/cache/
+dist/
+build/
+node_modules/
+
+# --- Database and State ---
+*.db
+*.sqlite
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# --- IDE and System ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.log

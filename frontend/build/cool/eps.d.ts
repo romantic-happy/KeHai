@@ -383,9 +383,9 @@ declare namespace Eps {
 		industryCategoryMinor?: string;
 
 		/**
-		 * 负责人ID
+		 * 负责人
 		 */
-		backgroundOwnerUserId?: string;
+		backgroundOwner?: string;
 
 		/**
 		 * 协作人列表
@@ -408,17 +408,12 @@ declare namespace Eps {
 		backgroundRemark?: string;
 
 		/**
-		 * 客户性质
-		 */
-		customerNature?: string;
-
-		/**
 		 * 公司背景
 		 */
 		backgroundCompanyProfile?: string;
 
 		/**
-		 * 经营范围
+		 * 经营范围/企业经营项目
 		 */
 		businessScope?: string;
 
@@ -443,7 +438,7 @@ declare namespace Eps {
 		backgroundIsListed?: string;
 
 		/**
-		 * 地址
+		 * 详细地址
 		 */
 		address?: string;
 
@@ -485,7 +480,7 @@ declare namespace Eps {
 		/**
 		 * 机器人工艺
 		 */
-		backgroundRobotProcess?: string;
+		backgroundRobot?: string;
 
 		/**
 		 * 公司网址
@@ -523,6 +518,11 @@ declare namespace Eps {
 		backgroundDistrict?: string;
 
 		/**
+		 * 详细地址(扩展)
+		 */
+		backgroundAddressDetail?: string;
+
+		/**
 		 * 竞争对手
 		 */
 		competitors?: string;
@@ -541,6 +541,108 @@ declare namespace Eps {
 		 * 客户编号
 		 */
 		customerNo?: string;
+
+		/**
+		 * 创建时间
+		 */
+		createTime?: Date;
+
+		/**
+		 * 更新时间
+		 */
+		updateTime?: Date;
+
+		/**
+		 * 任意键值
+		 */
+		[key: string]: any;
+	}
+
+	interface CompanyFollowUpRecordEntity {
+		/**
+		 * ID
+		 */
+		id?: number;
+
+		/**
+		 * 客户名称
+		 */
+		customerName?: string;
+
+		/**
+		 * 关键人
+		 */
+		keyPerson?: string;
+
+		/**
+		 * 跟进人
+		 */
+		ownerUserName?: string;
+
+		/**
+		 * 跟进方式
+		 */
+		method?: string;
+
+		/**
+		 * 跟进状态
+		 */
+		status?: string;
+
+		/**
+		 * 跟进结果
+		 */
+		result?: string;
+
+		/**
+		 * 跟进时间
+		 */
+		followUpTime?: Date;
+
+		/**
+		 * 下次跟进时间
+		 */
+		nextFollowTime?: Date;
+
+		/**
+		 * 日程提醒
+		 */
+		isReminder?: boolean;
+
+		/**
+		 * 跟进人所在部门
+		 */
+		followUpPersonDept?: string;
+
+		/**
+		 * 创建人
+		 */
+		creator?: string;
+
+		/**
+		 * 最后修改人
+		 */
+		modifier?: string;
+
+		/**
+		 * 核算维度
+		 */
+		accountingDimension?: string;
+
+		/**
+		 * 协作人
+		 */
+		collaborators?: string;
+
+		/**
+		 * 联系详情
+		 */
+		details?: string;
+
+		/**
+		 * AI销售指导
+		 */
+		aiGuide?: string;
 
 		/**
 		 * 创建时间
@@ -952,11 +1054,6 @@ declare namespace Eps {
 		 * 线索状态
 		 */
 		leadStatus?: number;
-
-		/**
-		 * 跟进详情
-		 */
-		followupDetail?: string;
 
 		/**
 		 * AI线索分析
@@ -1813,6 +1910,11 @@ declare namespace Eps {
 		list: CompanyCustomerEntity[];
 	}
 
+	interface CompanyFollowUpRecordPageResponse {
+		pagination: PagePagination;
+		list: CompanyFollowUpRecordEntity[];
+	}
+
 	interface CompanyInquiryPageResponse {
 		pagination: PagePagination;
 		list: CompanyInquiryEntity[];
@@ -2423,6 +2525,64 @@ declare namespace Eps {
 		 * 分页查询
 		 */
 		page(data?: any): Promise<CompanyCustomerPageResponse>;
+
+		/**
+		 * 新增
+		 */
+		add(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: {
+			delete: string;
+			update: string;
+			info: string;
+			list: string;
+			page: string;
+			add: string;
+		};
+
+		/**
+		 * 权限状态
+		 */
+		_permission: {
+			delete: boolean;
+			update: boolean;
+			info: boolean;
+			list: boolean;
+			page: boolean;
+			add: boolean;
+		};
+
+		request: Request;
+	}
+
+	interface CompanyFollowUpRecord {
+		/**
+		 * 删除
+		 */
+		delete(data?: any): Promise<any>;
+
+		/**
+		 * 修改
+		 */
+		update(data?: any): Promise<any>;
+
+		/**
+		 * 单个信息
+		 */
+		info(data?: any): Promise<CompanyFollowUpRecordEntity>;
+
+		/**
+		 * 列表查询
+		 */
+		list(data?: any): Promise<CompanyFollowUpRecordEntity[]>;
+
+		/**
+		 * 分页查询
+		 */
+		page(data?: any): Promise<CompanyFollowUpRecordPageResponse>;
 
 		/**
 		 * 新增
@@ -3425,6 +3585,7 @@ declare namespace Eps {
 		company: {
 			contract: CompanyContract;
 			customer: CompanyCustomer;
+			followUpRecord: CompanyFollowUpRecord;
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;

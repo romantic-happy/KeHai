@@ -44,10 +44,18 @@ export function useDifyApi() {
 			data: params
 		});
 	}
-
-	async function getCustomerPortrait(params: { name: string }) {
+	
+	async function analyzeFollowUp(params: { customerName: string; details: string }) {
 		return service.request({
-			url: 'company/dify/customerPortrait',
+			url: 'company/dify/analyzeFollowUp',
+			method: 'POST',
+			data: params
+		});
+	}
+
+	async function analyzePortrait(params: { name: string }) {
+		return service.request({
+			url: 'company/dify/analyzePortrait',
 			method: 'POST',
 			data: params
 		});
@@ -59,6 +67,7 @@ export function useDifyApi() {
 		getReceptionScript,
 		getSupplierRecommend,
 		analyzeLead,
-		getCustomerPortrait
+		analyzeFollowUp,
+		analyzePortrait
 	};
 }

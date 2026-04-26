@@ -87,13 +87,29 @@ export class DifyController {
     }
   }
 
-  @Post('/customerPortrait')
-  async getCustomerPortrait(@Body() body: { name: string }) {
-    if (!body.name) {
-      return { code: 400, message: '客户名称不能为空' };
+  @Post('/analyzeFollowUp')
+  async analyzeFollowUp(@Body() body: { customerName: string; details: string }) {
+    if (!body.customerName || !body.details) {
+      return { code: 400, message: '客户名称和跟进详情均为必填项' };
     }
     try {
-      const result = await this.difyService.getCustomerPortrait(body.name);
+      const result = await this.difyService.analyzeFollowUp(
+        body.customerName,
+        body.details
+      );
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
+
+  @Post('/analyzePortrait')
+  async analyzePortrait(@Body() body: { name: string }) {
+    if (!body.name) {
+      return { code: 400, message: '名称不能为空' };
+    }
+    try {
+      const result = await this.difyService.analyzePortrait(body.name);
       return { code: 1000, data: result };
     } catch (error: any) {
       return { code: 500, message: error.message };

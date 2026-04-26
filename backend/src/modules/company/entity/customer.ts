@@ -27,10 +27,6 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
   })
   updateTime: Date;
 
-  @Index()
-  @Column({ comment: '租户ID', nullable: true })
-  tenantId: number;
-
   // ===================== 分组一：新建客户填写 =====================
 
   @Index()
@@ -69,8 +65,8 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
   industryCategoryMinor: string;
 
   @Index()
-  @Column({ comment: '负责人ID', length: 512, nullable: true })
-  backgroundOwnerUserId: string;
+  @Column({ comment: '负责人', length: 512, nullable: true })
+  backgroundOwner: string;
 
   @Column({
     comment: '协作人列表',
@@ -103,18 +99,10 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
 
   // ===================== 分组二：AI客户背调 =====================
 
-  @Column({
-    comment: '客户性质',
-    type: 'varchar',
-    length: 512,
-    nullable: true,
-  })
-  customerNature: string;
-
   @Column({ comment: '公司背景', type: 'text', nullable: true })
   backgroundCompanyProfile: string;
 
-  @Column({ comment: '经营范围', type: 'text', nullable: true })
+  @Column({ comment: '经营范围/企业经营项目', type: 'text', nullable: true })
   businessScope: string;
 
   @Column({ comment: '成立时间', type: 'varchar', length: 512, nullable: true })
@@ -139,7 +127,7 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
   })
   backgroundIsListed: string;
 
-  @Column({ comment: '地址', length: 512, nullable: true })
+  @Column({ comment: '详细地址', length: 512, nullable: true })
   address: string;
 
   @Column({
@@ -188,8 +176,12 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
   @Column({ comment: '下游客户', length: 512, nullable: true })
   backgroundDownstreamCustomer: string;
 
-  @Column({ comment: '机器人工艺', type: 'text', nullable: true })
-  backgroundRobotProcess: string;
+  @Column({
+    comment: '机器人工艺',
+    type: 'text',
+    nullable: true,
+  })
+  backgroundRobot: string;
 
   @Column({ comment: '公司网址', length: 512, nullable: true })
   backgroundWebsite: string;
@@ -200,7 +192,7 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
   @Column({ comment: '电子邮件', length: 512, nullable: true })
   backgroundEmail: string;
 
-  @Column({ comment: '国家', length: 512, default: '中国' })
+  @Column({ comment: '国家', length: 512, default: '中国', nullable: true })
   backgroundCountry: string;
 
   @Column({ comment: '省', length: 512, nullable: true })
@@ -211,6 +203,9 @@ export class CompanyCustomerEntity extends CoolBaseEntity {
 
   @Column({ comment: '区', length: 512, nullable: true })
   backgroundDistrict: string;
+
+  @Column({ comment: '详细地址(扩展)', length: 512, nullable: true })
+  backgroundAddressDetail: string;
 
   @Column({ comment: '竞争对手', type: 'text', nullable: true })
   competitors: string;

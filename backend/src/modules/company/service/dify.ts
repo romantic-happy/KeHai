@@ -13,9 +13,9 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = 'http://10.10.2.103:6859/v1/workflows/run'; // TODO
+  private readonly DIFY_API_URL = 'http://localhost/v1/workflows/run'; // TODO
   private readonly RESPONSE_MODE = 'blocking';
-  private readonly DIFY_USER = '2782129289@qq.com';
+  private readonly DIFY_USER = 'smallrespon';
 
   private workflowMap: Map<string, DifyWorkflowConfig> = new Map();
 
@@ -136,7 +136,16 @@ export class DifyService {
     return result.data;
   }
 
-  async getCustomerPortrait(name: string) {
+  async analyzeFollowUp(customerName: string, details: string) {
+    const result = await this.runWorkflow('followUpAnalysis', {
+      customerName,
+      details,
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  }
+
+  async analyzePortrait(name: string) {
     const result = await this.runWorkflow('customerPortrait', {
       name,
     });
