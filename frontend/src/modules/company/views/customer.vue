@@ -429,7 +429,7 @@ const Upsert = useUpsert<any>({
 		},
 		{
 			label: t("机器人工艺"),
-			prop: "backgroundRobotProcess",
+			prop: "backgroundRobot",
 			required: true,
 			span: 24,
 			component: {
@@ -506,7 +506,7 @@ const Upsert = useUpsert<any>({
 		},
 		{
 			label: t("负责人"),
-			prop: "backgroundOwnerUserId",
+			prop: "backgroundOwner",
 			required: true,
 			span: 12,
 			component: {
@@ -809,14 +809,14 @@ const Upsert = useUpsert<any>({
 			{ key: "backgroundIsListed", label: t("是否上市"), tab: "bg" },
 			{ key: "backgroundIndustry", label: t("行业"), tab: "bg" },
 			{ key: "backgroundBusinessItems", label: t("企业经营项目"), tab: "bg" },
-			{ key: "backgroundRobotProcess", label: t("机器人工艺"), tab: "bg" },
+			{ key: "backgroundRobot", label: t("机器人工艺"), tab: "bg" },
 			{ key: "backgroundPhone", label: t("电话"), tab: "bg" },
 			{ key: "backgroundEmail", label: t("电子邮件"), tab: "bg" },
 			{ key: "backgroundCountry", label: t("国家"), tab: "bg" },
 			{ key: "backgroundProvince", label: t("省"), tab: "bg" },
 			{ key: "backgroundCity", label: t("市"), tab: "bg" },
 			{ key: "backgroundAddressDetail", label: t("详细地址"), tab: "bg" },
-			{ key: "backgroundOwnerUserId", label: t("负责人"), tab: "bg" },
+			{ key: "backgroundOwner", label: t("负责人"), tab: "bg" },
 			// 拜访信息
 			{ key: "lastFollowType", label: t("最近跟进类型"), tab: "visit" },
 			{ key: "lastFollowDate", label: t("最近跟进时间"), tab: "visit" },
@@ -853,8 +853,8 @@ const Upsert = useUpsert<any>({
 
 		// 保存负责人时更新上一次负责人
 		if (Upsert.value?.mode === 'edit' && Upsert.value?.data) {
-			const originalOwner = Upsert.value.data.backgroundOwnerUserId;
-			const newOwner = data.backgroundOwnerUserId;
+			const originalOwner = Upsert.value.data.backgroundOwner;
+			const newOwner = data.backgroundOwner;
 			if (originalOwner && newOwner && originalOwner !== newOwner) {
 				payload.backgroundPreviousOwnerUserId = originalOwner;
 				payload.backgroundOwnerChangeTime = new Date().toISOString();
@@ -888,126 +888,72 @@ const Upsert = useUpsert<any>({
 const Table = useTable<any>({
 	columns: [
 		{ type: "selection", width: 60 },
-		{ label: t("客户编码"), prop: "customerNo", minWidth: 140 },
-		{ label: t("客户名称"), prop: "customerName", minWidth: 180 },
+		{ label: t("客户编号"), prop: "customerNo", minWidth: 120, sortable: "custom" },
+		{ label: t("客户名称"), prop: "customerName", minWidth: 200 },
+		{ label: t("来源"), prop: "backgroundSource", minWidth: 120, dict: options.backgroundSource },
+		{ label: t("线索"), prop: "clue", minWidth: 120 },
+		{ label: t("行业大分类"), prop: "industryCategoryMajor", minWidth: 120 },
+		{ label: t("行业小分类"), prop: "industryCategoryMinor", minWidth: 120 },
+		{ label: t("负责人"), prop: "backgroundOwner", minWidth: 120 },
 		{
-			label: t("客户性质"),
-			prop: "customerNature",
-			minWidth: 120,
-			dict: options.customerNature,
-		},
-		{
-			label: t("客户级别"),
-			prop: "level",
-			minWidth: 120,
-			dict: options.level,
-		},
-		{ label: t("统一信用代码"), prop: "socialCreditCode", minWidth: 180 },
-		{
-			label: t("管理状态"),
-			prop: "manageStatus",
-			minWidth: 140,
-			dict: options.manageStatus,
-		},
-		{
-			label: t("成交状态"),
-			prop: "dealStatus",
-			minWidth: 120,
-			dict: options.dealStatus,
-		},
-		{ label: t("合同数量"), prop: "contractCount", minWidth: 120 },
-		{
-			label: t("赢单状态"),
-			prop: "winStatus",
-			minWidth: 120,
-			dict: options.winStatus,
-		},
-		{
-			label: t("最近成交时间"),
-			prop: "latestDealTime",
-			minWidth: 170,
-			component: { name: "cl-date-text" },
-		},
-		{ label: t("拜访次数"), prop: "visitCount", minWidth: 100 },
-		{
-			label: t("距上次合作（天）"),
-			prop: "daysSinceLastCooperation",
+			label: t("协作人列表"),
+			prop: "backgroundCollaboratorUserIds",
 			minWidth: 150,
-		},
-		{
-			label: t("合同订单总额"),
-			prop: "contractOrderTotalAmount",
-			minWidth: 150,
-		},
-		{
-			label: t("应收款余额"),
-			prop: "receivableBalance",
-			minWidth: 150,
-		},
-		{
-			label: t("开票总额"),
-			prop: "invoiceTotalAmount",
-			minWidth: 150,
-		},
-		{
-			label: t("询价单数量"),
-			prop: "inquiryCount",
-			minWidth: 120,
-		},
-		{
-			label: t("报价单数量"),
-			prop: "quoteCount",
-			minWidth: 120,
-		},
-		{
-			label: t("转换率"),
-			prop: "contractConvertRate",
-			minWidth: 120,
 			formatter(row: any) {
-				const v = row.contractConvertRate;
-				if (v === null || v === undefined) return "--";
-				const num = Number(v);
-				if (isNaN(num)) return v;
-				return `${(num * 100).toFixed(2)}%`;
+				return Array.isArray(row.backgroundCollaboratorUserIds)
+					? row.backgroundCollaboratorUserIds.join(",")
+					: row.backgroundCollaboratorUserIds || "";
 			},
 		},
+		{ label: t("客户关系"), prop: "level", minWidth: 120, dict: options.level },
+		{ label: t("合作阶段"), prop: "manageStatus", minWidth: 120, dict: options.manageStatus },
+		{ label: t("备注"), prop: "backgroundRemark", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("公司背景"), prop: "backgroundCompanyProfile", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("经营范围"), prop: "businessScope", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("成立时间"), prop: "backgroundEstablishDate", minWidth: 120 },
+		{ label: t("注册资金"), prop: "backgroundRegisteredCapital", minWidth: 120 },
+		{ label: t("企业性质"), prop: "backgroundEnterpriseType", minWidth: 120 },
+		{ label: t("是否上市"), prop: "backgroundIsListed", minWidth: 100 },
+		{ label: t("地址"), prop: "address", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("当年营业额"), prop: "backgroundTurnoverCurrent", minWidth: 120 },
+		{ label: t("上一年营业额"), prop: "backgroundTurnoverLast", minWidth: 120 },
+		{ label: t("上上年营业额"), prop: "backgroundTurnoverPrev", minWidth: 120 },
+		{ label: t("年产值"), prop: "annualOutputValue", minWidth: 120 },
+		{ label: t("预算"), prop: "budget", minWidth: 120 },
+		{ label: t("上级客户"), prop: "backgroundSuperiorCustomer", minWidth: 150 },
+		{ label: t("下游客户"), prop: "backgroundDownstreamCustomer", minWidth: 150 },
+		{ label: t("机器人工艺"), prop: "backgroundRobot", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("公司网址"), prop: "backgroundWebsite", minWidth: 150 },
+		{ label: t("电话"), prop: "backgroundPhone", minWidth: 120 },
+		{ label: t("电子邮件"), prop: "backgroundEmail", minWidth: 150 },
+		{ label: t("国家"), prop: "backgroundCountry", minWidth: 100 },
+		{ label: t("省"), prop: "backgroundProvince", minWidth: 100 },
+		{ label: t("市"), prop: "backgroundCity", minWidth: 100 },
+		{ label: t("区"), prop: "backgroundDistrict", minWidth: 100 },
+		{ label: t("详细地址(扩展)"), prop: "backgroundAddressDetail", minWidth: 200, showOverflowTooltip: true },
+		{ label: t("竞争对手"), prop: "competitors", minWidth: 200, showOverflowTooltip: true },
 		{
-			label: t("最近跟进时间"),
-			prop: "lastFollowDate",
-			minWidth: 150,
-			component: { name: "cl-date-text" },
+			label: t("关键人"),
+			prop: "keyContacts",
+			minWidth: 200,
+			showOverflowTooltip: true,
+			formatter(row: any) {
+				if (!row.keyContacts) return "";
+				if (typeof row.keyContacts === "string") return row.keyContacts;
+				if (Array.isArray(row.keyContacts)) {
+					return row.keyContacts
+						.map((e: any) => (typeof e === "object" ? JSON.stringify(e) : e))
+						.join(" | ");
+				}
+				return JSON.stringify(row.keyContacts);
+			},
 		},
-		{
-			label: t("距上次跟进（天）"),
-			prop: "daysSinceLastFollow",
-			minWidth: 150,
-		},
-		{
-			label: t("负责人"),
-			prop: "backgroundOwnerUserId",
-			minWidth: 120,
-		},
-		{
-			label: t("最后修改人"),
-			prop: "backgroundLastModifyUserId",
-			minWidth: 140,
-		},
-		{
-			label: t("上一次负责人"),
-			prop: "backgroundPreviousOwnerUserId",
-			minWidth: 150,
-		},
-		{
-			label: t("负责人变更时间"),
-			prop: "backgroundOwnerChangeTime",
-			minWidth: 170,
-			component: { name: "cl-date-text" },
-		},
+		{ label: t("AI 客户画像"), prop: "backgroundPortrait", minWidth: 200, showOverflowTooltip: true },
 		{
 			label: t("创建时间"),
 			prop: "createTime",
 			minWidth: 170,
-			sortable: "desc",
+			sortable: "custom",
 			component: { name: "cl-date-text" },
 		},
 		{
@@ -1017,11 +963,7 @@ const Table = useTable<any>({
 			sortable: "custom",
 			component: { name: "cl-date-text" },
 		},
-		{
-			type: "op",
-			buttons: ["edit", "delete"],
-			width: 170,
-		},
+		{ type: "op", buttons: ["edit", "delete"], width: 160 },
 	],
 });
 
@@ -1030,7 +972,7 @@ const Crud = useCrud(
 		service: (service as any).company?.customer,
 	},
 	(app) => {
-		app.refresh();
+		app.refresh({ sort: "customerNo", order: "asc" });
 	},
 );
 </script>
