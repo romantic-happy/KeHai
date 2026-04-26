@@ -284,6 +284,31 @@
                 "childMenus": []
               }
             ]
+          },
+          {
+            "name": "Supplier",
+            "router": "/company/supplier",
+            "perms": null,
+            "type": 1,
+            "icon": "icon-user",
+            "orderNum": 2,
+            "viewPath": "modules/company/views/supplier.vue",
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": [
+              {
+                "name": "Perms",
+                "router": null,
+                "perms": "company:supplier:page,company:supplier:list,company:supplier:info,company:supplier:add,company:supplier:update,company:supplier:delete,company:supplier:transfer,company:supplier:aiBackgroundCheck,company:supplier:aiSupplierProfile,company:supplier:quoteRecords",
+                "type": 2,
+                "icon": null,
+                "orderNum": 0,
+                "viewPath": null,
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": []
+              }
+            ]
           }
         ]
       },
