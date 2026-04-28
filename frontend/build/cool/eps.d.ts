@@ -799,6 +799,91 @@ declare namespace Eps {
 		customer?: string;
 
 		/**
+		 * 协作人ID列表
+		 */
+		collaboratorUserIds?: any;
+
+		/**
+		 * 报价截止日期
+		 */
+		deadlineDate?: Date;
+
+		/**
+		 * 附件URL列表
+		 */
+		attachments?: any;
+
+		/**
+		 * 备注
+		 */
+		remark?: string;
+
+		/**
+		 * 产品明细
+		 */
+		productItems?: any;
+
+		/**
+		 * AI分类
+		 */
+		aiCategory?: string;
+
+		/**
+		 * AI分类分析
+		 */
+		aiCategoryAnalysis?: string;
+
+		/**
+		 * AI历史报价
+		 */
+		aiHistoryQuote?: string;
+
+		/**
+		 * AI历史报价依据
+		 */
+		aiHistoryQuoteBasis?: string;
+
+		/**
+		 * 报价业务状态
+		 */
+		quoteBizStatus?: number;
+
+		/**
+		 * 驳回原因
+		 */
+		rejectReason?: string;
+
+		/**
+		 * 销售报价
+		 */
+		salesQuote?: number;
+
+		/**
+		 * 销售报价备注
+		 */
+		salesQuoteRemark?: string;
+
+		/**
+		 * 销售报价时间
+		 */
+		salesQuoteTime?: Date;
+
+		/**
+		 * 是否成单
+		 */
+		dealStatus?: number;
+
+		/**
+		 * 丢单原因
+		 */
+		lostReason?: string;
+
+		/**
+		 * 合同订单号
+		 */
+		contractOrderNo?: string;
+
+		/**
 		 * 项目名称
 		 */
 		projectName?: string;
@@ -899,9 +984,9 @@ declare namespace Eps {
 		createUserId?: number;
 
 		/**
-		 * 报价状态
+		 * 负责人姓名（默认填写人）
 		 */
-		quoteStatus?: number;
+		ownerName?: string;
 
 		/**
 		 * 最新报价ID
@@ -1171,6 +1256,11 @@ declare namespace Eps {
 		 * 线索状态
 		 */
 		leadStatus?: number;
+
+		/**
+		 * 跟进详情
+		 */
+		followupDetail?: string;
 
 		/**
 		 * AI线索分析
@@ -2969,9 +3059,34 @@ declare namespace Eps {
 
 	interface CompanyInquiry {
 		/**
+		 * 已成单，转换合同订单
+		 */
+		convertToContractOrder(data?: any): Promise<any>;
+
+		/**
+		 * 保存销售实际报价
+		 */
+		saveSalesPricing(data?: any): Promise<any>;
+
+		/**
+		 * 提交成单结果
+		 */
+		saveDealResult(data?: any): Promise<any>;
+
+		/**
 		 * 同步报价操作权限
 		 */
 		syncQuotePerms(data?: any): Promise<any>;
+
+		/**
+		 * 同步报价业务状态
+		 */
+		syncBizStatus(data?: any): Promise<any>;
+
+		/**
+		 * 未成单
+		 */
+		saveLostDeal(data?: any): Promise<any>;
 
 		/**
 		 * 报价单进度分页（含负责人）
@@ -3022,7 +3137,12 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
+			convertToContractOrder: string;
+			saveSalesPricing: string;
+			saveDealResult: string;
 			syncQuotePerms: string;
+			syncBizStatus: string;
+			saveLostDeal: string;
 			progressPage: string;
 			accept: string;
 			reject: string;
@@ -4003,6 +4123,8 @@ declare namespace Eps {
 
 	type Request = (options: RequestOptions) => Promise<any>;
 
+	type DictKey = "brand" | "occupation";
+
 	type Service = {
 		request: Request;
 
@@ -4021,14 +4143,11 @@ declare namespace Eps {
 		};
 		company: {
 			contract: CompanyContract;
-			contractMgmt: CompanyContractMgmt;
 			customer: CompanyCustomer;
-			followUpRecord: CompanyFollowUpRecord;
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;
 			quote: CompanyQuote;
-			supplier: CompanySupplier;
 		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };
 		dict: { info: DictInfo; type: DictType };
