@@ -21,7 +21,7 @@ export default {
         host: '10.10.2.103',
         port: 9563,
         username: 'root',
-        password: 'root',
+        password: 'Aa17526909261',
         database: 'cool-admin',
         // 自动建表 注意：线上部署的时候不要使用，有可能导致数据丢失
         synchronize: true,
