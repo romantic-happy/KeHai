@@ -9,8 +9,8 @@ export default {
   // 本地开发可在此覆盖；生产请用环境变量
   contract: {
     difyWebhookUrl:
-      process.env.DIFY_CONTRACT_WEBHOOK_URL ||
-      'http://localhost/triggers/webhook/qbuu-XEXmwu0foyqZJvbdJJP',
+      'http://10.10.2.103:6859//triggers/webhook-debug/qbuu-XEXmwu0foyqZJvbdJJP',
+    //这样可以正确触发服务器上的dify
     callbackSecret:
       process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',
   },
@@ -18,13 +18,13 @@ export default {
     dataSource: {
       default: {
         type: 'mysql',
-        host: '127.0.0.1',
-        port: 3306,
+        host: '10.10.2.103',
+        port: 9563,
         username: 'root',
-        password: 'Aa17526909261',
+        password: 'root',
         database: 'cool-admin',
         // 自动建表 注意：线上部署的时候不要使用，有可能导致数据丢失
-        synchronize: true,
+        synchronize: false,
         // 打印日志
         logging: false,
         // 字符集

@@ -1,0 +1,325 @@
+'0':项目类（搬迁改造）合同 {
+    // 原有变量
+    projectname: "AAAA机器人搬迁改造项目",
+    contractNo: "HT-20260426-001",
+    signPlace: "天津市",
+    signDate: "2026年04月26日",
+    partyA: "甲方公司",
+    partyB: "乙方公司",
+    projectTarget: "AAA机器人设备",
+    deliveryPlace: "甲方工厂",
+    additionalScope: "含现场接线、编程、调试",
+    effectiveDays: 10,
+    installDays: 15,
+    delayPenaltyRate: 0.5,
+    delayPenaltyCap: 10,
+    payment1Ratio: 30,
+    payment1Amount: 3000,
+    payment2Ratio: 30,
+    payment2Amount: 3000,
+    payment3Ratio: 30,
+    payment3Amount: 3000,
+    retentionRatio: 10,
+    paymentMethod: "银行电汇",
+    debtPenaltyRate: 3.1,
+    warrantyDays: 30,
+    repairFailurePenalty: 10,
+    warrantyMonths: 6,
+    partyADuty: "现场工具、备件、环境",
+    partyBDuty: "差旅费、人工费",
+    secrecyPenalty: 10,
+    disputepart: "乙方",
+    breachPenalty: 20,
+    totalAmount: 10000,
+    totalAmountCN: "人民币壹万元整",
+    contractDetails: "无特殊备注",
+    // ✅ 新增：多行设备数组（自动循环生成N行）
+    deviceList: [
+        {
+        deviceName: "机器人本体",
+        specModel: "型号ABC-123",
+        quantity: 1,
+        totalPrice: "6000.00"
+        },
+        {
+        deviceName: "控制柜",
+        specModel: "型号XYZ-456",
+        quantity: 1,
+        totalPrice: "4000.00"
+        }
+    ]
+};
+
+'1':机械类（维保）合同 
+{
+      "contractNo": "WB-2024-0031",
+      "partyA": "保定精工汽车零部件有限公司",
+      "partyAAddress": "河北省保定市竞秀区创业路128号",
+      "partyB": "北京智维机器人技术服务有限公司",
+      "partyBAddress": "北京市海淀区中关村软件园A座302",
+      "deviceList": [
+        {
+          "seq": "1",
+          "brand": "ABB",
+          "model": "IRB 6700-200/2.6",
+          "deviceName": "焊接机器人",
+          "qty": "1",
+          "location": "一车间",
+          "date": "2024-01-15",
+          "remark": "重复定位精度偏差"
+        },
+        {
+          "seq": "2",
+          "brand": "KUKA",
+          "model": "KR 210 R2700",
+          "deviceName": "搬运机器人",
+          "qty": "2",
+          "location": "二车间",
+          "date": "2024-01-15",
+          "remark": "2#机电机异响"
+        }
+      ],
+      "planDays": "5",
+      "reportDays": "3",
+      "trainTime": "2",
+      "trainHours": "4",
+      "nonOriginalWarranty": "6",
+      "designLife": "8",
+      "startDate": "2024年3月1日",
+      "endDate": "2025年2月28日",
+      "durationMonth": "12",
+      "renewNoticeDays": "30",
+      "renewYears": "1",
+      "terminationDays": "7",
+      "partyAContactName": "李伟",
+      "partyAContactPhone": "1390312****",
+      "confidentialYears": "3",
+      "paymentPlan": "1",
+      "totalAmountCN": "伍万元整",
+      "totalAmount": "50,000",
+      "pmFeePerTime": "800",
+      "repairHourlyFee": "200",
+      "travelFeeMode": "实报实销",
+      "payADays1": "7",
+      "payARatio1": "50",
+      "payADays2": "6",
+      "payARatio2": "40",
+      "payADays3": "10",
+      "payARatio3": "10",
+      "payBDays1": "5",
+      "payBDays2": "25",
+      "taxRate": "6",
+      "invoiceItem": "工业机器人维保服务费",
+      "precisionPercent": "90",
+      "dryRunHours": "2",
+      "loadRunHours": "1",
+      "objectionDays": "3",
+      "warrantyOriginal": "12",
+      "warrantyCompat": "6",
+      "warrantyRefurb": "3",
+      "latePayRate": "0.5",
+      "latePayMaxDays": "30",
+      "delayPenalty": "500",
+      "lossCapPercent": "50",
+      "fakePartPenaltyTimes": "3",
+      "staffQualifyPenalty": "1000",
+      "forceMajeureNotice": "48",
+      "forceMajeureProof": "15"
+}
+
+
+'2': 调试类合同
+{  
+  contractNo: "DEBUG-20260428-001",
+  signDate: "2026年04月28日",
+
+  partyA: "保定XX自动化科技有限公司",
+  partyAAddress: "河北省保定市竞秀区XX产业园",
+  partyB: "XX机器人技术服务有限公司",
+  partyBAddress: "河北省保定市莲池区XX基地",
+
+  totalAmount: "15000",
+  totalAmountCN: "人民币壹万伍仟元整",
+
+  bankName: "XXXXX",
+  bankAccount: "XXXXX",
+  paymentDate: "2026年05月10日",
+
+  debugTime: "根据甲方要求，双方协商一致",
+  debugPlace: "甲方工厂",
+
+  latePaymentRate: "0.1",
+
+  devicelist: [
+    {
+      seq: "1",
+      serviceContent: "机器人调试",
+      unit: "台",
+      quantity: "1",
+      unitPrice: "15000",
+      totalPrice: "15000",
+      remark: "调试一种产品（编写程序）"
+    }
+  ],
+};
+
+
+'3':电气（排故维修）类合同 
+ {
+  projectname: "工业机器人电气系统排故维修服务合同",
+  contractNo: "REP-20260428-001",
+
+  partyA: "保定智能装备有限公司",
+  partyAAddress: "河北省保定市竞秀区火炬街99号智能产业园A座",
+  partyB: "机器人维修服务（保定）有限公司",
+  partyBAddress: "河北省保定市莲池区双创基地2号楼305室",
+
+  confirmDays: 2,
+  quoteHours: 24,
+  quoteDays: 3,
+  storageFee: 50,
+  storageExpireDays: 15,
+  repairPeriod: 5,
+  insuredAmount: 5000,
+
+  prepayDays: 3,
+  prepayRatio: 50,
+  balanceDays: 5,
+  balanceRatio: 50,
+  fullPaymentRatio: 100,
+  partPrepayRatio: 70,
+  partBalanceRatio: 30,
+  invoiceDays: 3,
+  taxRate: 13,
+
+  noLoadHours: 2,
+  loadHours: 1,
+  acceptanceDays: 5,
+
+  penaltyRate: 0.5,
+  penaltyExpireDays: 15,
+  repaireDays: 5,
+  compensationMultiple: 3,
+  disputeCourt: "甲方所在地",
+
+  repairItems: [
+    {
+      index: 1,
+      itemName: "伺服驱动器",
+      brand: "ABB",
+      model: "3HAC025105-001",
+      serialNo: "SN-ROB-2024001",
+      quantity: 1,
+      faultDesc: "上电无输出、报过载故障、无法启动",
+      repairMode: "邮寄维修"
+    },
+    {
+      index: 2,
+      itemName: "示教器",
+      brand: "KUKA",
+      model: "KRC4 00-168-334",
+      serialNo: "SN-ROB-2024002",
+      quantity: 1,
+      faultDesc: "触摸屏碎裂、按键失灵、无法通讯",
+      repairMode: "邮寄维修"
+    },
+    {
+      index: 3,
+      itemName: "控制主板",
+      brand: "发那科",
+      model: "A20B-8100-0960",
+      serialNo: "SN-ROB-2024003",
+      quantity: 1,
+      faultDesc: "通讯中断、程序丢失、无法复位",
+      repairMode: "入场维修"
+    }
+  ]
+};
+
+
+'4':备品备件合同
+// 完全适配你当前备品备件模板的填充数据
+const sparePartContractData = {
+  // 基础信息
+  projectname: "工业机器人备品备件采购合同",
+  contractNo: "SPARE-20260428-001",
+  signDate: "2026年04月28日",
+
+  // 甲乙方信息
+  partyA: "保定智能装备维保有限公司",
+  partyAAddress: "河北省保定市竞秀区火炬街99号",
+  partyB: "机器人备件供应链（保定）有限公司",
+  partyBAddress: "河北省保定市莲池区双创基地3号楼402室",
+  partyAAgent: "张三",
+  partyBAgent: "李四",
+
+  // 合同金额
+  totalAmount: "26800",
+  totalAmountCN: "人民币贰万陆仟捌佰元整",
+
+  // 备件清单
+  spareParts: [
+    {
+      seq: "1",
+      brand: "ABB",
+      model: "IRB 120",
+      partName: "伺服电机",
+      partNo: "3HAC044569-001",
+      attribute: "原装",
+      unit: "台",
+      quantity: "1",
+      unitPrice: "16800",
+      totalPrice: "16800"
+    },
+    {
+      seq: "2",
+      brand: "库卡",
+      model: "KRC4",
+      partName: "驱动模块",
+      partNo: "00-123-456",
+      attribute: "兼容",
+      unit: "块",
+      quantity: "1",
+      unitPrice: "10000",
+      totalPrice: "10000"
+    }
+  ],
+
+  // 技术与质保参数
+  testHours: "48",
+  processStandard: "ISO 9001",
+  warrantyOriginal: "12",
+  warrantyCompatible: "6",
+  warrantyMax: "12",
+  responseHours: "48",
+  failureRate: "10",
+  penaltyMultiple: "3",
+
+  // 物流交付
+  deliveryPlace: "甲方指定仓库",
+  deliveryNotifyHours: "2",
+
+  // 付款参数
+  paymentScheme: "A",
+  prepayDays: "3",
+  prepayRatio: "30",
+  balanceDays: "5",
+  balanceRatio: "70",
+  startRatio: "50",
+  videoPayRatio: "40",
+  retentionRatio: "10",
+  taxRate: "13",
+
+  // 验收参数
+  lookDays: "2",
+  noLoadHours: "4",
+  loadHours: "2",
+  objectionDays: "7",
+  exchangeDays: "5",
+
+  // 违约参数
+  delayPenaltyRate: "0.5",
+  delayPenaltyDays: "10",
+  terminationPenalty: "20",
+
+};

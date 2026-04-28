@@ -32,7 +32,7 @@ export class AdminCompanyContractController extends BaseController {
       contractName: string;
       customerName: string;
       amount: unknown;
-      contractType: string | number;
+      contractType: string;// 如项目类合同是'0'，是字符串不是数字
       contractDetails: string;
     }
   ) {
