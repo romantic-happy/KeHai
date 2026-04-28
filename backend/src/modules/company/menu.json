@@ -72,7 +72,7 @@
                     "name": "权限",
                     "router": null,
                     "perms": "company:inquiry:page,company:inquiry:list,company:inquiry:info,company:inquiry:add,company:inquiry:update,company:inquiry:delete,company:inquiry:accept,company:inquiry:reject",
-                    "type": 1,
+                    "type": 2,
                     "icon": null,
                     "orderNum": 0,
                     "viewPath": null,

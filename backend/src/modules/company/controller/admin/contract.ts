@@ -1,6 +1,10 @@
 import { Body, Get, Inject, Post, Query } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
-import { CoolController, BaseController, CoolCommException } from '@cool-midway/core';
+import {
+  CoolController,
+  BaseController,
+  CoolCommException,
+} from '@cool-midway/core';
 import { CompanyContractService } from '../../service/contract';
 import { createReadStream } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
