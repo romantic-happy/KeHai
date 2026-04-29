@@ -41,13 +41,6 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
-	interface CompanyContractMgmtEntity {
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
 	interface CompanyCustomerEntity {
 		/**
 		 * 任意键值
@@ -84,13 +77,6 @@ declare namespace Eps {
 	}
 
 	interface CompanyQuoteEntity {
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
-	interface CompanySupplierEntity {
 		/**
 		 * 任意键值
 		 */
@@ -207,11 +193,6 @@ declare namespace Eps {
 		list: BaseSysUserEntity[];
 	}
 
-	interface CompanyContractMgmtPageResponse {
-		pagination: PagePagination;
-		list: CompanyContractMgmtEntity[];
-	}
-
 	interface CompanyCustomerPageResponse {
 		pagination: PagePagination;
 		list: CompanyCustomerEntity[];
@@ -240,11 +221,6 @@ declare namespace Eps {
 	interface CompanyQuotePageResponse {
 		pagination: PagePagination;
 		list: CompanyQuoteEntity[];
-	}
-
-	interface CompanySupplierPageResponse {
-		pagination: PagePagination;
-		list: CompanySupplierEntity[];
 	}
 
 	interface DemoGoodsPageResponse {
@@ -812,113 +788,6 @@ declare namespace Eps {
 		request: Request;
 	}
 
-	interface CompanyContractMgmt {
-		/**
-		 * getCategories
-		 */
-		getCategories(data?: any): Promise<any>;
-
-		/**
-		 * contractPage
-		 */
-		contractPage(data?: any): Promise<any>;
-
-		/**
-		 * contractInfo
-		 */
-		contractInfo(data?: any): Promise<any>;
-
-		/**
-		 * logicDelete
-		 */
-		logicDelete(data?: any): Promise<any>;
-
-		/**
-		 * categories
-		 */
-		categories(data?: any): Promise<any>;
-
-		/**
-		 * template
-		 */
-		template(data?: any): Promise<any>;
-
-		/**
-		 * download
-		 */
-		download(data?: any): Promise<any>;
-
-		/**
-		 * delete
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * update
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * info
-		 */
-		info(data?: any): Promise<CompanyContractMgmtEntity>;
-
-		/**
-		 * list
-		 */
-		list(data?: any): Promise<CompanyContractMgmtEntity[]>;
-
-		/**
-		 * page
-		 */
-		page(data?: any): Promise<CompanyContractMgmtPageResponse>;
-
-		/**
-		 * add
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			getCategories: string;
-			contractPage: string;
-			contractInfo: string;
-			logicDelete: string;
-			categories: string;
-			template: string;
-			download: string;
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			getCategories: boolean;
-			contractPage: boolean;
-			contractInfo: boolean;
-			logicDelete: boolean;
-			categories: boolean;
-			template: boolean;
-			download: boolean;
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
 	interface CompanyCustomer {
 		/**
 		 * delete
@@ -1037,34 +906,9 @@ declare namespace Eps {
 
 	interface CompanyInquiry {
 		/**
-		 * convertToContractOrder
-		 */
-		convertToContractOrder(data?: any): Promise<any>;
-
-		/**
-		 * saveSalesPricing
-		 */
-		saveSalesPricing(data?: any): Promise<any>;
-
-		/**
-		 * saveDealResult
-		 */
-		saveDealResult(data?: any): Promise<any>;
-
-		/**
 		 * syncQuotePerms
 		 */
 		syncQuotePerms(data?: any): Promise<any>;
-
-		/**
-		 * syncBizStatus
-		 */
-		syncBizStatus(data?: any): Promise<any>;
-
-		/**
-		 * saveLostDeal
-		 */
-		saveLostDeal(data?: any): Promise<any>;
 
 		/**
 		 * progressPage
@@ -1115,12 +959,7 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
-			convertToContractOrder: string;
-			saveSalesPricing: string;
-			saveDealResult: string;
 			syncQuotePerms: string;
-			syncBizStatus: string;
-			saveLostDeal: string;
 			progressPage: string;
 			accept: string;
 			reject: string;
@@ -1136,12 +975,7 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: {
-			convertToContractOrder: boolean;
-			saveSalesPricing: boolean;
-			saveDealResult: boolean;
 			syncQuotePerms: boolean;
-			syncBizStatus: boolean;
-			saveLostDeal: boolean;
 			progressPage: boolean;
 			accept: boolean;
 			reject: boolean;
@@ -1375,92 +1209,6 @@ declare namespace Eps {
 		 */
 		_permission: {
 			inquiryPage: boolean;
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
-	interface CompanySupplier {
-		/**
-		 * aiBackgroundCheck
-		 */
-		aiBackgroundCheck(data?: any): Promise<any>;
-
-		/**
-		 * aiSupplierProfile
-		 */
-		aiSupplierProfile(data?: any): Promise<any>;
-
-		/**
-		 * quoteRecords
-		 */
-		quoteRecords(data?: any): Promise<any>;
-
-		/**
-		 * transfer
-		 */
-		transfer(data?: any): Promise<any>;
-
-		/**
-		 * delete
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * update
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * info
-		 */
-		info(data?: any): Promise<CompanySupplierEntity>;
-
-		/**
-		 * list
-		 */
-		list(data?: any): Promise<CompanySupplierEntity[]>;
-
-		/**
-		 * page
-		 */
-		page(data?: any): Promise<CompanySupplierPageResponse>;
-
-		/**
-		 * add
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			aiBackgroundCheck: string;
-			aiSupplierProfile: string;
-			quoteRecords: string;
-			transfer: string;
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			aiBackgroundCheck: boolean;
-			aiSupplierProfile: boolean;
-			quoteRecords: boolean;
-			transfer: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;
@@ -2124,14 +1872,12 @@ declare namespace Eps {
 		};
 		company: {
 			contract: CompanyContract;
-			contractMgmt: CompanyContractMgmt;
 			customer: CompanyCustomer;
 			followUpRecord: CompanyFollowUpRecord;
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;
 			quote: CompanyQuote;
-			supplier: CompanySupplier;
 		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };
 		dict: { info: DictInfo; type: DictType };
