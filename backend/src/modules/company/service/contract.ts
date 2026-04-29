@@ -190,7 +190,9 @@ export class CompanyContractService extends BaseService {
 
   //   return String(raw ?? '').trim();
   // }
-  // ====================== 新：填充模板生成docx======================
+
+  // ======================新方式：填充模板生成docx======================
+
   async generateDocxByTemplate(
     templateFileName: string, //模板文件名
     data: Record<string, any> //contractData数据
