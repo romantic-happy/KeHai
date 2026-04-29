@@ -10,7 +10,7 @@ export default {
   contract: {
     difyWebhookUrl:
       'http://10.10.2.103:6859//triggers/webhook-debug/qbuu-XEXmwu0foyqZJvbdJJP',
-    //这样可以正确触发服务器上的dify
+    //如此能正确触发服务器端的dify
     callbackSecret:
       process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',
   },
@@ -24,7 +24,7 @@ export default {
         password: 'root',
         database: 'cool-admin',
         // 自动建表 注意：线上部署的时候不要使用，有可能导致数据丢失
-        synchronize: false,
+        synchronize: true,
         // 打印日志
         logging: false,
         // 字符集
