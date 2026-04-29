@@ -74,13 +74,6 @@
 					@customerChange="(v: any) => onQuoteCustomerChange(scope, v)"
 				/>
 			</template>
-
-			<template #slot-productItems>
-				<contract-product-items
-					ref="productItemsRef"
-					v-model="productItemsData"
-				/>
-			</template>
 		</cl-upsert>
 	</cl-crud>
 </template>
@@ -96,7 +89,6 @@ import { useI18n } from 'vue-i18n';
 import { onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { TagProps } from 'element-plus';
-import ContractProductItems from './components/contract-product-items.vue';
 import ContractProductSelector from './components/contract-product-selector.vue';
 
 const { service, route } = useCool();
@@ -128,8 +120,6 @@ const options = reactive<{
 	]
 });
 
-const productItemsRef = ref();
-const productItemsData = ref<any[]>([]);
 const selectedQuoteProducts = ref<any[]>([]);
 
 function formatAmount(val: any) {
@@ -313,12 +303,6 @@ const Upsert = useUpsert<any>({
 			component: { name: 'el-input' }
 		},
 		{
-			label: t('产品明细'),
-			prop: 'productItems',
-			span: 24,
-			component: { name: 'slot-productItems' }
-		},
-		{
 			label: t('合同详情'),
 			prop: 'contractDetails',
 			span: 24,
@@ -390,26 +374,8 @@ const Upsert = useUpsert<any>({
 	],
 
 	onOpened(data) {
-		const pi = (data as any).productItems;
-		if (pi) {
-			if (typeof pi === 'string') {
-				try {
-					const parsed = JSON.parse(pi);
-					productItemsData.value = Array.isArray(parsed) ? parsed : [];
-				} catch {
-					productItemsData.value = [];
-				}
-			} else if (Array.isArray(pi)) {
-				productItemsData.value = pi;
-			} else {
-				productItemsData.value = [];
-			}
-		} else {
-			productItemsData.value = [];
-		}
-
 		if ((data as any).quoteId) {
-			selectedQuoteProducts.value = [...productItemsData.value];
+			selectedQuoteProducts.value = (data as any).productItems || [];
 		} else {
 			selectedQuoteProducts.value = [];
 		}
@@ -427,17 +393,8 @@ const Upsert = useUpsert<any>({
 			return;
 		}
 
-		const mergedItems = [...selectedQuoteProducts.value];
-
-		const manualIds = new Set(mergedItems.map((i: any) => i.sourceQuoteItemId));
-		for (const item of productItemsData.value) {
-			if (!manualIds.has(item.sourceQuoteItemId)) {
-				mergedItems.push(item);
-			}
-		}
-
 		const payload = { ...data };
-		payload.productItems = mergedItems;
+		payload.productItems = selectedQuoteProducts.value;
 		delete payload.contractNo;
 		delete payload.createUserId;
 		delete payload.createUserName;

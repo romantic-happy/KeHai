@@ -118,9 +118,10 @@ export class CompanyQuoteService extends BaseService {
 
       if (exist.inquiryId) {
         await inquiryRepo.update(exist.inquiryId, {
-          quoteStatus: 1,
           quoteId: idNum,
           requotePending: 0,
+          quoteBizStatus: 1,
+          rejectReason: null,
         });
       }
 
@@ -155,8 +156,8 @@ export class CompanyQuoteService extends BaseService {
       throw new Error('询价不存在');
     }
 
-    const inquiryQuoteStatusNum = Number(inquiry.quoteStatus ?? 0);
-    const shouldOverwrite = inquiryQuoteStatusNum !== 2; // 2=已定：不覆盖 accepted 状态
+    // 不再依赖已注释的 quoteStatus 字段；新报价默认覆盖当前有效报价。
+    const shouldOverwrite = true;
 
     const dateStr = moment().format('YYYYMMDD');
     // 0-机械加工类 JG，1-机械维修类 WX，2-机械保养类 BY，3-项目类 XM，4-备件类 BJ
@@ -184,9 +185,10 @@ export class CompanyQuoteService extends BaseService {
 
     if (shouldOverwrite) {
       await inquiryRepo.update(inquiryId, {
-        quoteStatus: 1,
         quoteId: saved.id,
         requotePending: 0,
+        quoteBizStatus: 1,
+        rejectReason: null,
       });
     }
 
@@ -287,9 +289,11 @@ export class CompanyQuoteService extends BaseService {
         .createQueryBuilder()
         .update(CompanyInquiryEntity)
         .set({
-          quoteStatus: 0,
           quoteId: null,
           requotePending: 0,
+                // 删除最后一条报价后，统一回落为“未报价”
+          quoteBizStatus: () =>
+                        '0',
         })
         .whereInIds(needReset)
         .execute();
@@ -298,29 +302,25 @@ export class CompanyQuoteService extends BaseService {
 
   /**
    * 询价分页（给供应链端自动展示销售询价）
-   * 通过 quoteStatus=0 默认筛选待报价，可按需传入 inquiryType、keyWord 等
+   * 默认筛选待报价（无当前报价或待重报），可按需传入 inquiryType、keyWord 等
    */
   async inquiryPage(query: any) {
     const qb = this.companyInquiryEntity.createQueryBuilder('a');
     qb.where('1=1');
 
-    const quoteStatusNum =
-      query?.quoteStatus === undefined || query?.quoteStatus === null
+    const quoteBizStatusNum =
+      query?.quoteBizStatus === undefined || query?.quoteBizStatus === null
         ? null
-        : Number(query.quoteStatus);
-    if (quoteStatusNum === null) {
-      qb.andWhere(
-        '(a.quoteStatus = :waitQuoteStatus OR a.requotePending = :requotePending)',
-        {
-          waitQuoteStatus: 0,
-          requotePending: 1,
-        }
-      );
-    } else {
-      const quoteStatus = [0, 1, 2].includes(quoteStatusNum)
-        ? quoteStatusNum
-        : 0;
-      qb.andWhere('a.quoteStatus = :quoteStatus', { quoteStatus });
+        : Number(query.quoteBizStatus);
+    if (quoteBizStatusNum === null) {
+      // 默认给供应链展示“待报价”池：未报价或被驳回待重报
+      qb.andWhere('(a.quoteId is null OR a.requotePending = :requotePending)', {
+        requotePending: 1,
+      });
+    } else if ([0, 1, 2].includes(quoteBizStatusNum)) {
+      qb.andWhere('a.quoteBizStatus = :quoteBizStatus', {
+        quoteBizStatus: quoteBizStatusNum,
+      });
     }
 
     const inquiryTypeNum =

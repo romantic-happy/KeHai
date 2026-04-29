@@ -1,6 +1,6 @@
 <template>
-	<div class="contract-product-items">
-		<div class="contract-product-items__header">
+	<div class="inquiry-product-items">
+		<div class="inquiry-product-items__header">
 			<el-button type="success" size="small" @click="addProduct">
 				{{ $t('新增产品') }}
 			</el-button>
@@ -9,11 +9,11 @@
 		<div
 			v-for="(product, pIndex) in productItems"
 			:key="pIndex"
-			class="contract-product-items__product"
+			class="inquiry-product-items__product"
 		>
 			<el-card shadow="never" class="mb-2">
 				<template #header>
-					<div class="contract-product-items__product-header">
+					<div class="inquiry-product-items__product-header">
 						<span>{{ $t('产品') }} {{ pIndex + 1 }}</span>
 						<el-button
 							type="danger"
@@ -49,7 +49,6 @@
 									v-model="product.quantity"
 									:min="1"
 									:controls="false"
-									@change="calcRowTotal(product)"
 								/>
 							</el-form-item>
 						</el-col>
@@ -58,52 +57,12 @@
 								<el-input v-model="product.unit" clearable />
 							</el-form-item>
 						</el-col>
-						<el-col :span="5">
-							<el-form-item :label="$t('含税单价')">
-								<el-input-number
-									v-model="product.salesPriceInclTax"
-									:min="0"
-									:controls="false"
-									@change="calcRowTotal(product)"
-								/>
-							</el-form-item>
-						</el-col>
-					</el-row>
-					<el-row :gutter="10">
-						<el-col :span="4">
-							<el-form-item :label="$t('税率(%)')">
-								<el-input-number
-									v-model="product.taxRate"
-									:min="0"
-									:controls="false"
-									@change="calcRowTotal(product)"
-								/>
-							</el-form-item>
-						</el-col>
-						<el-col :span="5">
-							<el-form-item :label="$t('未税单价')">
-								<el-input-number
-									v-model="product.salesPriceExclTax"
-									:min="0"
-									:controls="false"
-								/>
-							</el-form-item>
-						</el-col>
-						<el-col :span="5">
-							<el-form-item :label="$t('价税合计')">
-								<el-input-number
-									v-model="product.totalPriceInclTax"
-									:min="0"
-									:controls="false"
-								/>
-							</el-form-item>
-						</el-col>
 					</el-row>
 				</el-form>
 			</el-card>
 		</div>
 
-		<div v-if="productItems.length === 0" class="contract-product-items__empty">
+		<div v-if="productItems.length === 0" class="inquiry-product-items__empty">
 			{{ $t('暂无产品明细，请点击"新增产品"') }}
 		</div>
 	</div>
@@ -113,33 +72,26 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-interface ContractProductItem {
+interface InquiryProductItem {
 	productSeq: number;
 	productName: string;
 	brand: string;
 	model: string;
 	quantity: number;
 	unit: string;
-	salesPriceInclTax: number;
-	taxRate: number;
-	salesPriceExclTax: number;
-	totalPriceInclTax: number;
-	sourceType?: string;
-	sourceQuoteItemId?: string;
-	supplierName?: string;
 }
 
 const props = defineProps<{
-	modelValue?: ContractProductItem[];
+	modelValue?: InquiryProductItem[];
 }>();
 
 const emit = defineEmits<{
-	'update:modelValue': [value: ContractProductItem[]];
+	'update:modelValue': [value: InquiryProductItem[]];
 }>();
 
 const { t } = useI18n();
 
-const productItems = ref<ContractProductItem[]>(props.modelValue || []);
+const productItems = ref<InquiryProductItem[]>(props.modelValue || []);
 
 watch(
 	() => productItems.value,
@@ -165,11 +117,7 @@ function addProduct() {
 		brand: '',
 		model: '',
 		quantity: 1,
-		unit: '项',
-		salesPriceInclTax: 0,
-		taxRate: 13,
-		salesPriceExclTax: 0,
-		totalPriceInclTax: 0
+		unit: '项'
 	});
 }
 
@@ -184,25 +132,13 @@ function resequence() {
 	});
 }
 
-function calcRowTotal(row: ContractProductItem) {
-	const price = Number(row.salesPriceInclTax) || 0;
-	const qty = Number(row.quantity) || 1;
-	row.totalPriceInclTax = Math.round(price * qty * 100) / 100;
-	if (row.taxRate > 0) {
-		row.salesPriceExclTax =
-			Math.round((price / (1 + row.taxRate / 100)) * 100) / 100;
-	} else {
-		row.salesPriceExclTax = price;
-	}
-}
-
 defineExpose({
 	productItems
 });
 </script>
 
 <style lang="scss" scoped>
-.contract-product-items {
+.inquiry-product-items {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;

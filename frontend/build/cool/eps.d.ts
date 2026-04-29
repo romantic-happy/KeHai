@@ -351,432 +351,6 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
-	interface CompanyContractMgmtEntity {
-		/**
-		 * ID
-		 */
-		id?: number;
-
-		/**
-		 * 合同编号
-		 */
-		contractNo?: string;
-
-		/**
-		 * 合同名称
-		 */
-		contractName?: string;
-
-		/**
-		 * 合同类别
-		 */
-		contractCategory?: number;
-
-		/**
-		 * 客户ID
-		 */
-		customerId?: number;
-
-		/**
-		 * 客户名称
-		 */
-		customerName?: string;
-
-		/**
-		 * 合同金额
-		 */
-		contractAmount?: number;
-
-		/**
-		 * 合同状态
-		 */
-		contractStatus?: number;
-
-		/**
-		 * 合同详情
-		 */
-		contractDetails?: string;
-
-		/**
-		 * 合同开始日期
-		 */
-		startDate?: Date;
-
-		/**
-		 * 合同结束日期
-		 */
-		endDate?: Date;
-
-		/**
-		 * 签订日期
-		 */
-		signDate?: Date;
-
-		/**
-		 * 合同文件路径
-		 */
-		filePath?: string;
-
-		/**
-		 * 模板文件路径
-		 */
-		templatePath?: string;
-
-		/**
-		 * 备注
-		 */
-		remark?: string;
-
-		/**
-		 * 创建人ID
-		 */
-		createUserId?: number;
-
-		/**
-		 * 创建人姓名
-		 */
-		createUserName?: string;
-
-		/**
-		 * 是否删除
-		 */
-		isDeleted?: number;
-
-		/**
-		 * 合同变量数据（用于模板填充）
-		 */
-		templateVariables?: any;
-
-		/**
-		 * 版本号
-		 */
-		version?: number;
-
-		/**
-		 * 创建时间
-		 */
-		createTime?: string;
-
-		/**
-		 * 更新时间
-		 */
-		updateTime?: string;
-
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
-	interface CompanyCustomerEntity {
-		/**
-		 * ID
-		 */
-		id?: number;
-
-		/**
-		 * 客户名称
-		 */
-		customerName?: string;
-
-		/**
-		 * 来源
-		 */
-		backgroundSource?: string;
-
-		/**
-		 * 线索
-		 */
-		clue?: string;
-
-		/**
-		 * 行业大分类
-		 */
-		industryCategoryMajor?: string;
-
-		/**
-		 * 行业小分类
-		 */
-		industryCategoryMinor?: string;
-
-		/**
-		 * 负责人
-		 */
-		backgroundOwner?: string;
-
-		/**
-		 * 协作人列表
-		 */
-		backgroundCollaboratorUserIds?: any;
-
-		/**
-		 * 客户关系
-		 */
-		level?: string;
-
-		/**
-		 * 合作阶段
-		 */
-		manageStatus?: string;
-
-		/**
-		 * 备注
-		 */
-		backgroundRemark?: string;
-
-		/**
-		 * 公司背景
-		 */
-		backgroundCompanyProfile?: string;
-
-		/**
-		 * 经营范围/企业经营项目
-		 */
-		businessScope?: string;
-
-		/**
-		 * 成立时间
-		 */
-		backgroundEstablishDate?: string;
-
-		/**
-		 * 注册资金
-		 */
-		backgroundRegisteredCapital?: string;
-
-		/**
-		 * 企业性质
-		 */
-		backgroundEnterpriseType?: string;
-
-		/**
-		 * 是否上市
-		 */
-		backgroundIsListed?: string;
-
-		/**
-		 * 详细地址
-		 */
-		address?: string;
-
-		/**
-		 * 当年营业额
-		 */
-		backgroundTurnoverCurrent?: string;
-
-		/**
-		 * 上一年营业额
-		 */
-		backgroundTurnoverLast?: string;
-
-		/**
-		 * 上上年营业额
-		 */
-		backgroundTurnoverPrev?: string;
-
-		/**
-		 * 年产值
-		 */
-		annualOutputValue?: string;
-
-		/**
-		 * 预算
-		 */
-		budget?: string;
-
-		/**
-		 * 上级客户
-		 */
-		backgroundSuperiorCustomer?: string;
-
-		/**
-		 * 下游客户
-		 */
-		backgroundDownstreamCustomer?: string;
-
-		/**
-		 * 机器人工艺
-		 */
-		backgroundRobot?: string;
-
-		/**
-		 * 公司网址
-		 */
-		backgroundWebsite?: string;
-
-		/**
-		 * 电话
-		 */
-		backgroundPhone?: string;
-
-		/**
-		 * 电子邮件
-		 */
-		backgroundEmail?: string;
-
-		/**
-		 * 国家
-		 */
-		backgroundCountry?: string;
-
-		/**
-		 * 省
-		 */
-		backgroundProvince?: string;
-
-		/**
-		 * 市
-		 */
-		backgroundCity?: string;
-
-		/**
-		 * 区
-		 */
-		backgroundDistrict?: string;
-
-		/**
-		 * 详细地址(扩展)
-		 */
-		backgroundAddressDetail?: string;
-
-		/**
-		 * 竞争对手
-		 */
-		competitors?: string;
-
-		/**
-		 * 关键人
-		 */
-		keyContacts?: any;
-
-		/**
-		 * AI 客户画像
-		 */
-		backgroundPortrait?: string;
-
-		/**
-		 * 客户编号
-		 */
-		customerNo?: string;
-
-		/**
-		 * 创建时间
-		 */
-		createTime?: Date;
-
-		/**
-		 * 更新时间
-		 */
-		updateTime?: Date;
-
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
-	interface CompanyFollowUpRecordEntity {
-		/**
-		 * ID
-		 */
-		id?: number;
-
-		/**
-		 * 客户名称
-		 */
-		customerName?: string;
-
-		/**
-		 * 关键人
-		 */
-		keyPerson?: string;
-
-		/**
-		 * 跟进人
-		 */
-		ownerUserName?: string;
-
-		/**
-		 * 跟进方式
-		 */
-		method?: string;
-
-		/**
-		 * 跟进状态
-		 */
-		status?: string;
-
-		/**
-		 * 跟进结果
-		 */
-		result?: string;
-
-		/**
-		 * 跟进时间
-		 */
-		followUpTime?: Date;
-
-		/**
-		 * 下次跟进时间
-		 */
-		nextFollowTime?: Date;
-
-		/**
-		 * 日程提醒
-		 */
-		isReminder?: boolean;
-
-		/**
-		 * 跟进人所在部门
-		 */
-		followUpPersonDept?: string;
-
-		/**
-		 * 创建人
-		 */
-		creator?: string;
-
-		/**
-		 * 最后修改人
-		 */
-		modifier?: string;
-
-		/**
-		 * 核算维度
-		 */
-		accountingDimension?: string;
-
-		/**
-		 * 协作人
-		 */
-		collaborators?: string;
-
-		/**
-		 * 联系详情
-		 */
-		details?: string;
-
-		/**
-		 * AI销售指导
-		 */
-		aiGuide?: string;
-
-		/**
-		 * 创建时间
-		 */
-		createTime?: Date;
-
-		/**
-		 * 更新时间
-		 */
-		updateTime?: Date;
-
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
 	interface CompanyInquiryEntity {
 		/**
 		 * ID
@@ -797,6 +371,91 @@ declare namespace Eps {
 		 * 客户
 		 */
 		customer?: string;
+
+		/**
+		 * 协作人ID列表
+		 */
+		collaboratorUserIds?: any;
+
+		/**
+		 * 报价截止日期
+		 */
+		deadlineDate?: Date;
+
+		/**
+		 * 附件URL列表
+		 */
+		attachments?: any;
+
+		/**
+		 * 备注
+		 */
+		remark?: string;
+
+		/**
+		 * 产品明细
+		 */
+		productItems?: any;
+
+		/**
+		 * AI分类
+		 */
+		aiCategory?: string;
+
+		/**
+		 * AI分类分析
+		 */
+		aiCategoryAnalysis?: string;
+
+		/**
+		 * AI历史报价
+		 */
+		aiHistoryQuote?: string;
+
+		/**
+		 * AI历史报价依据
+		 */
+		aiHistoryQuoteBasis?: string;
+
+		/**
+		 * 报价业务状态
+		 */
+		quoteBizStatus?: number;
+
+		/**
+		 * 驳回原因
+		 */
+		rejectReason?: string;
+
+		/**
+		 * 销售报价
+		 */
+		salesQuote?: number;
+
+		/**
+		 * 销售报价备注
+		 */
+		salesQuoteRemark?: string;
+
+		/**
+		 * 销售报价时间
+		 */
+		salesQuoteTime?: Date;
+
+		/**
+		 * 是否成单
+		 */
+		dealStatus?: number;
+
+		/**
+		 * 丢单原因
+		 */
+		lostReason?: string;
+
+		/**
+		 * 合同订单号
+		 */
+		contractOrderNo?: string;
 
 		/**
 		 * 项目名称
@@ -822,11 +481,6 @@ declare namespace Eps {
 		 * 项目工期结束
 		 */
 		projectEndDate?: Date;
-
-		/**
-		 * 销售类别
-		 */
-		salesCategory?: number;
 
 		/**
 		 * 设备品牌
@@ -899,9 +553,9 @@ declare namespace Eps {
 		createUserId?: number;
 
 		/**
-		 * 报价状态
+		 * 负责人姓名（默认填写人）
 		 */
-		quoteStatus?: number;
+		ownerName?: string;
 
 		/**
 		 * 最新报价ID
@@ -1173,6 +827,11 @@ declare namespace Eps {
 		leadStatus?: number;
 
 		/**
+		 * 跟进详情
+		 */
+		followupDetail?: string;
+
+		/**
 		 * AI线索分析
 		 */
 		aiAnalysis?: string;
@@ -1348,123 +1007,6 @@ declare namespace Eps {
 		 * 询价类型
 		 */
 		inquiryInquiryType?: number;
-
-		/**
-		 * 任意键值
-		 */
-		[key: string]: any;
-	}
-
-	interface CompanySupplierEntity {
-		/**
-		 * ID
-		 */
-		id?: number;
-
-		/**
-		 * Supplier name
-		 */
-		supplierName?: string;
-
-		/**
-		 * Supplier type: temporary/formal
-		 */
-		supplierType?: string;
-
-		/**
-		 * Supplier source
-		 */
-		supplierSource?: string;
-
-		/**
-		 * Remark
-		 */
-		remark?: string;
-
-		/**
-		 * Contact name
-		 */
-		contactName?: string;
-
-		/**
-		 * Contact info
-		 */
-		contactInfo?: string;
-
-		/**
-		 * Information status: active/pending/dormant
-		 */
-		infoStatus?: string;
-
-		/**
-		 * Manage status: valid/invalid
-		 */
-		manageStatus?: string;
-
-		/**
-		 * Supplier nature
-		 */
-		supplierNature?: string;
-
-		/**
-		 * Business category list
-		 */
-		businessCategory?: any;
-
-		/**
-		 * Payment term days
-		 */
-		paymentTerm?: number;
-
-		/**
-		 * Cooperation relation
-		 */
-		cooperationRelation?: string;
-
-		/**
-		 * AI background check
-		 */
-		aiBackgroundCheck?: string;
-
-		/**
-		 * AI supplier profile
-		 */
-		aiSupplierProfile?: string;
-
-		/**
-		 * Invalid reason
-		 */
-		invalidReason?: string;
-
-		/**
-		 * First quote date
-		 */
-		quoteStartTime?: Date;
-
-		/**
-		 * Last quote date
-		 */
-		lastQuoteTime?: Date;
-
-		/**
-		 * Created by user id
-		 */
-		createUserId?: number;
-
-		/**
-		 * Last edit user id
-		 */
-		lastEditUserId?: number;
-
-		/**
-		 * 创建时间
-		 */
-		createTime?: string;
-
-		/**
-		 * 更新时间
-		 */
-		updateTime?: string;
 
 		/**
 		 * 任意键值
@@ -2139,21 +1681,6 @@ declare namespace Eps {
 		list: BaseSysUserEntity[];
 	}
 
-	interface CompanyContractMgmtPageResponse {
-		pagination: PagePagination;
-		list: CompanyContractMgmtEntity[];
-	}
-
-	interface CompanyCustomerPageResponse {
-		pagination: PagePagination;
-		list: CompanyCustomerEntity[];
-	}
-
-	interface CompanyFollowUpRecordPageResponse {
-		pagination: PagePagination;
-		list: CompanyFollowUpRecordEntity[];
-	}
-
 	interface CompanyInquiryPageResponse {
 		pagination: PagePagination;
 		list: CompanyInquiryEntity[];
@@ -2172,11 +1699,6 @@ declare namespace Eps {
 	interface CompanyQuotePageResponse {
 		pagination: PagePagination;
 		list: CompanyQuoteEntity[];
-	}
-
-	interface CompanySupplierPageResponse {
-		pagination: PagePagination;
-		list: CompanySupplierEntity[];
 	}
 
 	interface DemoGoodsPageResponse {
@@ -2744,234 +2266,36 @@ declare namespace Eps {
 		request: Request;
 	}
 
-	interface CompanyContractMgmt {
-		/**
-		 * 获取合同类别列表
-		 */
-		getCategories(data?: any): Promise<any>;
-
-		/**
-		 * 合同高级分页查询
-		 */
-		contractPage(data?: any): Promise<any>;
-
-		/**
-		 * 合同详情查询
-		 */
-		contractInfo(data?: any): Promise<any>;
-
-		/**
-		 * 逻辑删除合同
-		 */
-		logicDelete(data?: any): Promise<any>;
-
-		/**
-		 * 获取合同类别列表（含模板路径）
-		 */
-		categories(data?: any): Promise<any>;
-
-		/**
-		 * 下载合同模板文件
-		 */
-		template(data?: any): Promise<any>;
-
-		/**
-		 * 下载合同文件
-		 */
-		download(data?: any): Promise<any>;
-
-		/**
-		 * 逻辑删除合同
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * 修改
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * 单个信息
-		 */
-		info(data?: any): Promise<CompanyContractMgmtEntity>;
-
-		/**
-		 * 列表查询
-		 */
-		list(data?: any): Promise<CompanyContractMgmtEntity[]>;
-
-		/**
-		 * 分页查询
-		 */
-		page(data?: any): Promise<CompanyContractMgmtPageResponse>;
-
-		/**
-		 * 新增
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			getCategories: string;
-			contractPage: string;
-			contractInfo: string;
-			logicDelete: string;
-			categories: string;
-			template: string;
-			download: string;
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			getCategories: boolean;
-			contractPage: boolean;
-			contractInfo: boolean;
-			logicDelete: boolean;
-			categories: boolean;
-			template: boolean;
-			download: boolean;
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
-	interface CompanyCustomer {
-		/**
-		 * 删除
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * 修改
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * 单个信息
-		 */
-		info(data?: any): Promise<CompanyCustomerEntity>;
-
-		/**
-		 * 列表查询
-		 */
-		list(data?: any): Promise<CompanyCustomerEntity[]>;
-
-		/**
-		 * 分页查询
-		 */
-		page(data?: any): Promise<CompanyCustomerPageResponse>;
-
-		/**
-		 * 新增
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
-	interface CompanyFollowUpRecord {
-		/**
-		 * 删除
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * 修改
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * 单个信息
-		 */
-		info(data?: any): Promise<CompanyFollowUpRecordEntity>;
-
-		/**
-		 * 列表查询
-		 */
-		list(data?: any): Promise<CompanyFollowUpRecordEntity[]>;
-
-		/**
-		 * 分页查询
-		 */
-		page(data?: any): Promise<CompanyFollowUpRecordPageResponse>;
-
-		/**
-		 * 新增
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
 	interface CompanyInquiry {
+		/**
+		 * 已成单，转换合同订单
+		 */
+		convertToContractOrder(data?: any): Promise<any>;
+
+		/**
+		 * 保存销售实际报价
+		 */
+		saveSalesPricing(data?: any): Promise<any>;
+
+		/**
+		 * 提交成单结果
+		 */
+		saveDealResult(data?: any): Promise<any>;
+
 		/**
 		 * 同步报价操作权限
 		 */
 		syncQuotePerms(data?: any): Promise<any>;
+
+		/**
+		 * 同步报价业务状态
+		 */
+		syncBizStatus(data?: any): Promise<any>;
+
+		/**
+		 * 未成单
+		 */
+		saveLostDeal(data?: any): Promise<any>;
 
 		/**
 		 * 报价单进度分页（含负责人）
@@ -3022,7 +2346,12 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
+			convertToContractOrder: string;
+			saveSalesPricing: string;
+			saveDealResult: string;
 			syncQuotePerms: string;
+			syncBizStatus: string;
+			saveLostDeal: string;
 			progressPage: string;
 			accept: string;
 			reject: string;
@@ -3038,7 +2367,12 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: {
+			convertToContractOrder: boolean;
+			saveSalesPricing: boolean;
+			saveDealResult: boolean;
 			syncQuotePerms: boolean;
+			syncBizStatus: boolean;
+			saveLostDeal: boolean;
 			progressPage: boolean;
 			accept: boolean;
 			reject: boolean;
@@ -3272,92 +2606,6 @@ declare namespace Eps {
 		 */
 		_permission: {
 			inquiryPage: boolean;
-			delete: boolean;
-			update: boolean;
-			info: boolean;
-			list: boolean;
-			page: boolean;
-			add: boolean;
-		};
-
-		request: Request;
-	}
-
-	interface CompanySupplier {
-		/**
-		 * AI background check placeholder
-		 */
-		aiBackgroundCheck(data?: any): Promise<any>;
-
-		/**
-		 * AI supplier profile placeholder
-		 */
-		aiSupplierProfile(data?: any): Promise<any>;
-
-		/**
-		 * Supplier quote records placeholder
-		 */
-		quoteRecords(data?: any): Promise<any>;
-
-		/**
-		 * Temporary supplier transfer to formal supplier
-		 */
-		transfer(data?: any): Promise<any>;
-
-		/**
-		 * 删除
-		 */
-		delete(data?: any): Promise<any>;
-
-		/**
-		 * 修改
-		 */
-		update(data?: any): Promise<any>;
-
-		/**
-		 * 单个信息
-		 */
-		info(data?: any): Promise<CompanySupplierEntity>;
-
-		/**
-		 * 列表查询
-		 */
-		list(data?: any): Promise<CompanySupplierEntity[]>;
-
-		/**
-		 * 分页查询
-		 */
-		page(data?: any): Promise<CompanySupplierPageResponse>;
-
-		/**
-		 * 新增
-		 */
-		add(data?: any): Promise<any>;
-
-		/**
-		 * 权限标识
-		 */
-		permission: {
-			aiBackgroundCheck: string;
-			aiSupplierProfile: string;
-			quoteRecords: string;
-			transfer: string;
-			delete: string;
-			update: string;
-			info: string;
-			list: string;
-			page: string;
-			add: string;
-		};
-
-		/**
-		 * 权限状态
-		 */
-		_permission: {
-			aiBackgroundCheck: boolean;
-			aiSupplierProfile: boolean;
-			quoteRecords: boolean;
-			transfer: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;
@@ -4021,14 +3269,10 @@ declare namespace Eps {
 		};
 		company: {
 			contract: CompanyContract;
-			contractMgmt: CompanyContractMgmt;
-			customer: CompanyCustomer;
-			followUpRecord: CompanyFollowUpRecord;
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;
 			quote: CompanyQuote;
-			supplier: CompanySupplier;
 		};
 		demo: { goods: DemoGoods; tenant: DemoTenant };
 		dict: { info: DictInfo; type: DictType };
