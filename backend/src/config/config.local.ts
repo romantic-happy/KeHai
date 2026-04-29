@@ -10,6 +10,7 @@ export default {
   contract: {
     difyWebhookUrl:
       'http://10.10.2.103:6859//triggers/webhook-debug/qbuu-XEXmwu0foyqZJvbdJJP',
+
     //如此能正确触发服务器端的dify
     callbackSecret:
       process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',

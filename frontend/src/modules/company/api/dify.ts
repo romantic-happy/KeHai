@@ -44,30 +44,12 @@ export function useDifyApi() {
 			data: params
 		});
 	}
-	
-	async function analyzeFollowUp(params: { customerName: string; details: string }) {
-		return service.request({
-			url: 'company/dify/analyzeFollowUp',
-			method: 'POST',
-			data: params
-		});
-	}
-
-	async function analyzePortrait(params: { name: string }) {
-		return service.request({
-			url: 'company/dify/analyzePortrait',
-			method: 'POST',
-			data: params
-		});
-	}
 
 	return {
 		queryMaterialPrice,
 		getCustomerInfo,
 		getReceptionScript,
 		getSupplierRecommend,
-		analyzeLead,
-		analyzeFollowUp,
-		analyzePortrait
+		analyzeLead
 	};
 }
