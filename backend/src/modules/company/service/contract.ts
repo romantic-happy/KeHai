@@ -11,6 +11,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { pUploadPath } from '../../../comm/path';
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+import PizZip from 'pizzip';
 
 export type ContractTaskStatus = 'pending' | 'ready' | 'failed';
 
@@ -42,6 +44,34 @@ export class CompanyContractService extends BaseService {
   /**
    * 将正文按行写入 docx
    */
+  // async generateDocxBuffer(text: string, title?: string): Promise<Buffer> {
+  //   const lines = String(text || '').split(/\r?\n/);
+  //   const children: Paragraph[] = [];
+  //   if (title) {
+  //     children.push(
+  //       new Paragraph({
+  //         text: title,
+  //         heading: HeadingLevel.HEADING_1,
+  //       })
+  //     );
+  //   }
+  //   for (const line of lines) {
+  //     children.push(
+  //       new Paragraph({
+  //         children: [new TextRun({ text: line.length ? line : ' ' })],
+  //       })
+  //     );
+  //   }
+  //   const doc = new Document({
+  //     sections: [
+  //       {
+  //         children,
+  //       },
+  //     ],
+  //   });
+  //   const buf = await Packer.toBuffer(doc);
+  //   return Buffer.from(buf);
+  // }
   // async generateDocxBuffer(text: string, title?: string): Promise<Buffer> {
   //   const lines = String(text || '').split(/\r?\n/);
   //   const children: Paragraph[] = [];
@@ -123,7 +153,62 @@ export class CompanyContractService extends BaseService {
   //   }
   //   return out;
   // }
+  // private extractLooseJsonStringField(
+  //   raw: string,
+  //   fieldName: string
+  // ): string | null {
+  //   const needle = `"${fieldName}"`;
+  //   const pos = raw.indexOf(needle);
+  //   if (pos < 0) return null;
+  //   let i = pos + needle.length;
+  //   while (i < raw.length && /\s/.test(raw[i])) i++;
+  //   if (raw[i] !== ':') return null;
+  //   i++;
+  //   while (i < raw.length && /\s/.test(raw[i])) i++;
+  //   if (raw[i] !== '"') return null;
+  //   i++;
+  //   let out = '';
+  //   while (i < raw.length) {
+  //     const c = raw[i];
+  //     if (c === '\\' && i + 1 < raw.length) {
+  //       const n = raw[i + 1];
+  //       if (n === 'n') {
+  //         out += '\n';
+  //         i += 2;
+  //       } else if (n === 'r') {
+  //         out += '\r';
+  //         i += 2;
+  //       } else if (n === 't') {
+  //         out += '\t';
+  //         i += 2;
+  //       } else if (n === '\\' || n === '"') {
+  //         out += n;
+  //         i += 2;
+  //       } else if (n === 'u' && i + 5 < raw.length) {
+  //         const hex = raw.slice(i + 2, i + 6);
+  //         if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+  //           out += String.fromCharCode(parseInt(hex, 16));
+  //           i += 6;
+  //         } else {
+  //           out += c;
+  //           i++;
+  //         }
+  //       } else {
+  //         out += n;
+  //         i += 2;
+  //       }
+  //       continue;
+  //     }
+  //     if (c === '"') break;
+  //     out += c;
+  //     i++;
+  //   }
+  //   return out;
+  // }
 
+  // private normalizeContractRawToPlainText(raw: string): string {
+  //   let s = String(raw ?? '').trim();
+  //   if (!s) return s;
   // private normalizeContractRawToPlainText(raw: string): string {
   //   let s = String(raw ?? '').trim();
   //   if (!s) return s;
@@ -132,7 +217,21 @@ export class CompanyContractService extends BaseService {
   //   if (fence) {
   //     s = fence[1].trim();
   //   }
+  //   const fence = /^```(?:json)?\s*\r?\n?([\s\S]*?)\r?\n?```$/i.exec(s);
+  //   if (fence) {
+  //     s = fence[1].trim();
+  //   }
 
+  //   const tryParseObject = (jsonStr: string): Record<string, unknown> | null => {
+  //     try {
+  //       const v = JSON.parse(jsonStr);
+  //       return v !== null && typeof v === 'object' && !Array.isArray(v)
+  //         ? (v as Record<string, unknown>)
+  //         : null;
+  //     } catch {
+  //       return null;
+  //     }
+  //   };
   //   const tryParseObject = (jsonStr: string): Record<string, unknown> | null => {
   //     try {
   //       const v = JSON.parse(jsonStr);
@@ -155,7 +254,28 @@ export class CompanyContractService extends BaseService {
   //       /* 非 JSON */
   //     }
   //   }
+  //   let obj = tryParseObject(s);
+  //   if (!obj) {
+  //     try {
+  //       const once = JSON.parse(s);
+  //       if (typeof once === 'string') {
+  //         obj = tryParseObject(once.trim());
+  //       }
+  //     } catch {
+  //       /* 非 JSON */
+  //     }
+  //   }
 
+  //   if (obj) {
+  //     const o = obj;
+  //     const pick = (k: string) =>
+  //       typeof o[k] === 'string' ? (o[k] as string) : undefined;
+  //     const named =
+  //       pick('合同内容') ??
+  //       pick('contractText') ??
+  //       pick('content') ??
+  //       pick('text');
+  //     if (named != null) return named;
   //   if (obj) {
   //     const o = obj;
   //     const pick = (k: string) =>
@@ -171,7 +291,19 @@ export class CompanyContractService extends BaseService {
   //     if (keys.length === 1 && typeof o[keys[0]] === 'string') {
   //       return o[keys[0]] as string;
   //     }
+  //     const keys = Object.keys(o);
+  //     if (keys.length === 1 && typeof o[keys[0]] === 'string') {
+  //       return o[keys[0]] as string;
+  //     }
 
+  //     const strVals = Object.values(o).filter(
+  //       (v): v is string => typeof v === 'string' && v.trim().length > 0
+  //     );
+  //     if (strVals.length > 0) {
+  //       strVals.sort((a, b) => b.length - a.length);
+  //       return strVals[0];
+  //     }
+  //   }
   //     const strVals = Object.values(o).filter(
   //       (v): v is string => typeof v === 'string' && v.trim().length > 0
   //     );
@@ -187,10 +319,16 @@ export class CompanyContractService extends BaseService {
   //     this.extractLooseJsonStringField(s, 'content') ??
   //     this.extractLooseJsonStringField(s, 'text');
   //   if (loose != null) return loose;
+  //   const loose =
+  //     this.extractLooseJsonStringField(s, '合同内容') ??
+  //     this.extractLooseJsonStringField(s, 'contractText') ??
+  //     this.extractLooseJsonStringField(s, 'content') ??
+  //     this.extractLooseJsonStringField(s, 'text');
+  //   if (loose != null) return loose;
 
   //   return String(raw ?? '').trim();
   // }
-  // ======================新方式：填充模板生成docx======================
+  // ====================== 新：填充模板生成docx======================
   async generateDocxByTemplate(
     templateFileName: string, //模板文件名
     data: Record<string, any> //contractData数据
@@ -304,12 +442,15 @@ export class CompanyContractService extends BaseService {
    * 管理端：发起生成（先登记任务再触发 Dify）
    */
 
+
   async startGenerate(
     taskId: string,
     inputs: {
       contractName: string;
       customerName: string;
       amount: number;
+      // contractType: string | number;
+      contractType: string;
       // contractType: string | number;
       contractType: string;
       contractDetails: string;
@@ -327,6 +468,7 @@ export class CompanyContractService extends BaseService {
       contractType: inputs.contractType,
       contractDetails: inputs.contractDetails,
     });
+
 
   }
 
@@ -357,8 +499,34 @@ export class CompanyContractService extends BaseService {
   //   return fileUrl;
   // }
   //====================新：透传合同类型并选择模板=========
+  // async completeFromCallback(
+  //   taskId: string,
+  //   contractText: string,
+  //   contractName?: string
+  // ): Promise<string> {
+  //   const exist = await this.getTask(taskId);
+  //   if (!exist) {
+  //     throw new Error('无效的任务 taskId，请确认 Webhook 与 HTTP 节点使用了同一 taskId');
+  //   }
+  //   const plain = this.normalizeContractRawToPlainText(contractText);
+  //   const buf = await this.generateDocxBuffer(
+  //     plain,
+  //     contractName || undefined
+  //   );
+  //   const baseName = contractName || `contract_${taskId}`;
+  //   const fileUrl = this.saveToUpload(buf, baseName);
+  //   await this.setTask(taskId, {
+  //     status: 'ready',
+  //     fileUrl,
+  //     createdAt: exist.createdAt,
+  //   });
+  //   return fileUrl;
+  // }
+  //====================新：透传合同类型并选择模板=========
   async completeFromCallback(
     taskId: string,
+    contractText: any,
+    contractType: string,
     contractText: any,
     contractType: string,
     contractName?: string
@@ -378,8 +546,23 @@ export class CompanyContractService extends BaseService {
 
     //用模板生成docx
     const buf = await this.generateDocxByTemplate(templateFile, contractText);
+    if (!exist) throw new Error('无效taskId');
+
+    //注意contractType也是字符串形式的 0,1,2等
+    const templateMap = {
+      '0': '项目类（搬迁改造）合同.docx',
+      '1': '机械类（维保）合同.docx',
+      '2': '调试类合同.docx',
+      '3': '电气（排故维修）类合同.docx',
+      '4': '备品备件合同.docx',
+    };
+    const templateFile = templateMap[contractType];
+
+    //用模板生成docx
+    const buf = await this.generateDocxByTemplate(templateFile, contractText);
     const baseName = contractName || `contract_${taskId}`;
     const fileUrl = this.saveToUpload(buf, baseName);
+
 
     await this.setTask(taskId, {
       status: 'ready',

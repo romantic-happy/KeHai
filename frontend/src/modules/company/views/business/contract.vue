@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 defineOptions({
-	name: 'company-business-contract'
+	name: 'company-business-contract',
 });
 
 import BusinessLayout from '../business.vue';
-import ContractMgmtPage from '../contractMgmt.vue';
+import ContractPage from '../contract.vue';
 </script>
 
 <template>
-	<business-layout>
-		<contract-mgmt-page />
-	</business-layout>
+	<BusinessLayout>
+		<ContractPage />
+	</BusinessLayout>
 </template>
+

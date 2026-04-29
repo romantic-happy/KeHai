@@ -56,10 +56,4 @@ export default [
       { name: 'detail', required: true, type: 'string' },
     ],
   },
-  {
-    key: 'customerPortrait',
-    name: '客户画像生成',
-    apiKey: 'TODO_REPLACE_WITH_ACTUAL_KEY', // TODO: 等待焕峰分配 Key
-    inputs: [{ name: 'name', required: true, type: 'string' }],
-  },
 ] as DifyWorkflowConfig[];
