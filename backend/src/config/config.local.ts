@@ -9,8 +9,8 @@ export default {
   // 本地开发可在此覆盖；生产请用环境变量
   contract: {
     difyWebhookUrl:
-      process.env.DIFY_CONTRACT_WEBHOOK_URL ||
-      'http://localhost/triggers/webhook/qbuu-XEXmwu0foyqZJvbdJJP',
+      'http://10.10.2.103:6859//triggers/webhook-debug/qbuu-XEXmwu0foyqZJvbdJJP',
+    //如此能正确触发服务器端的dify
     callbackSecret:
       process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',
   },
