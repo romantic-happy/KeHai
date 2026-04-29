@@ -179,6 +179,21 @@ export class CompanyInquiryEntity extends BaseEntity {
     brand?: string;
   }[];
 
+  @Column({
+    comment: '产品明细（产品名称、品牌、型号等）',
+    nullable: true,
+    type: 'json',
+    transformer: transformerJson,
+  })
+  productItems: {
+    productSeq: number;
+    productName: string;
+    brand: string;
+    model: string;
+    quantity: number;
+    unit: string;
+  }[];
+
   @Column({ comment: '工具要求', type: 'text', nullable: true })
   toolRequirement: string;
 

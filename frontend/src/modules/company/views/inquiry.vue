@@ -123,6 +123,13 @@
 		</el-dialog>
 
 		<cl-upsert ref="Upsert">
+			<template #slot-productItems="{ scope }">
+				<inquiry-product-items
+					ref="productItemsRef"
+					v-model="productItemsData"
+				/>
+			</template>
+
 			<!-- 备件类：物料列表可增删多条（绑定 spareItems） -->
 			<template #slot-materialList="{ scope }">
 				<div v-if="scope">
@@ -197,20 +204,26 @@ defineOptions({
 	name: 'company-inquiry'
 });
 
-import { useCrud, useTable, useUpsert } from '@cool-vue/crud';
-import { useCool } from '/@/cool';
-import { useI18n } from 'vue-i18n';
-import { onMounted, reactive, ref } from 'vue';
-import { Document } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { request } from '/@/cool/service/request';
-import { config } from '/@/config';
-import { useBase } from '/$/base';
+import { useCrud, useTable, useUpsert } from "@cool-vue/crud";
+import { useCool } from "/@/cool";
+import { useI18n } from "vue-i18n";
+import { onMounted, reactive, ref } from "vue";
+import { Document } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { request } from "/@/cool/service/request";
+import { config } from "/@/config";
+import Sales_agent from "./sales_agent.vue";
+import { useBase } from "/$/base";
+import InquiryProductItems from "./components/inquiry-product-items.vue";
+
 
 const { service, router, mitt } = useCool();
 const { t } = useI18n();
 const { menu } = useBase();
+
+const productItemsRef = ref();
 const permRenderKey = ref(0);
+const productItemsData = ref<any[]>([]);
 
 const options = reactive({
 	inquiryType: [
@@ -773,6 +786,16 @@ const Upsert = useUpsert({
 			required: true,
 			hidden: ({ scope }: any) => scope.inquiryType == 4
 		},
+
+		// 产品明细（所有类型都需要）
+		{
+			label: t("产品明细"),
+			prop: "productItems",
+			span: 24,
+			component: { name: "slot-productItems" },
+		},
+
+		// 报价类别字段仅作为内部映射使用，不再单独展示
 		{
 			label: t('销售类别'),
 			prop: 'salesCategory',
@@ -934,6 +957,26 @@ const Upsert = useUpsert({
 			data.salesCategory = data.inquiryType;
 		}
 
+		// 产品明细
+		const pi = (data as any).productItems;
+		if (pi) {
+			if (typeof pi === 'string') {
+				try {
+					const parsed = JSON.parse(pi);
+					productItemsData.value = Array.isArray(parsed) ? parsed : [];
+				} catch {
+					productItemsData.value = [];
+				}
+			} else if (Array.isArray(pi)) {
+				productItemsData.value = pi;
+			} else {
+				productItemsData.value = [];
+			}
+		} else {
+			productItemsData.value = [];
+		}
+
+		// 备件类：编辑时还原 spareItems 为数组
 		if (data?.inquiryType === 4) {
 			if (!Array.isArray(data.spareItems)) {
 				data.spareItems = data.spareItems ? [].concat(data.spareItems as any) : [];
@@ -987,7 +1030,9 @@ const Upsert = useUpsert({
 			inquiryType: isNaN(fixedInquiryType) ? data.inquiryType : fixedInquiryType,
 			salesCategory: isNaN(fixedInquiryType) ? data.inquiryType : fixedInquiryType,
 			projectDateRange: undefined,
-			...(siteEnv !== undefined ? { siteEnvironment: siteEnv } : {})
+			productItems: productItemsData.value,
+			// 仅当实际选择了现场环境时才提交该字段
+			...(siteEnv !== undefined ? { siteEnvironment: siteEnv } : {}),
 		});
 	}
 });
