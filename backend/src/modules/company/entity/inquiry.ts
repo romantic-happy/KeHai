@@ -23,96 +23,6 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Column({ comment: '客户', length: 100 })
   customer: string;
 
-  @Column({
-    comment: '协作人ID列表',
-    nullable: true,
-    type: 'json',
-    transformer: transformerJson,
-  })
-  collaboratorUserIds: number[];
-
-  @Index()
-  @Column({ comment: '报价截止日期', type: 'date', nullable: true })
-  deadlineDate: Date;
-
-  @Column({
-    comment: '附件URL列表',
-    nullable: true,
-    type: 'json',
-    transformer: transformerJson,
-  })
-  attachments: string[];
-
-  @Column({ comment: '备注', type: 'text', nullable: true })
-  remark: string;
-
-  @Column({
-    comment: '产品明细',
-    nullable: true,
-    type: 'json',
-    transformer: transformerJson,
-  })
-  productItems: {
-    productName: string;
-    brand?: string;
-    model?: string;
-    quantity?: number;
-    unit?: string;
-    supplierQuotePrice?: number;
-    salesActualPrice?: number;
-    remark?: string;
-  }[];
-
-  @Column({ comment: 'AI分类', length: 100, nullable: true })
-  aiCategory: string;
-
-  @Column({ comment: 'AI分类分析', type: 'text', nullable: true })
-  aiCategoryAnalysis: string;
-
-  @Column({ comment: 'AI历史报价', type: 'text', nullable: true })
-  aiHistoryQuote: string;
-
-  @Column({ comment: 'AI历史报价依据', type: 'text', nullable: true })
-  aiHistoryQuoteBasis: string;
-
-  @Index()
-  @Column({
-    comment: '报价业务状态',
-    // 0:未报价 1：报价中 2：已报价 3：已逾期 4：已失效
-    dict: ['未报价', '报价中', '已报价', '已逾期', '已失效'],
-    type: 'tinyint',
-    default: 0,
-  })
-  quoteBizStatus: number;
-
-  @Column({ comment: '驳回原因', type: 'text', nullable: true })
-  rejectReason: string;
-
-  @Column({ comment: '销售报价', type: 'decimal', precision: 14, scale: 2, nullable: true })
-  salesQuote: number;
-
-  @Column({ comment: '销售报价备注', type: 'text', nullable: true })
-  salesQuoteRemark: string;
-
-  @Column({ comment: '销售报价时间', type: 'datetime', nullable: true })
-  salesQuoteTime: Date;
-
-  @Index()
-  @Column({
-    comment: '是否成单',
-    // 0：未确认 1：未成单 2：已成单
-    dict: ['未确认', '未成单', '已成单'],
-    type: 'tinyint',
-    default: 0,
-  })
-  dealStatus: number;
-
-  @Column({ comment: '丢单原因', type: 'text', nullable: true })
-  lostReason: string;
-
-  @Column({ comment: '合同订单号', length: 100, nullable: true })
-  contractOrderNo: string;
-
   @Index()
   @Column({ comment: '项目名称', length: 200 })
   projectName: string;
@@ -141,6 +51,14 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Column({ comment: '项目工期结束', type: 'date', nullable: true })
   projectEndDate: Date;
 
+  @Column({
+    comment: '销售类别',
+    dict: ['机械加工类', '机械维修类', '机械保养类', '项目类', '备件类'],
+    type: 'tinyint',
+    default: 0,
+  })
+  salesCategory: number;
+
   @Column({ comment: '设备品牌', length: 100, nullable: true })
   equipmentBrand: string;
 
@@ -152,6 +70,8 @@ export class CompanyInquiryEntity extends BaseEntity {
 
   @Column({ comment: '售后要求', type: 'text', nullable: true })
   afterSalesRequirement: string;
+
+ 
 
   // ===================== 通用补充需求 =====================
 
@@ -179,21 +99,6 @@ export class CompanyInquiryEntity extends BaseEntity {
     brand?: string;
   }[];
 
-  @Column({
-    comment: '产品明细（产品名称、品牌、型号等）',
-    nullable: true,
-    type: 'json',
-    transformer: transformerJson,
-  })
-  productItems: {
-    productSeq: number;
-    productName: string;
-    brand: string;
-    model: string;
-    quantity: number;
-    unit: string;
-  }[];
-
   @Column({ comment: '工具要求', type: 'text', nullable: true })
   toolRequirement: string;
 
@@ -204,7 +109,7 @@ export class CompanyInquiryEntity extends BaseEntity {
     comment: '吊装需求',
     dict: ['无', '吊装机', '龙门架', '现场建筑', '其他'],
     type: 'tinyint',
-    nullable: true,
+    nullable: true, 
   })
   hoistingRequirement: number;
 
@@ -214,11 +119,7 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Column({ comment: '技工种及人数', type: 'text', nullable: true })
   workerTypeAndCount: string;
 
-  @Column({
-    comment: '具体人员（内部人员/委外）',
-    type: 'text',
-    nullable: true,
-  })
+  @Column({ comment: '具体人员（内部人员/委外）', type: 'text', nullable: true })
   specificPersonnel: string;
 
   @Column({ comment: '初步施工方案', type: 'text', nullable: true })
@@ -228,20 +129,16 @@ export class CompanyInquiryEntity extends BaseEntity {
   createUserId: number;
 
   @Index()
-  @Column({ comment: '负责人姓名（默认填写人）', length: 100, nullable: true })
-  ownerName: string;
-
-  // @Index()
-  // @Column({
-  //   comment: '报价状态',
-  //   // 0：待报价（未收到供应链报价）
-  //   // 1：报价中（已收到供应链报价，销售尚未接受）
-  //   // 2：报价已定（销售已接受供应链报价，可转合同）
-  //   dict: ['待报价', '报价中', '报价已定'],
-  //   type: 'tinyint',
-  //   default: 0,
-  // })
-  // quoteStatus: number;
+  @Column({
+    comment: '报价状态',
+    // 0：待报价（未收到供应链报价）
+    // 1：报价中（已收到供应链报价，销售尚未接受）
+    // 2：报价已定（销售已接受供应链报价，可转合同）
+    dict: ['待报价', '报价中', '报价已定'],
+    type: 'tinyint',
+    default: 0,
+  })
+  quoteStatus: number;
 
   @Index()
   @Column({ comment: '最新报价ID', nullable: true })
@@ -321,13 +218,7 @@ export class CompanyInquiryEntity extends BaseEntity {
 
   @Column({
     comment: '施工类型',
-    dict: [
-      '工作站搬迁',
-      '工作站改造',
-      '工作站恢复功能',
-      '工作站翻新',
-      '新建工作站',
-    ],
+    dict: ['工作站搬迁', '工作站改造', '工作站恢复功能', '工作站翻新', '新建工作站'],
     type: 'tinyint',
     nullable: true,
   })
@@ -355,3 +246,4 @@ export class CompanyInquiryEntity extends BaseEntity {
   })
   projectSiteEnvAttachments: string[];
 }
+

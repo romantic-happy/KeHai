@@ -135,3 +135,4 @@ export class CompanyQuoteEntity extends BaseEntity {
   })
   isRejected: number;
 }
+

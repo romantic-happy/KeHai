@@ -13,7 +13,7 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = 'http://10.10.2.103:6859/v1/workflows/run'; // TODO
+  private readonly DIFY_API_URL = 'http://localhost/v1/workflows/run'; // TODO
   private readonly RESPONSE_MODE = 'blocking';
   private readonly DIFY_USER = 'smallrespon';
 
@@ -131,6 +131,23 @@ export class DifyService {
     const result = await this.runWorkflow('leadAnalysis', {
       title,
       detail,
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  }
+
+  async analyzeFollowUp(customerName: string, details: string) {
+    const result = await this.runWorkflow('followUpAnalysis', {
+      customerName,
+      details,
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  }
+
+  async analyzePortrait(name: string) {
+    const result = await this.runWorkflow('customerPortrait', {
+      name,
     });
     if (!result.success) throw new Error(result.error);
     return result.data;
