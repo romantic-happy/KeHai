@@ -1173,6 +1173,11 @@ declare namespace Eps {
 		leadStatus?: number;
 
 		/**
+		 * 跟进详情
+		 */
+		followupDetail?: string;
+
+		/**
 		 * AI线索分析
 		 */
 		aiAnalysis?: string;

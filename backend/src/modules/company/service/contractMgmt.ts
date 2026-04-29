@@ -4,6 +4,7 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import * as moment from 'moment';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyContractMgmtEntity } from '../entity/contractMgmt';
+import { CompanyFollowUpRecordEntity } from '../entity/followUpRecord';
 import * as path from 'path';
 import { pUploadPath } from '../../../comm/path';
 
@@ -186,5 +187,77 @@ export class CompanyContractMgmtService extends BaseService {
       label: name,
       templatePath: this.getTemplateRelativePath(Number(key)),
     }));
+  }
+
+  async getCustomerRecords(customerId: number) {
+    const contractRepo = this.contractMgmtEntity;
+    const followUpRepo = contractRepo.manager.getRepository(CompanyFollowUpRecordEntity);
+
+    const customer = await contractRepo.findOne({
+      where: { id: customerId },
+      select: ['customerName'],
+    });
+    const customerName = customer?.customerName;
+
+    const wonContracts = await contractRepo.find({
+      where: { customerId, isDeleted: 0, contractStatus: 3 },
+      order: { signDate: 'DESC' },
+    });
+
+    const lostContracts = await contractRepo.find({
+      where: { customerId, isDeleted: 0, contractStatus: 4 },
+      order: { signDate: 'DESC' },
+    });
+
+    const followUpRecords = customerName
+      ? await followUpRepo
+          .createQueryBuilder('f')
+          .where('f.customerName = :name', { name: customerName })
+          .orderBy('f.followUpTime', 'DESC')
+          .getMany()
+      : [];
+
+    return {
+      wonContracts,
+      lostContracts,
+      followUpRecords,
+    };
+  }
+
+  async getCustomerRecordsByName(customerName: string) {
+    const contractRepo = this.contractMgmtEntity;
+    const followUpRepo = contractRepo.manager.getRepository(CompanyFollowUpRecordEntity);
+
+    const qb = contractRepo.createQueryBuilder('a');
+    qb.where('a.isDeleted = 0');
+    qb.andWhere('a.customerName LIKE :name', { name: `%${customerName}%` });
+
+    const wonContracts = await contractRepo
+      .createQueryBuilder('a')
+      .where('a.isDeleted = 0')
+      .andWhere('a.customerName LIKE :name', { name: `%${customerName}%` })
+      .andWhere('a.contractStatus = :status', { status: 3 })
+      .orderBy('a.signDate', 'DESC')
+      .getMany();
+
+    const lostContracts = await contractRepo
+      .createQueryBuilder('a')
+      .where('a.isDeleted = 0')
+      .andWhere('a.customerName LIKE :name', { name: `%${customerName}%` })
+      .andWhere('a.contractStatus = :status', { status: 4 })
+      .orderBy('a.signDate', 'DESC')
+      .getMany();
+
+    const followUpRecords = await followUpRepo
+      .createQueryBuilder('f')
+      .where('f.customerName LIKE :name', { name: `%${customerName}%` })
+      .orderBy('f.followUpTime', 'DESC')
+      .getMany();
+
+    return {
+      wonContracts,
+      lostContracts,
+      followUpRecords,
+    };
   }
 }
