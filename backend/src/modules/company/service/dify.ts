@@ -13,7 +13,7 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = 'http://localhost/v1/workflows/run'; // TODO
+  private readonly DIFY_API_URL = 'http://10.10.2.103:6859/v1/workflows/run'; // TODO
   private readonly RESPONSE_MODE = 'blocking';
   private readonly DIFY_USER = 'smallrespon';
 
@@ -151,5 +151,23 @@ export class DifyService {
     });
     if (!result.success) throw new Error(result.error);
     return result.data;
+  }
+
+  async analyzeCustomerOrder(
+    name: string,
+    docking_record: string,
+    Order_Records: string,
+    Unclosed_Order_Records: string
+  ) {
+    const result = await this.runWorkflow('customerOrderAnalysis', {
+      name,
+      docking_record,
+      Order_Records,
+      Unclosed_Order_Records,
+    });
+    if (!result.success) throw new Error(result.error);
+    return {
+      text: result.data?.text,
+    };
   }
 }

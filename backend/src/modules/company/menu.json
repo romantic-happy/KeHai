@@ -181,8 +181,31 @@
                 "keepAlive": true,
                 "isShow": true,
                 "childMenus": []
-              }
-            ]
+               },
+              {
+                "name": "跟踪记录",
+                "router": "/company/follow-up-record",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-time",
+                "orderNum": 3,
+                "viewPath": "modules/company/views/followUpRecord.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:followUpRecord:page,company:followUpRecord:list,company:followUpRecord:info,company:followUpRecord:add,company:followUpRecord:update,company:followUpRecord:delete",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
           },
           {
             "name": "线索管理",

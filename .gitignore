@@ -3,6 +3,7 @@ test
 memory
 CLAUDE.md
 .trae/
+.claude/
 
 # --- Privacy and Local Configs ---
 # Local config files containing secrets

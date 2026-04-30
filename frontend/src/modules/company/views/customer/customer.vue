@@ -76,14 +76,41 @@ async function onAiAnalyze() {
 
 	try {
 		const res = await difyApi.getCustomerInfo({ name: form.customerName });
-		if (res) {
-			Object.assign(form, {
-				backgroundCompanyProfile: res.backgroundCompanyProfile || form.backgroundCompanyProfile,
-				businessScope: res.businessScope || form.businessScope,
+
+		if (res?.structured_output) {
+			// 处理 structured_output 中的字段
+			const data = { ...res.structured_output };
+
+			// 特殊处理 backgroundIsListed：去除空格并确保是 "是" 或 "否"
+			if (data.backgroundIsListed) {
+				const val = String(data.backgroundIsListed).trim();
+				if (val.includes("是")) {
+					data.backgroundIsListed = t("是");
+				} else if (val.includes("否")) {
+					data.backgroundIsListed = t("否");
+				}
+			}
+
+			// 处理其他可能带空格的文本字段
+			const textFields = [
+				"backgroundCompanyProfile",
+				"businessScope",
+				"backgroundEnterpriseType",
+			];
+			textFields.forEach((field) => {
+				if (data[field] && typeof data[field] === "string") {
+					data[field] = data[field].trim();
+				}
 			});
+
+			Object.assign(form, data);
+			ElMessage.success(t("AI 背调数据已回填"));
+		} else if (res) {
+			Object.assign(form, res);
 			ElMessage.success(t("AI 背调数据已回填"));
 		}
 	} catch (e) {
+		console.error("AI 背调失败:", e);
 		ElMessage.error(t("AI 背调失败"));
 	} finally {
 		loading.close();

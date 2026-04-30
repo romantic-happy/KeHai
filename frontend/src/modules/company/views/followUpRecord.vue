@@ -1,40 +1,87 @@
 <template>
-	<cl-crud ref="Crud">
-		<cl-row>
-			<cl-refresh-btn />
-			<cl-add-btn />
-			<cl-multi-delete-btn />
-			<cl-flex1 />
-			<cl-search-key :placeholder="$t('搜索详情/关键人/客户/负责人')" :width="260" />
-		</cl-row>
-
-		<cl-row>
-			<cl-table ref="Table" />
-		</cl-row>
-
-		<cl-row>
-			<cl-flex1 />
-			<cl-pagination />
-		</cl-row>
-
-		<cl-upsert ref="Upsert">
-			<template #slot-ai-btn>
-				<div style="display: flex; justify-content: flex-end; width: 100%">
-					<el-button
-						type="primary"
-						:loading="aiLoading"
-						@click="onAiGuide"
-						style="margin-bottom: 20px"
-					>
-						<template #icon>
-							<el-icon><MagicStick /></el-icon>
-						</template>
-						{{ t("生成 AI 销售指导") }}
+	<div class="follow-up-record-container">
+		<!-- 左侧提醒面板 -->
+		<div class="reminder-panel" v-if="reminderVisible">
+			<div class="reminder-header">
+				<span class="reminder-title">{{ t("跟进提醒") }}</span>
+				<div class="reminder-actions">
+					<el-button text size="small" :loading="reminderLoading" @click="loadReminderRecords">
+						<el-icon><Refresh /></el-icon>
+					</el-button>
+					<el-button text size="small" @click="hideReminderPanel">
+						<el-icon><Close /></el-icon>
 					</el-button>
 				</div>
-			</template>
-		</cl-upsert>
-	</cl-crud>
+			</div>
+			<div class="reminder-content" v-if="reminderRecords.length > 0">
+				<div
+					class="reminder-item"
+					v-for="record in reminderRecords"
+					:key="record.id"
+				>
+					<div class="reminder-customer">{{ record.customerName }}</div>
+					<div class="reminder-info">
+						<span>{{ t("关键人") }}: {{ record.keyPerson || '-' }}</span>
+					</div>
+					<div class="reminder-info">
+						<span>{{ t("跟进人") }}: {{ record.ownerUserName || '-' }}</span>
+					</div>
+					<div class="reminder-info">
+						<span>{{ t("下次跟进") }}: {{ formatDate(record.nextFollowTime) }}</span>
+					</div>
+					<div class="reminder-info reminder-details">
+						<span>{{ t("跟进内容") }}: {{ record.details || '-' }}</span>
+					</div>
+				</div>
+			</div>
+			<div class="reminder-empty" v-else>
+				<span>{{ t("暂无待跟进提醒") }}</span>
+			</div>
+		</div>
+
+		<!-- 右侧主内容 -->
+		<cl-crud ref="Crud" :class="{ 'crud-withReminder': reminderVisible }">
+			<cl-row>
+				<cl-refresh-btn />
+				<cl-add-btn />
+				<cl-multi-delete-btn />
+				<cl-flex1 />
+				<cl-search-key :placeholder="$t('搜索详情/关键人/客户/负责人')" :width="260" />
+				<el-button type="primary" text @click="showReminderPanel">
+					<el-icon><Bell /></el-icon>
+					{{ t("跟进提醒") }}
+					<el-badge :value="reminderRecords.length" :hidden="reminderRecords.length === 0" />
+				</el-button>
+			</cl-row>
+
+			<cl-row>
+				<cl-table ref="Table" />
+			</cl-row>
+
+			<cl-row>
+				<cl-flex1 />
+				<cl-pagination />
+			</cl-row>
+
+			<cl-upsert ref="Upsert">
+				<template #slot-ai-btn>
+					<div style="display: flex; justify-content: flex-end; width: 100%">
+						<el-button
+							type="primary"
+							:loading="aiLoading"
+							@click="onAiGuide"
+							style="margin-bottom: 20px"
+						>
+							<template #icon>
+								<el-icon><MagicStick /></el-icon>
+							</template>
+							{{ t("生成 AI 销售指导") }}
+						</el-button>
+					</div>
+				</template>
+			</cl-upsert>
+		</cl-crud>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -43,7 +90,9 @@ import { useCool } from "/@/cool";
 import { useI18n } from "vue-i18n";
 import { reactive, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
-import { MagicStick } from "@element-plus/icons-vue";
+import { MagicStick, Bell, Close, Refresh } from "@element-plus/icons-vue";
+import { useDifyApi } from "../api/dify";
+import { useFollowUpRecordApi } from "../api/followUpRecord";
 
 defineOptions({
 	name: "company-follow-up-record",
@@ -54,22 +103,115 @@ const { t } = useI18n();
 
 const aiLoading = ref(false);
 
+// 提醒面板相关
+const reminderVisible = ref(false);
+const reminderRecords = ref<any[]>([]);
+const reminderLoading = ref(false);
+const { getReminderRecords } = useFollowUpRecordApi();
+
+// 格式化日期
+function formatDate(date: string | Date) {
+	if (!date) return '-';
+	const d = new Date(date);
+	return d.toLocaleString();
+}
+
+// 显示提醒面板
+function showReminderPanel() {
+	reminderVisible.value = true;
+}
+
+// 关闭提醒面板
+function hideReminderPanel() {
+	reminderVisible.value = false;
+}
+
+// 刷新提醒记录（手动刷新）
+async function loadReminderRecords() {
+	reminderLoading.value = true;
+	try {
+		const res = await getReminderRecords();
+		if (res?.data) {
+			reminderRecords.value = res.data;
+		} else if (Array.isArray(res)) {
+			reminderRecords.value = res;
+		} else {
+			reminderRecords.value = [];
+		}
+		console.log('提醒记录已刷新，当前时间:', new Date().toLocaleString(), '条数:', reminderRecords.value.length);
+	} catch (error) {
+		console.error('加载提醒记录失败', error);
+		reminderRecords.value = [];
+	} finally {
+		reminderLoading.value = false;
+	}
+}
+
 // 生成 AI 销售指导
 async function onAiGuide() {
 	const form = Upsert.value?.form;
-	if (!form?.customerName || !form?.details) {
-		ElMessage.warning(t("请先填写客户名称和联系详情"));
+	if (!form?.customerName) {
+		ElMessage.warning(t("请先填写客户名称"));
 		return;
 	}
 
 	aiLoading.value = true;
 	try {
-		const res = await (service as any).company.dify.analyzeFollowUp({
-			customerName: form.customerName,
-			details: form.details,
+		// 1. 先调用 getCustomerOrderData 获取该客户的所有数据
+		const orderData = await service.request({
+			url: "admin/company/followUpRecord/getCustomerOrderData",
+			method: "POST",
+			data: { customerName: form.customerName },
 		});
-		if (res) {
-			Upsert.value?.setForm("aiGuide", res.text || res);
+
+		const data = orderData?.data || orderData;
+		if (!data) {
+			ElMessage.error(t("获取客户订单数据失败"));
+			return;
+		}
+
+		// 2. 将表单数据（除 aiGuide 外）打包成字符串传入 Dify
+		const docking_record = [
+			`客户名称：${form.customerName || "无"}`,
+			`关键人：${form.keyPerson || "无"}`,
+			`跟进人：${form.ownerUserName || "无"}`,
+			`跟进类型：${form.method || "无"}`,
+			`跟进状态：${form.status || "无"}`,
+			`跟进结果：${form.result || "无"}`,
+			`跟进时间：${form.followUpTime || "无"}`,
+			`下次跟进时间：${form.nextFollowTime || "无"}`,
+			`日程提醒：${form.isReminder || "无"}`,
+			`核算维度：${form.accountingDimension || "无"}`,
+			`协作人：${form.collaborators || "无"}`,
+			`跟进人所在部门：${form.followUpPersonDept || "无"}`,
+			`联系详情：${form.details || "无"}`,
+		].join("\n");
+
+		const Order_Records =
+			data.closedContracts?.length
+				? data.closedContracts
+						.map((c: any) => `[成单记录] ${c.contractName || ""} - ${c.contractAmount || ""}元`)
+						.join("\n")
+				: "无";
+		const Unclosed_Order_Records =
+			data.unclosedContracts?.length
+				? data.unclosedContracts
+						.map((c: any) => `[未成单记录] ${c.contractName || ""} - ${c.contractAmount || ""}元 (${c.contractStatus || ""})`)
+						.join("\n")
+				: "无";
+
+		// 3. 调用 Dify 接口获取 AI 分析结果
+		const { analyzeCustomerOrder } = useDifyApi();
+		const difyRes = await analyzeCustomerOrder({
+			name: form.customerName,
+			docking_record,
+			Order_Records,
+			Unclosed_Order_Records,
+		});
+
+		if (difyRes) {
+			const text = difyRes?.data?.text || difyRes?.text || difyRes;
+			Upsert.value?.setForm("aiGuide", text);
 			ElMessage.success(t("生成成功"));
 		}
 	} catch (error: any) {
@@ -119,6 +261,9 @@ onMounted(async () => {
 			value: e.name, // 使用名字作为值
 		}));
 	});
+
+	// 加载提醒记录
+	await loadReminderRecords();
 });
 
 const Upsert = useUpsert<any>({
@@ -247,7 +392,12 @@ const Upsert = useUpsert<any>({
 			prop: "isReminder",
 			span: 12,
 			component: {
-				name: "el-switch",
+				name: "el-input-number",
+				props: {
+					clearable: true,
+					min: 0,
+					placeholder: t("提前天数"),
+				},
 			},
 		},
 		{
@@ -450,4 +600,78 @@ const Crud = useCrud(
 );
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.follow-up-record-container {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.reminder-panel {
+	width: 300px;
+	background: #fff;
+	border-right: 1px solid #e8e8e8;
+	padding: 16px;
+	overflow-y: auto;
+	flex-shrink: 0;
+
+	.reminder-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 16px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid #e8e8e8;
+
+		.reminder-title {
+			font-size: 16px;
+			font-weight: 600;
+			color: #303133;
+		}
+	}
+
+	.reminder-content {
+		.reminder-item {
+			padding: 12px;
+			background: #f5f7fa;
+			border-radius: 4px;
+			margin-bottom: 12px;
+			border-left: 3px solid #409eff;
+
+			.reminder-customer {
+				font-size: 14px;
+				font-weight: 600;
+				color: #303133;
+				margin-bottom: 8px;
+			}
+
+			.reminder-info {
+				font-size: 12px;
+				color: #606266;
+				margin-bottom: 4px;
+				line-height: 1.5;
+
+				&.reminder-details {
+					margin-top: 8px;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+		}
+	}
+
+	.reminder-empty {
+		text-align: center;
+		color: #909399;
+		font-size: 14px;
+		padding: 40px 0;
+	}
+}
+
+:deep(.crud-withReminder) {
+	flex: 1;
+	margin-left: 0;
+}
+</style>

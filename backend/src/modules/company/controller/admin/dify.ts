@@ -1,11 +1,15 @@
-import { Controller, Inject, Post } from '@midwayjs/core';
+import { Controller, Inject, Post, Get, Query } from '@midwayjs/core';
 import { Body } from '@midwayjs/core';
 import { DifyService } from '../../service/dify';
+import { CompanyContractMgmtService } from '../../service/contractMgmt';
 
 @Controller('/company/dify')
 export class DifyController {
   @Inject()
   difyService!: DifyService;
+
+  @Inject()
+  contractMgmtService!: CompanyContractMgmtService;
 
   @Post('/intelligentPriceInquiry')
   async intelligentPriceInquiry(
@@ -88,7 +92,9 @@ export class DifyController {
   }
 
   @Post('/analyzeFollowUp')
-  async analyzeFollowUp(@Body() body: { customerName: string; details: string }) {
+  async analyzeFollowUp(
+    @Body() body: { customerName: string; details: string }
+  ) {
     if (!body.customerName || !body.details) {
       return { code: 400, message: '客户名称和跟进详情均为必填项' };
     }
@@ -110,6 +116,44 @@ export class DifyController {
     }
     try {
       const result = await this.difyService.analyzePortrait(body.name);
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
+
+  @Get('/customerRecords')
+  async getCustomerRecords(@Query('customerName') customerName: string) {
+    if (!customerName) {
+      return { code: 400, message: '客户名称不能为空' };
+    }
+    try {
+      const result = await this.contractMgmtService.getCustomerRecordsByName(
+        customerName
+      );
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
+
+  @Post('/customerOrderAnalysis')
+  async analyzeCustomerOrder(@Body() body: {
+    name: string;
+    docking_record: string;
+    Order_Records: string;
+    Unclosed_Order_Records: string;
+  }) {
+    if (!body.name || !body.docking_record || !body.Order_Records || !body.Unclosed_Order_Records) {
+      return { code: 400, message: 'name、docking_record、Order_Records、Unclosed_Order_Records 均为必填项' };
+    }
+    try {
+      const result = await this.difyService.analyzeCustomerOrder(
+        body.name,
+        body.docking_record,
+        body.Order_Records,
+        body.Unclosed_Order_Records
+      );
       return { code: 1000, data: result };
     } catch (error: any) {
       return { code: 500, message: error.message };
