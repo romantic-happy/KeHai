@@ -177,8 +177,9 @@ export class CompanyContractMgmtService extends BaseService {
     return contract;
   }
 
-  async logicDelete(id: number) {
-    return this.contractMgmtEntity.update(id, { isDeleted: 1 });
+  async logicDelete(id: number | number[]) {
+    const ids = Array.isArray(id) ? id : [id];
+    return this.contractMgmtEntity.delete(ids);
   }
 
   async getCategories() {

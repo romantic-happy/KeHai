@@ -36,11 +36,11 @@ export class AdminCompanyContractMgmtController extends BaseController {
   companyContractService: CompanyContractService;
 
   @Post('/delete', { summary: '逻辑删除合同' })
-  async softDelete(@Body() body: { id: number }) {
-    if (!body.id) {
+  async softDelete(@Body() body: { id?: number; ids?: number[] }) {
+    if (!body.id && !body.ids?.length) {
       throw new CoolCommException('缺少合同ID');
     }
-    await this.contractMgmtService.logicDelete(body.id);
+    await this.contractMgmtService.logicDelete(body.id || body.ids);
     return this.ok();
   }
 
