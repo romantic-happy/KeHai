@@ -247,7 +247,8 @@ const options = reactive({
 		{ label: t('未报价'), value: 0 },
 		{ label: t('报价中'), value: 1 },
 		{ label: t('已报价'), value: 2 },
-		{ label: t('已失效'), value: 3 }
+		{ label: t('已逾期'), value: 3 },
+		{ label: t('已失效'), value: 4 }
 	],
 	dealStatus: [
 		{ label: t('未确认'), value: 0 },
