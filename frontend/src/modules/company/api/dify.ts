@@ -61,6 +61,19 @@ export function useDifyApi() {
 		});
 	}
 
+	async function analyzeCustomerOrder(params: {
+		name: string;
+		docking_record: string;
+		Order_Records: string;
+		Unclosed_Order_Records: string;
+	}) {
+		return service.request({
+			url: 'company/dify/customerOrderAnalysis',
+			method: 'POST',
+			data: params
+		});
+	}
+
 	return {
 		queryMaterialPrice,
 		getCustomerInfo,
@@ -68,6 +81,7 @@ export function useDifyApi() {
 		getSupplierRecommend,
 		analyzeLead,
 		analyzeFollowUp,
-		analyzePortrait
+		analyzePortrait,
+		analyzeCustomerOrder
 	};
 }

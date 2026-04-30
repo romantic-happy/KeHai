@@ -56,8 +56,8 @@ export class CompanyFollowUpRecordEntity extends CoolBaseEntity {
   @Column({ comment: '下次跟进时间', type: 'datetime', nullable: true })
   nextFollowTime: Date;
 
-  @Column({ comment: '日程提醒', default: false, nullable: true })
-  isReminder: boolean;
+   @Column({ comment: '日程提醒', type: 'tinyint', nullable: true })
+  isReminder: number;
 
   @Column({ comment: '跟进人所在部门', length: 512, nullable: true })
   followUpPersonDept: string;

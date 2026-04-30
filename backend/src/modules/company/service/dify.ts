@@ -152,4 +152,22 @@ export class DifyService {
     if (!result.success) throw new Error(result.error);
     return result.data;
   }
+
+  async analyzeCustomerOrder(
+    name: string,
+    docking_record: string,
+    Order_Records: string,
+    Unclosed_Order_Records: string
+  ) {
+    const result = await this.runWorkflow('customerOrderAnalysis', {
+      name,
+      docking_record,
+      Order_Records,
+      Unclosed_Order_Records,
+    });
+    if (!result.success) throw new Error(result.error);
+    return {
+      text: result.data?.text,
+    };
+  }
 }

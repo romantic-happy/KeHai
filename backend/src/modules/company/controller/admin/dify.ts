@@ -136,4 +136,27 @@ export class DifyController {
       return { code: 500, message: error.message };
     }
   }
+
+  @Post('/customerOrderAnalysis')
+  async analyzeCustomerOrder(@Body() body: {
+    name: string;
+    docking_record: string;
+    Order_Records: string;
+    Unclosed_Order_Records: string;
+  }) {
+    if (!body.name || !body.docking_record || !body.Order_Records || !body.Unclosed_Order_Records) {
+      return { code: 400, message: 'name、docking_record、Order_Records、Unclosed_Order_Records 均为必填项' };
+    }
+    try {
+      const result = await this.difyService.analyzeCustomerOrder(
+        body.name,
+        body.docking_record,
+        body.Order_Records,
+        body.Unclosed_Order_Records
+      );
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
 }

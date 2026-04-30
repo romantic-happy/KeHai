@@ -724,7 +724,7 @@ declare namespace Eps {
 		/**
 		 * 日程提醒
 		 */
-		isReminder?: boolean;
+		isReminder?: number;
 
 		/**
 		 * 跟进人所在部门
@@ -2916,6 +2916,16 @@ declare namespace Eps {
 
 	interface CompanyFollowUpRecord {
 		/**
+		 * getCustomerOrderData
+		 */
+		getCustomerOrderData(data?: any): Promise<any>;
+
+		/**
+		 * getReminderRecords
+		 */
+		getReminderRecords(data?: any): Promise<any>;
+
+		/**
 		 * 删除
 		 */
 		delete(data?: any): Promise<any>;
@@ -2949,6 +2959,8 @@ declare namespace Eps {
 		 * 权限标识
 		 */
 		permission: {
+			getCustomerOrderData: string;
+			getReminderRecords: string;
 			delete: string;
 			update: string;
 			info: string;
@@ -2961,6 +2973,8 @@ declare namespace Eps {
 		 * 权限状态
 		 */
 		_permission: {
+			getCustomerOrderData: boolean;
+			getReminderRecords: boolean;
 			delete: boolean;
 			update: boolean;
 			info: boolean;

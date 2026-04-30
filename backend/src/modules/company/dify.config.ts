@@ -62,4 +62,15 @@ export default [
     apiKey: 'TODO_REPLACE_WITH_ACTUAL_KEY', // TODO: 等待焕峰分配 Key
     inputs: [{ name: 'name', required: true, type: 'string' }],
   },
+  {
+    key: 'customerOrderAnalysis',
+    name: '客户订单分析',
+    apiKey: 'app-yyaJ0pp53bdqddr8dg72ahUT', // TODO: 请替换为实际的 API Key
+    inputs: [
+      { name: 'name', required: true, type: 'string' },
+      { name: 'docking_record', required: true, type: 'string' },
+      { name: 'Order_Records', required: true, type: 'string' },
+      { name: 'Unclosed_Order_Records', required: true, type: 'string' },
+    ],
+  },
 ] as DifyWorkflowConfig[];
