@@ -109,17 +109,20 @@ const FormRef = ref<FormInstance>();
 const previewRef = ref<HTMLElement | null>(null);
 
 const contractTypeOptions = [
-	// 给 Dify 的输入是“英文枚举码”，展示仍是中文
-	{ label: t('本体'), value: 'core' },
-	{ label: t('维保'), value: 'maintenance' },
-	{ label: t('调试'), value: 'debug' }
+	// 给 Dify 的输入是“枚举码”，展示仍是中文
+	{ label: t('项目类（搬迁改造）合同'), value: '0' },
+	{ label: t('机械类（维保）合同'), value: '1' },
+	{ label: t('调试类合同'), value: '2' },
+	{ label: t('电气（排故维修）类合同'), value: '3' },
+	{ label: t('备品备件合同'), value: '4' },
+
 ];
 
 const form = reactive({
 	contractName: '',
 	customerName: '',
 	amount: undefined as number | undefined,
-	contractType: '' as string,
+	contractType: '' as string,//Type是string类型
 	contractDetails: ''
 });
 

@@ -39,6 +39,7 @@ export class OpenCompanyContractController extends BaseController {
     body: {
       taskId: string;
       contractText: string;
+      contractType: string,
       contractName?: string;
     },
     @Query('secret') secretQuery?: string
@@ -65,7 +66,8 @@ export class OpenCompanyContractController extends BaseController {
       const fileUrl = await this.companyContractService.completeFromCallback(
         body.taskId,
         body.contractText,
-        body.contractName
+        body.contractType,
+        body.contractName,
       );
       this.ctx.set('Access-Control-Allow-Origin', '*');
       return this.ok({ fileUrl });
