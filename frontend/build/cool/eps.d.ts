@@ -724,7 +724,7 @@ declare namespace Eps {
 		/**
 		 * 日程提醒
 		 */
-		isReminder?: number;
+		isReminder?: string;
 
 		/**
 		 * 跟进人所在部门
@@ -2183,6 +2183,8 @@ declare namespace Eps {
 	}
 
 	type json = any;
+
+	type DictKey = "brand" | "occupation";
 
 	interface PagePagination {
 		size: number;
@@ -4134,8 +4136,6 @@ declare namespace Eps {
 	}
 
 	type Request = (options: RequestOptions) => Promise<any>;
-
-	type DictKey = "brand" | "occupation";
 
 	type Service = {
 		request: Request;

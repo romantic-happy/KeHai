@@ -183,7 +183,7 @@
                 "childMenus": []
                },
               {
-                "name": "跟踪记录",
+                "name": "跟进记录",
                 "router": "/company/follow-up-record",
                 "perms": null,
                 "type": 1,

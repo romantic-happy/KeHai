@@ -102,6 +102,8 @@ const { service } = useCool();
 const { t } = useI18n();
 
 const aiLoading = ref(false);
+const customerLoading = ref(false);
+let customerSearchSeq = 0;
 
 // 提醒面板相关
 const reminderVisible = ref(false);
@@ -243,17 +245,91 @@ const options = reactive({
 	],
 });
 
+function mapCustomerOption(customer: any) {
+	return {
+		label: customer.customerName,
+		value: customer.customerName,
+		keyContacts: customer.keyContacts || [],
+	};
+}
+
+function setCustomerOptions(list: any[]) {
+	options.customers.splice(0, options.customers.length, ...list);
+	Upsert.value?.setOptions("customerName", list);
+}
+
+function setKeyPersonOptions(list: any[]) {
+	options.keyPersons.splice(0, options.keyPersons.length, ...list);
+	Upsert.value?.setOptions("keyPerson", list);
+}
+
+function updateKeyPersonsByCustomerName(customerName?: string) {
+	const customer = options.customers.find((e) => e.value === customerName);
+	const keyPersonList = (customer?.keyContacts || []).map((e: any) => ({
+		label: e.name,
+		value: e.name,
+	}));
+	setKeyPersonOptions(keyPersonList);
+}
+
+async function searchCustomers(keyword = "") {
+	const currentSeq = ++customerSearchSeq;
+	const normalizedKeyword = keyword.trim();
+
+	if (!normalizedKeyword) {
+		setCustomerOptions([]);
+		customerLoading.value = false;
+		return;
+	}
+
+	customerLoading.value = true;
+
+	try {
+		const res = await service.request({
+			url: "admin/company/customer/page",
+			method: "POST",
+			data: {
+				page: 1,
+				size: 20,
+				keyWord: normalizedKeyword,
+			},
+		});
+
+		if (currentSeq !== customerSearchSeq) return;
+
+		const customerList = (res.list || [])
+			.filter((e: any) => e.customerName)
+			.map((e: any) => mapCustomerOption(e));
+		setCustomerOptions(customerList);
+	} catch (error) {
+		if (currentSeq === customerSearchSeq) {
+			setCustomerOptions([]);
+		}
+		console.error("加载客户候选项失败", error);
+	} finally {
+		if (currentSeq === customerSearchSeq) {
+			customerLoading.value = false;
+		}
+	}
+}
+
+async function ensureCustomerOption(customerName?: string) {
+	if (!customerName) {
+		setCustomerOptions([]);
+		setKeyPersonOptions([]);
+		return;
+	}
+
+	const existed = options.customers.find((e) => e.value === customerName);
+	if (!existed) {
+		await searchCustomers(customerName);
+	}
+
+	updateKeyPersonsByCustomerName(customerName);
+}
+
 // 初始化加载数据
 onMounted(async () => {
-	// 加载客户列表
-	(service as any).company.customer.list().then((res: any) => {
-		options.customers = res.map((e: any) => ({
-			label: e.customerName,
-			value: e.customerName, // 使用名字作为值
-			keyContacts: e.keyContacts || [],
-		}));
-	});
-
 	// 加载系统用户
 	(service as any).base.sys.user.list().then((res: any) => {
 		options.users = res.map((e: any) => ({
@@ -280,14 +356,16 @@ const Upsert = useUpsert<any>({
 				name: "el-select",
 				props: {
 					filterable: true,
+					remote: true,
 					clearable: true,
+					reserveKeyword: true,
+					loading: customerLoading,
+					placeholder: t("请输入客户名称关键字"),
+					remoteMethod: (query: string) => {
+						searchCustomers(query);
+					},
 					onChange: (val: any) => {
-						const customer = options.customers.find((e) => e.value === val);
-						options.keyPersons = (customer?.keyContacts || []).map((e: any) => ({
-							label: e.name,
-							value: e.name,
-						}));
-						// 重置关键人
+						updateKeyPersonsByCustomerName(val);
 						Upsert.value?.setForm("keyPerson", "");
 					},
 				},
@@ -392,11 +470,10 @@ const Upsert = useUpsert<any>({
 			prop: "isReminder",
 			span: 12,
 			component: {
-				name: "el-input-number",
+				name: "el-input",
 				props: {
 					clearable: true,
-					min: 0,
-					placeholder: t("提前天数"),
+					placeholder: t("例如：提前5分钟 / 提前2天"),
 				},
 			},
 		},
@@ -487,14 +564,8 @@ const Upsert = useUpsert<any>({
 			},
 		},
 	],
-	onOpened(data) {
-		if (data.customerName) {
-			const customer = options.customers.find((e) => e.value === data.customerName);
-			options.keyPersons = (customer?.keyContacts || []).map((e: any) => ({
-				label: e.name,
-				value: e.name,
-			}));
-		}
+	async onOpened(data) {
+		await ensureCustomerOption(data.customerName);
 	},
 });
 

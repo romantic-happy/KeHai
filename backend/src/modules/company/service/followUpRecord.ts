@@ -28,9 +28,104 @@ export class CompanyFollowUpRecordService extends BaseService {
   companyContractMgmtEntity!: Repository<CompanyContractMgmtEntity>;
 
   /**
+   * 将空字符串等“空输入”统一转为 null
+   */
+  private normalizeEmptyValue(value: any) {
+    if (value === undefined || value === null) {
+      return null;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed || trimmed.toLowerCase() === 'null') {
+        return null;
+      }
+      return trimmed;
+    }
+
+    return value;
+  }
+
+  /**
+   * 规范化可空日期字段，避免将空字符串写入 datetime
+   */
+  private normalizeNullableDate(value: any) {
+    const normalized = this.normalizeEmptyValue(value);
+    if (normalized === null) {
+      return null;
+    }
+
+    const date = normalized instanceof Date ? normalized : new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  /**
+   * 规范化提醒字段，兼容“2”与“提前5分钟”两类输入
+   */
+  private normalizeReminderValue(value: any) {
+    const normalized = this.normalizeEmptyValue(value);
+    if (normalized === null) {
+      return null;
+    }
+
+    return String(normalized);
+  }
+
+  /**
+   * 将提醒配置转换为毫秒数
+   * 纯数字按“天”处理；文本支持“提前5分钟 / 提前2小时 / 提前3天”
+   */
+  private parseReminderOffset(value: any) {
+    const normalized = this.normalizeEmptyValue(value);
+    if (normalized === null) {
+      return null;
+    }
+
+    if (typeof normalized === 'number') {
+      return normalized > 0 ? normalized * 24 * 60 * 60 * 1000 : null;
+    }
+
+    const text = String(normalized);
+
+    if (/^\d+(\.\d+)?$/.test(text)) {
+      const days = Number(text);
+      return days > 0 ? days * 24 * 60 * 60 * 1000 : null;
+    }
+
+    const minuteMatch = text.match(/提前\s*(\d+)\s*分钟/);
+    if (minuteMatch) {
+      return Number(minuteMatch[1]) * 60 * 1000;
+    }
+
+    const hourMatch = text.match(/提前\s*(\d+)\s*小时/);
+    if (hourMatch) {
+      return Number(hourMatch[1]) * 60 * 60 * 1000;
+    }
+
+    const dayMatch = text.match(/提前\s*(\d+)\s*天/);
+    if (dayMatch) {
+      return Number(dayMatch[1]) * 24 * 60 * 60 * 1000;
+    }
+
+    return null;
+  }
+
+  /**
    * 修改前置处理
    */
   async modifyBefore(data: any, type: 'delete' | 'update' | 'add') {
+    if (Object.prototype.hasOwnProperty.call(data, 'followUpTime')) {
+      data.followUpTime = this.normalizeNullableDate(data.followUpTime);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, 'nextFollowTime')) {
+      data.nextFollowTime = this.normalizeNullableDate(data.nextFollowTime);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, 'isReminder')) {
+      data.isReminder = this.normalizeReminderValue(data.isReminder);
+    }
+
     if (type === 'add') {
       const userInfo = await this.baseSysUserService.info(this.ctx.admin.userId);
       const userName = userInfo?.name || this.ctx.admin.username;
@@ -55,6 +150,10 @@ export class CompanyFollowUpRecordService extends BaseService {
     }
 
     if (type === 'update') {
+      if (!data.followUpTime) {
+        delete data.followUpTime;
+      }
+
       const userInfo = await this.baseSysUserService.info(this.ctx.admin.userId);
       // 设置最后修改人（如果没传则默认当前用户）
       if (!data.modifier) {
@@ -130,7 +229,7 @@ export class CompanyFollowUpRecordService extends BaseService {
 
   /**
    * 获取需要提醒的跟进记录
-   * 逻辑：当前时间 >= (下次跟进时间 - 日程提醒天数) 且 当前时间 <= 下次跟进时间
+   * 逻辑：当前时间 >= (下次跟进时间 - 日程提醒偏移量) 且 当前时间 <= 下次跟进时间
    */
   async getReminderRecords() {
     // Node.js 使用 Asia/Shanghai 时区，MySQL 使用 UTC，需要转换
@@ -171,18 +270,17 @@ export class CompanyFollowUpRecordService extends BaseService {
         continue;
       }
 
-      // isReminder 是天数，例如 6 表示提前6天提醒
-      const reminderDays = Number(record.isReminder);
-      console.log(`检查 id=${record.id}, isReminder=${record.isReminder}, reminderDays=${reminderDays}`);
+      const reminderOffset = this.parseReminderOffset(record.isReminder);
+      console.log(`检查 id=${record.id}, isReminder=${record.isReminder}, reminderOffset=${reminderOffset}`);
 
-      if (!reminderDays || reminderDays <= 0) {
-        console.log(`跳过: reminderDays无效`);
+      if (!reminderOffset || reminderOffset <= 0) {
+        console.log(`跳过: reminderOffset无效`);
         continue;
       }
 
-      // 计算提醒时间：下次跟进时间 - 提醒天数
+      // 计算提醒时间：下次跟进时间 - 提醒偏移量
       const reminderTime = new Date(
-        record.nextFollowTime.getTime() - reminderDays * 24 * 60 * 60 * 1000
+        record.nextFollowTime.getTime() - reminderOffset
       );
 
       console.log(`  提醒时间=${reminderTime.toISOString()}, 下次跟进=${record.nextFollowTime}`);
