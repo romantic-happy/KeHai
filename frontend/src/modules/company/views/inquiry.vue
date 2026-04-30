@@ -213,6 +213,7 @@ const { menu } = useBase();
 const permRenderKey = ref(0);
 
 const options = reactive({
+	customers: [] as any[],
 	inquiryType: [
 		{ label: t('项目类'), value: 3, type: 'info' },
 		{ label: t('机械保养类'), value: 2, type: 'warning' },
@@ -338,10 +339,25 @@ const Upsert = useUpsert({
 		},
 		{
 			label: t('客户'),
-			prop: 'customer',
-			component: { name: 'el-input', props: { clearable: true } },
+			prop: 'customerId',
+			component: {
+				name: 'el-select',
+				options: options.customers,
+				props: {
+					clearable: true,
+					filterable: true,
+					placeholder: t('请选择客户')
+				}
+			},
 			span: 12,
-			required: true
+			required: true,
+			hook: {
+				submit(value: any, { form }: any) {
+					const selected = options.customers.find((c: any) => c.value === value);
+					form.customer = selected?.label || '';
+					return undefined;
+				}
+			}
 		},
 		{
 			label: t('负责人姓名'),
@@ -1398,6 +1414,15 @@ async function onDealSuccess(scope: any) {
 
 onMounted(() => {
 	syncQuoteActionPerms();
+	(service as any).company.customer.list().then((res: any) => {
+		options.customers.length = 0;
+		res.forEach((e: any) => {
+			options.customers.push({
+				label: e.customerName,
+				value: e.customerName
+			});
+		});
+	});
 });
 </script>
 
