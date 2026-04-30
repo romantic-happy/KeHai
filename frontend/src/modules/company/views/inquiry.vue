@@ -123,6 +123,11 @@
 		</el-dialog>
 
 		<cl-upsert ref="Upsert">
+			<!-- 产品明细 -->
+			<template #slot-productItems="{ scope }">
+				<InquiryProductItems v-if="scope" v-model="scope.productItems" />
+			</template>
+
 			<!-- 备件类：物料列表可增删多条（绑定 spareItems） -->
 			<template #slot-materialList="{ scope }">
 				<div v-if="scope">
@@ -206,6 +211,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { request } from '/@/cool/service/request';
 import { config } from '/@/config';
 import { useBase } from '/$/base';
+import InquiryProductItems from './components/inquiry-product-items.vue';
 
 const { service, router, mitt } = useCool();
 const { t } = useI18n();
@@ -396,8 +402,8 @@ const Upsert = useUpsert({
 		{
 			label: t('产品明细'),
 			prop: 'productItems',
-			component: { name: 'el-input', props: { clearable: true } },
-			span: 12
+			component: { name: 'slot-productItems' },
+			span: 24
 		},
 		() => {
 			return () => ({
