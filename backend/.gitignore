@@ -19,3 +19,7 @@ launch.json
 data/*
 pnpm-lock.yaml
 public/uploads/*
+
+
+
+.env.*.local

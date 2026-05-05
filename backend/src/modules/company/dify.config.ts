@@ -15,11 +15,21 @@ export interface DifyWorkflowConfig {
   inputs: DifyInputConfig[];
 }
 
+/**
+ * 从环境变量获取 Dify API Key
+ * 环境变量命名规则: DIFY_KEY_${workflowKey}
+ * 例如: DIFY_KEY_materialQuote=app-xxx
+ */
+function getDifyApiKey(key: string, fallback: string): string {
+  const envKey = `DIFY_KEY_${key}`;
+  return process.env[envKey] || fallback;
+}
+
 export default [
   {
     key: 'materialQuote',
     name: '物料智能询价',
-    apiKey: 'app-DwJlTWY7azTC8osHFmDZ0IkR', // TODO
+    apiKey: getDifyApiKey('materialQuote', 'TODO_REPLACE'),
     inputs: [
       { name: 'brand', required: true, type: 'string' },
       { name: 'name', required: true, type: 'string' },
@@ -29,19 +39,19 @@ export default [
   {
     key: 'customerInfo',
     name: '客户信息提供',
-    apiKey: 'app-3wX5QOPsMa1JiwUHBHsh49Hg', // TODO
+    apiKey: getDifyApiKey('customerInfo', 'TODO_REPLACE'),
     inputs: [{ name: 'name', required: true, type: 'string' }],
   },
   {
     key: 'receptionScript',
     name: '客户接待话术',
-    apiKey: 'app-0Hu24lwKapNjZQZoZYljILnf', // TODO
+    apiKey: getDifyApiKey('receptionScript', 'TODO_REPLACE'),
     inputs: [{ name: 'user_name', required: true, type: 'string' }],
   },
   {
     key: 'supplierRecommend',
     name: '供应商推荐',
-    apiKey: 'app-fO76RrFaAA2DAODImOVcmYVs', // TODO
+    apiKey: getDifyApiKey('supplierRecommend', 'TODO_REPLACE'),
     inputs: [
       { name: 'name', required: true, type: 'string' },
       { name: 'dimension', required: true, type: 'string' },
@@ -50,7 +60,7 @@ export default [
   {
     key: 'leadAnalysis',
     name: '线索智能分析',
-    apiKey: 'app-wvN7QZhMFjMa808dEWEDszCN', // TODO: 替换为实际的API Key
+    apiKey: getDifyApiKey('leadAnalysis', 'TODO_REPLACE'),
     inputs: [
       { name: 'title', required: true, type: 'string' },
       { name: 'detail', required: true, type: 'string' },
@@ -59,13 +69,13 @@ export default [
   {
     key: 'customerPortrait',
     name: '客户画像生成',
-    apiKey: 'TODO_REPLACE_WITH_ACTUAL_KEY', // TODO: 等待焕峰分配 Key
+    apiKey: getDifyApiKey('customerPortrait', 'TODO_REPLACE'),
     inputs: [{ name: 'name', required: true, type: 'string' }],
   },
   {
     key: 'customerOrderAnalysis',
     name: '客户订单分析',
-    apiKey: 'app-yyaJ0pp53bdqddr8dg72ahUT', // TODO: 请替换为实际的 API Key
+    apiKey: getDifyApiKey('customerOrderAnalysis', 'TODO_REPLACE'),
     inputs: [
       { name: 'name', required: true, type: 'string' },
       { name: 'docking_record', required: true, type: 'string' },

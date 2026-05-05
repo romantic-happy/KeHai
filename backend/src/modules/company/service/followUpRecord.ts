@@ -234,18 +234,9 @@ export class CompanyFollowUpRecordService extends BaseService {
   async getReminderRecords() {
     // Node.js 使用 Asia/Shanghai 时区，MySQL 使用 UTC，需要转换
     const now = new Date();
-    // 转为 UTC 时间（去掉8小时）
     const utcNow = new Date(now.getTime() - 8 * 60 * 60 * 1000);
 
     const reminderRecords: CompanyFollowUpRecordEntity[] = [];
-
-    console.log('========== 提醒记录查询开始 ==========');
-    console.log('本地时间:', now.toISOString());
-    console.log('UTC 时间:', utcNow.toISOString());
-    console.log(
-      '查询窗口:',
-      new Date(utcNow.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    );
 
     // 查找未来30天内需要跟进的记录（使用UTC时间查询）
     const records = await this.companyFollowUpRecordEntity.find({
@@ -256,25 +247,14 @@ export class CompanyFollowUpRecordService extends BaseService {
       },
     });
 
-    console.log('查询到的记录数:', records.length);
-    if (records.length > 0) {
-      console.log('记录详情:');
-      records.forEach((r: any, i: number) => {
-        console.log(`  [${i+1}] id=${r.id}, customerName=${r.customerName}, nextFollowTime=${r.nextFollowTime}, isReminder=${r.isReminder}`);
-      });
-    }
-
     for (const record of records) {
       if (!record.nextFollowTime) {
-        console.log(`跳过: id=${record.id}, nextFollowTime为null`);
         continue;
       }
 
       const reminderOffset = this.parseReminderOffset(record.isReminder);
-      console.log(`检查 id=${record.id}, isReminder=${record.isReminder}, reminderOffset=${reminderOffset}`);
 
       if (!reminderOffset || reminderOffset <= 0) {
-        console.log(`跳过: reminderOffset无效`);
         continue;
       }
 
@@ -283,22 +263,11 @@ export class CompanyFollowUpRecordService extends BaseService {
         record.nextFollowTime.getTime() - reminderOffset
       );
 
-      console.log(`  提醒时间=${reminderTime.toISOString()}, 下次跟进=${record.nextFollowTime}`);
-      console.log(
-        `  utcNow>=reminderTime: ${utcNow >= reminderTime}, utcNow<=nextFollowTime: ${utcNow <= record.nextFollowTime}`
-      );
-
       // 当前时间在 [提醒时间, 下次跟进时间] 区间内时显示
       if (utcNow >= reminderTime && utcNow <= record.nextFollowTime) {
-        console.log(`  => 加入提醒列表`);
         reminderRecords.push(record);
-      } else {
-        console.log(`  => 不在提醒区间，跳过`);
       }
     }
-
-    console.log('最终提醒记录数:', reminderRecords.length);
-    console.log('========== 提醒记录查询结束 ==========');
 
     return reminderRecords;
   }
