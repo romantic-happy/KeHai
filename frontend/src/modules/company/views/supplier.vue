@@ -211,9 +211,30 @@
 		</template>
 	</el-dialog>
 
-	<el-dialog v-model="ai.visible" :title="ai.title" width="760px">
-		<el-alert :title="ai.message" type="warning" show-icon :closable="false" class="mb-3" />
-		<el-input v-model="ai.prompt" type="textarea" :rows="14" readonly />
+	<el-dialog v-model="ai.visible" :title="ai.title" width="960px">
+		<div class="ai-result-dialog">
+			<el-alert :title="ai.message" type="success" show-icon :closable="false" class="mb-3" />
+
+			<el-descriptions border :column="2" class="ai-result-dialog__table">
+				<el-descriptions-item v-for="item in ai.baseRows" :key="item.label" :label="item.label">
+					<div class="ai-result-dialog__text">{{ item.value || "-" }}</div>
+				</el-descriptions-item>
+			</el-descriptions>
+
+			<div class="ai-result-table">
+				<template v-for="section in ai.sections" :key="section.title">
+					<div class="ai-result-table__section">{{ section.title }}</div>
+					<div
+						v-for="(item, index) in section.rows"
+						:key="`${section.title}-${index}`"
+						class="ai-result-table__row"
+					>
+						<div class="ai-result-table__label">{{ item.label || "说明" }}</div>
+						<div class="ai-result-table__value">{{ item.value || "-" }}</div>
+					</div>
+				</template>
+			</div>
+		</div>
 	</el-dialog>
 
 	<el-dialog v-model="quote.visible" title="报价记录" width="900px">
@@ -316,6 +337,8 @@ const ai = reactive({
 	title: "",
 	message: "",
 	prompt: "",
+	baseRows: [] as Array<{ label: string; value: string }>,
+	sections: [] as Array<{ title: string; rows: Array<{ label: string; value: string }> }>,
 });
 
 const quote = reactive({
@@ -711,13 +734,220 @@ async function submitTransfer() {
 	}
 }
 
+function cleanAiText(text: any) {
+	if (text === undefined || text === null) return "";
+	if (typeof text === "object") {
+		text = Object.entries(text)
+			.map(([key, value]) => `${key}：${typeof value === "object" ? cleanAiText(value) : value}`)
+			.join("\n");
+	}
+
+	return String(text)
+		.replace(/\\n/g, "\n")
+		.replace(/\\r/g, "\n")
+		.replace(/\\"/g, '"')
+		.replace(/```json/gi, "")
+		.replace(/```/g, "")
+		.replace(/`/g, "")
+		.replace(/\*\*/g, "")
+		.replace(/#/g, "")
+		.replace(/\[object Object\]/g, "")
+		.replace(/[{}\[\]]/g, "")
+		.replace(/"/g, "")
+		.split("\n")
+		.map(line =>
+			line
+				.replace(/^\s*[-*•·]\s*/, "")
+				.replace(/^\s*([^：:\n]+)\s*:\s*/, "$1：")
+				.replace(/,$/, "")
+				.trim()
+		)
+		.filter(Boolean)
+		.join("\n")
+		.replace(/\n{2,}/g, "\n")
+		.trim();
+}
+
+function parseMaybeJson(value: any) {
+	if (typeof value !== "string") return value;
+	try {
+		return JSON.parse(value);
+	} catch {
+		return value;
+	}
+}
+
+function normalizeAiResponse(res: any) {
+	const prompt = parseMaybeJson(res?.prompt);
+	const data = parseMaybeJson(res?.data) || (typeof prompt === "object" ? prompt : undefined);
+	const result = parseMaybeJson(data?.result ?? data ?? prompt);
+
+	if (result?.rawText) {
+		return {
+			snapshot: data?.supplierSnapshot || {},
+			quoteRecordNote: data?.quoteRecordNote || "",
+			result: { rawText: cleanAiText(result.rawText) },
+		};
+	}
+
+	if (typeof result === "string") {
+		return {
+			snapshot: data?.supplierSnapshot || {},
+			quoteRecordNote: data?.quoteRecordNote || "",
+			result: { rawText: cleanAiText(result) },
+		};
+	}
+
+	return {
+		snapshot: data?.supplierSnapshot || {},
+		quoteRecordNote: data?.quoteRecordNote || "",
+		result: result && typeof result === "object" ? result : { rawText: cleanAiText(res) },
+	};
+}
+
+function formatAiValue(key: string, value: any) {
+	if (key === "supplierType") return labelOf(options.supplierType, value);
+	if (key === "supplierSource") return labelOf(options.supplierSource, value);
+	if (key === "supplierNature") return labelOf(options.supplierNature, value);
+	if (key === "cooperationRelation") return labelOf(options.cooperationRelation, value);
+	if (key === "managementStatus" || key === "manageStatus") return labelOf(options.manageStatus, value);
+	if (key === "businessCategory") {
+		const values = Array.isArray(value) ? value : String(value || "").split(",").filter(Boolean);
+		return values.map(item => labelOf(options.businessCategory, item)).join("、");
+	}
+	if (key === "paymentTerm" && value !== undefined && value !== null && value !== "") return `${value}天`;
+	return cleanAiText(value) || "-";
+}
+
+function buildAiRows(source: any, fields: Array<[string, string]>) {
+	return fields.map(([label, key]) => ({
+		label,
+		value: formatAiValue(key, source?.[key]),
+	}));
+}
+
+function splitLabelValue(line: string) {
+	const indexList = [line.indexOf("："), line.indexOf(":")].filter(index => index >= 0);
+	const splitIndex = indexList.length ? Math.min(...indexList) : -1;
+	if (splitIndex < 0) return null;
+
+	const label = cleanAiText(line.slice(0, splitIndex));
+	const value = cleanAiText(line.slice(splitIndex + 1));
+	if (!label || !value) return null;
+	return { label, value };
+}
+
+function parseAiTextToSections(text: string) {
+	const cleaned = cleanAiText(text);
+	const lines = cleaned
+		.split("\n")
+		.map(line => line.trim())
+		.filter(Boolean);
+	const sections: Array<{ title: string; rows: Array<{ label: string; value: string }> }> = [];
+	let current: { title: string; rows: Array<{ label: string; value: string }> } | null = null;
+	const titlePattern = /^[一二三四五六七八九十]+[、.．]\s*.+$/;
+
+	const ensureCurrent = () => {
+		if (!current) {
+			current = { title: "AI分析结果", rows: [] };
+			sections.push(current);
+		}
+		return current;
+	};
+
+	for (const line of lines) {
+		if (titlePattern.test(line)) {
+			const titleRow = splitLabelValue(line);
+			current = {
+				title: titleRow ? cleanAiText(line.slice(0, line.indexOf("：") >= 0 ? line.indexOf("：") : line.indexOf(":"))) : cleanAiText(line),
+				rows: [],
+			};
+			sections.push(current);
+			if (titleRow) {
+				current.rows.push({ label: "说明", value: titleRow.value });
+			}
+			continue;
+		}
+
+		const section = ensureCurrent();
+		const row = splitLabelValue(line);
+		if (row) {
+			section.rows.push(row);
+			continue;
+		}
+
+		const last = section.rows[section.rows.length - 1];
+		if (last) {
+			last.value = cleanAiText(`${last.value}\n${line}`);
+		} else {
+			section.rows.push({ label: "说明", value: cleanAiText(line) });
+		}
+	}
+
+	if (!sections.length) {
+		return [{ title: "AI分析结果", rows: [{ label: "说明", value: cleaned || "-" }] }];
+	}
+
+	sections.forEach(section => {
+		if (!section.rows.length) {
+			section.rows.push({ label: "说明", value: "-" });
+		}
+	});
+	return sections;
+}
+
+function buildAiResultSections(result: any, fields: Array<[string, string]>, title: string) {
+	if (result?.rawText || typeof result === "string") {
+		return parseAiTextToSections(result?.rawText || result);
+	}
+
+	const rows = fields
+		.filter(([, key]) => result?.[key] !== undefined && result?.[key] !== null && result?.[key] !== "")
+		.map(([label, key]) => ({ label, value: cleanAiText(result[key]) }));
+
+	return rows.length
+		? [{ title, rows }]
+		: parseAiTextToSections(cleanAiText(result));
+}
+
 async function openAiBackground(row: any) {
 	try {
 		const target = normalizeSupplierRow(row);
 		const res = await postAction("aiBackgroundCheck", { id: target.id });
-		ai.title = "AI背调";
+		const normalized = normalizeAiResponse(res);
+		const snapshot = { ...target, ...normalized.snapshot };
+		ai.title = `AI背调 - ${snapshot.supplierName || target.supplierName || "-"}`;
 		ai.message = res?.message || "AI接口暂未配置";
-		ai.prompt = res?.prompt || "";
+		ai.prompt = cleanAiText(normalized.result?.rawText || normalized.result);
+		ai.baseRows = buildAiRows(snapshot, [
+			["供应商名称", "supplierName"],
+			["供应商类型", "supplierType"],
+			["供应商来源", "supplierSource"],
+			["联系人", "contactName"],
+			["联系方式", "contactInfo"],
+			["供应商性质", "supplierNature"],
+			["业务类别", "businessCategory"],
+			["账期", "paymentTerm"],
+			["合作关系", "cooperationRelation"],
+			["管理状态", "managementStatus"],
+		]);
+		ai.sections = buildAiResultSections(
+			normalized.result,
+			[
+				["经营范围", "businessScope"],
+				["成立时间", "establishTime"],
+				["注册资金", "registeredCapital"],
+				["注册地址", "address"],
+				["风险提示", "riskWarning"],
+				["历史项目", "historicalProjects"],
+				["社保人数", "socialSecurityCount"],
+				["主体合法性", "legitimacyCheck"],
+				["经营状况", "operationCheck"],
+				["履约能力", "deliveryAbilityCheck"],
+				["综合结论", "conclusion"],
+			],
+			"AI背调结果"
+		);
 		ai.visible = true;
 	} catch (err: any) {
 		ElMessage.error(err?.message || "AI背调占位接口调用失败");
@@ -728,9 +958,41 @@ async function openAiProfile(row: any) {
 	try {
 		const target = normalizeSupplierRow(row);
 		const res = await postAction("aiSupplierProfile", { id: target.id });
-		ai.title = "AI供应商画像";
+		const normalized = normalizeAiResponse(res);
+		const snapshot = { ...target, ...normalized.snapshot };
+		ai.title = `AI供应商画像 - ${snapshot.supplierName || target.supplierName || "-"}`;
 		ai.message = res?.message || "AI接口暂未配置";
-		ai.prompt = res?.prompt || "";
+		ai.prompt = cleanAiText(normalized.result?.rawText || normalized.result);
+		ai.baseRows = buildAiRows(
+			{
+				...snapshot,
+				quoteRecordNote: normalized.quoteRecordNote,
+			},
+			[
+				["供应商名称", "supplierName"],
+				["供应商类型", "supplierType"],
+				["供应商来源", "supplierSource"],
+				["供应商性质", "supplierNature"],
+				["业务类别", "businessCategory"],
+				["账期", "paymentTerm"],
+				["合作关系", "cooperationRelation"],
+				["管理状态", "managementStatus"],
+				["报价记录说明", "quoteRecordNote"],
+			]
+		);
+		ai.sections = buildAiResultSections(
+			normalized.result,
+			[
+				["主营品类", "mainCategories"],
+				["报价特点", "priceFeature"],
+				["质量表现", "qualityFeature"],
+				["质保特点", "warrantyFeature"],
+				["合作建议", "cooperationAdvice"],
+				["风险提示", "riskWarning"],
+				["供应商画像", "supplierPortrait"],
+			],
+			"AI供应商画像结果"
+		);
 		ai.visible = true;
 	} catch (err: any) {
 		ElMessage.error(err?.message || "AI画像占位接口调用失败");
@@ -760,6 +1022,63 @@ async function openQuoteRecords(row: any) {
 }
 
 .pre-line {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.ai-result-dialog {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.ai-result-dialog__table {
+	flex-shrink: 0;
+}
+
+.ai-result-dialog__text {
+	line-height: 20px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	text-align: left;
+}
+
+.ai-result-dialog :deep(.el-descriptions__label) {
+	font-weight: 600;
+}
+
+.ai-result-table {
+	border: 1px solid var(--el-border-color);
+	border-bottom: 0;
+}
+
+.ai-result-table__section {
+	padding: 10px 12px;
+	background: var(--el-fill-color-light);
+	border-bottom: 1px solid var(--el-border-color);
+	font-weight: 600;
+	line-height: 20px;
+}
+
+.ai-result-table__row {
+	display: grid;
+	grid-template-columns: 170px minmax(0, 1fr);
+	border-bottom: 1px solid var(--el-border-color);
+}
+
+.ai-result-table__label {
+	padding: 10px 12px;
+	background: var(--el-fill-color-lighter);
+	border-right: 1px solid var(--el-border-color);
+	font-weight: 600;
+	line-height: 20px;
+	word-break: break-word;
+}
+
+.ai-result-table__value {
+	padding: 10px 12px;
+	background: #fff;
+	line-height: 20px;
 	white-space: pre-wrap;
 	word-break: break-word;
 }

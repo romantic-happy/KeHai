@@ -4,6 +4,7 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyQuoteEntity } from '../entity/quote';
 import { CompanySupplierEntity } from '../entity/supplier';
+import { DifyService } from './dify';
 
 @Provide()
 export class CompanySupplierService extends BaseService {
@@ -15,6 +16,9 @@ export class CompanySupplierService extends BaseService {
 
   @InjectEntityModel(CompanyQuoteEntity)
   companyQuoteEntity: Repository<CompanyQuoteEntity>;
+
+  @Inject()
+  difyService: DifyService;
 
   private currentUserId() {
     const id = Number(this.ctx?.admin?.userId);
@@ -186,54 +190,134 @@ export class CompanySupplierService extends BaseService {
   }
 
   async aiBackgroundCheck(param: any) {
-    const supplier = await this.getSupplierForAi(param);
-    const prompt = [
-      '供应商AI背调占位请求，后续可接入Dify、DeepSeek或其他AI服务。',
-      `供应商名称：${supplier.supplierName || ''}`,
-      `供应商来源：${supplier.supplierSource || ''}`,
-      `联系人：${supplier.contactName || ''}`,
-      `联系方式：${supplier.contactInfo || ''}`,
-      `供应商性质：${supplier.supplierNature || ''}`,
-      `业务类别：${(supplier.businessCategory || []).join('、')}`,
-      '需要核验：主体合法性、经营状况、履约能力、社保信息、历史项目与风险提示。',
-    ].join('\n');
+    const supplier = await this.getSupplierByRequiredId(param);
+    const inputs = this.buildSupplierBackgroundInputs(supplier);
+    const result = await this.difyService.analyzeSupplierBackground(inputs);
+    const saved = {
+      type: 'supplierBackgroundCheck',
+      generatedAt: new Date().toISOString(),
+      supplierSnapshot: inputs,
+      result,
+    };
+
+    await this.companySupplierEntity.update(supplier.id, {
+      aiBackgroundCheck: JSON.stringify(saved),
+    });
 
     return {
-      configured: false,
-      message: 'AI接口暂未配置',
-      prompt,
+      configured: true,
+      message: 'AI背调生成成功',
+      prompt: JSON.stringify(saved, null, 2),
+      data: saved,
     };
   }
 
   async aiSupplierProfile(param: any) {
-    const supplier = await this.getSupplierForAi(param);
-    const prompt = [
-      '供应商AI画像占位请求，后续根据历史报价记录总结。',
-      `供应商名称：${supplier.supplierName || ''}`,
-      `业务类别：${(supplier.businessCategory || []).join('、')}`,
-      '需要总结：主营品类、价格水平、合作稳定性、质量与质保表现、风险提示。',
-    ].join('\n');
+    const supplier = await this.getSupplierByRequiredId(param);
+    const quoteRecords = await this.getQuoteRecordsBySupplier(supplier);
+    const quoteRecordNote =
+      quoteRecords.length > 0
+        ? `共找到 ${quoteRecords.length} 条报价记录`
+        : '暂无报价记录，仅基于供应商基础信息生成画像';
+    const quoteRecordsText =
+      quoteRecords.length > 0 ? JSON.stringify(quoteRecords, null, 2) : '[]';
+    const supplierSnapshot = this.buildSupplierProfileSnapshot(supplier);
+    const inputs = {
+      ...supplierSnapshot,
+      quoteRecordNote,
+      quoteRecords: quoteRecordsText,
+    };
+    const result = await this.difyService.analyzeSupplierProfile(inputs);
+    const saved = {
+      type: 'supplierProfile',
+      generatedAt: new Date().toISOString(),
+      supplierSnapshot,
+      quoteRecordNote,
+      quoteRecords: quoteRecordsText,
+      result,
+    };
+
+    await this.companySupplierEntity.update(supplier.id, {
+      aiSupplierProfile: JSON.stringify(saved),
+    });
 
     return {
-      configured: false,
-      message: 'AI接口暂未配置',
-      prompt,
+      configured: true,
+      message: 'AI画像生成成功',
+      prompt: JSON.stringify(saved, null, 2),
+      data: saved,
     };
   }
 
   async quoteRecords(param: any) {
     const supplier = await this.getSupplierForAi(param);
-    const qb = this.companyQuoteEntity.createQueryBuilder('a');
-    qb.where('a.supplier = :name', { name: supplier.supplierName });
-    qb.orderBy('a.createTime', 'DESC');
-    qb.limit(20);
-    const list = await qb.getMany();
+    const list = await this.getQuoteRecordsBySupplier(supplier);
 
     return {
       supplierName: supplier.supplierName,
       aiSupplierProfile: supplier.aiSupplierProfile,
       list,
       placeholder: list.length === 0,
+    };
+  }
+
+  private async getSupplierByRequiredId(param: any) {
+    const id = Number(param?.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      throw new Error('查询参数[id]不存在');
+    }
+
+    const supplier = await this.companySupplierEntity.findOne({
+      where: { id },
+    });
+    if (!supplier) {
+      throw new Error('供应商不存在');
+    }
+    return supplier;
+  }
+
+  private async getQuoteRecordsBySupplier(supplier: CompanySupplierEntity) {
+    const qb = this.companyQuoteEntity.createQueryBuilder('a');
+    qb.where('a.supplier = :name', { name: supplier.supplierName });
+    qb.orderBy('a.createTime', 'DESC');
+    qb.limit(20);
+    return qb.getMany();
+  }
+
+  private valueText(value: any) {
+    if (value === undefined || value === null) return '';
+    if (Array.isArray(value)) return value.join(',');
+    return String(value);
+  }
+
+  private buildSupplierBackgroundInputs(supplier: CompanySupplierEntity) {
+    return {
+      supplierName: this.valueText(supplier.supplierName),
+      supplierType: this.valueText(supplier.supplierType),
+      supplierSource: this.valueText(supplier.supplierSource),
+      contactName: this.valueText(supplier.contactName),
+      contactInfo: this.valueText(supplier.contactInfo),
+      supplierNature: this.valueText(supplier.supplierNature),
+      businessCategory: this.valueText(supplier.businessCategory),
+      paymentTerm: this.valueText(supplier.paymentTerm),
+      cooperationRelation: this.valueText(supplier.cooperationRelation),
+      managementStatus: this.valueText(supplier.manageStatus),
+      remark: this.valueText(supplier.remark),
+    };
+  }
+
+  private buildSupplierProfileSnapshot(supplier: CompanySupplierEntity) {
+    return {
+      supplierId: this.valueText(supplier.id),
+      supplierName: this.valueText(supplier.supplierName),
+      supplierType: this.valueText(supplier.supplierType),
+      supplierSource: this.valueText(supplier.supplierSource),
+      supplierNature: this.valueText(supplier.supplierNature),
+      businessCategory: this.valueText(supplier.businessCategory),
+      paymentTerm: this.valueText(supplier.paymentTerm),
+      cooperationRelation: this.valueText(supplier.cooperationRelation),
+      managementStatus: this.valueText(supplier.manageStatus),
+      remark: this.valueText(supplier.remark),
     };
   }
 

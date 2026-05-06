@@ -159,4 +159,36 @@ export class DifyController {
       return { code: 500, message: error.message };
     }
   }
+
+  @Post('/keyPersonGuide')
+  async keyPersonGuide(
+    @Body()
+    body: {
+      customerName: string;
+      name: string;
+      position: string;
+      roleType: string;
+      lastContactContent: string;
+      remark: string;
+      birthday: string;
+    }
+  ) {
+    if (!body.customerName || !body.name || !body.position || !body.roleType) {
+      return { code: 400, message: 'customerName、name、position、roleType 均为必填项' };
+    }
+    try {
+      const result = await this.difyService.getKeyPersonGuide({
+        customerName: body.customerName,
+        name: body.name,
+        position: body.position,
+        roleType: body.roleType,
+        lastContactContent: body.lastContactContent || '',
+        remark: body.remark || '',
+        birthday: body.birthday || '',
+      });
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
 }

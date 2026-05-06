@@ -55,6 +55,40 @@ export class DifyService {
     return null;
   }
 
+  private getMissingApiKeyMessage(workflowKey: string) {
+    if (workflowKey === 'supplierBackgroundCheck') {
+      return '供应商 AI 背调未配置 Dify API Key';
+    }
+    if (workflowKey === 'supplierProfile') {
+      return '供应商 AI 画像未配置 Dify API Key';
+    }
+    return `工作流 ${workflowKey} 未配置 Dify API Key`;
+  }
+
+  private normalizeWorkflowOutput(data: any) {
+    const parseText = (text: string) => {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { rawText: text };
+      }
+    };
+
+    if (typeof data === 'string') {
+      return parseText(data);
+    }
+
+    if (data && typeof data === 'object') {
+      for (const key of ['text', 'result', 'output', 'answer']) {
+        if (typeof data[key] === 'string') {
+          return parseText(data[key]);
+        }
+      }
+    }
+
+    return data;
+  }
+
   async runWorkflow(
     workflowKey: string,
     inputs: Record<string, any>
@@ -62,6 +96,13 @@ export class DifyService {
     const config = this.workflowMap.get(workflowKey);
     if (!config)
       return { success: false, error: `未找到工作流: ${workflowKey}` };
+
+    if (!config.apiKey) {
+      return {
+        success: false,
+        error: this.getMissingApiKeyMessage(workflowKey),
+      };
+    }
 
     const validationError = this.validateInputs(config, inputs);
     if (validationError) return { success: false, error: validationError };
@@ -169,5 +210,44 @@ export class DifyService {
     return {
       text: result.data?.text,
     };
+  }
+
+  async getKeyPersonGuide(inputs: {
+    customerName: string;
+    name: string;
+    position: string;
+    roleType: string;
+    lastContactContent: string;
+    remark: string;
+    birthday: string;
+  }) {
+    const config = this.workflowMap.get('keyPersonGuide');
+    if (!config?.apiKey || /todo/i.test(config.apiKey)) {
+      throw new Error('keyPersonGuide 未配置真实 Dify API Key');
+    }
+
+    const result = await this.runWorkflow('keyPersonGuide', {
+      customerName: inputs.customerName,
+      name: inputs.name,
+      position: inputs.position,
+      roleType: inputs.roleType,
+      lastContactContent: inputs.lastContactContent || '',
+      remark: inputs.remark || '',
+      birthday: inputs.birthday || '',
+    });
+    if (!result.success) throw new Error(result.error);
+    return this.normalizeWorkflowOutput(result.data);
+  }
+
+  async analyzeSupplierBackground(inputs: Record<string, any>) {
+    const result = await this.runWorkflow('supplierBackgroundCheck', inputs);
+    if (!result.success) throw new Error(result.error);
+    return this.normalizeWorkflowOutput(result.data);
+  }
+
+  async analyzeSupplierProfile(inputs: Record<string, any>) {
+    const result = await this.runWorkflow('supplierProfile', inputs);
+    if (!result.success) throw new Error(result.error);
+    return this.normalizeWorkflowOutput(result.data);
   }
 }

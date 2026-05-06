@@ -74,6 +74,22 @@ export function useDifyApi() {
 		});
 	}
 
+	async function getKeyPersonGuide(params: {
+		customerName: string;
+		name: string;
+		position: string;
+		roleType: string;
+		lastContactContent: string;
+		remark: string;
+		birthday: string;
+	}) {
+		return service.request({
+			url: 'company/dify/keyPersonGuide',
+			method: 'POST',
+			data: params
+		});
+	}
+
 	return {
 		queryMaterialPrice,
 		getCustomerInfo,
@@ -82,6 +98,7 @@ export function useDifyApi() {
 		analyzeLead,
 		analyzeFollowUp,
 		analyzePortrait,
-		analyzeCustomerOrder
+		analyzeCustomerOrder,
+		getKeyPersonGuide
 	};
 }

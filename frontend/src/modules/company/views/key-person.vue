@@ -95,28 +95,14 @@
 				</el-descriptions-item>
 			</el-descriptions>
 
-			<el-descriptions border :column="1" class="analysis-dialog__result">
-				<el-descriptions-item :label="TEXT.personality">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.personalityAnalysis || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.salesSuggestion">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.salesSuggestion || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.talkingPoints">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.talkingPoints || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.birthdayReminder">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.birthdayReminder || "-" }}
-					</div>
-				</el-descriptions-item>
-			</el-descriptions>
+			<el-table :data="analysisDialog.rows" border class="analysis-dialog__result">
+				<el-table-column prop="label" :label="TEXT.analysisItem" width="160" />
+				<el-table-column prop="content" :label="TEXT.aiSuggestion">
+					<template #default="{ row }">
+						<div class="analysis-dialog__text">{{ row.content || "-" }}</div>
+					</template>
+				</el-table-column>
+			</el-table>
 		</div>
 	</el-dialog>
 </template>
@@ -128,6 +114,8 @@ defineOptions({
 
 import { useCrud, useTable, useUpsert } from "@cool-vue/crud";
 import { reactive } from "vue";
+import { ElMessage } from "element-plus";
+import { useDifyApi } from "../api/dify";
 
 type KeyPersonItem = {
 	id: number;
@@ -139,6 +127,7 @@ type KeyPersonItem = {
 	phone: string;
 	wechat: string;
 	email: string;
+	birthday: string;
 	influenceLevel: string;
 	relationStatus: string;
 	lastContactDate: string;
@@ -163,6 +152,10 @@ const TEXT = {
 	salesSuggestion: "\u9500\u552e\u5efa\u8bae",
 	talkingPoints: "\u8bdd\u672f\u5efa\u8bae",
 	birthdayReminder: "\u751f\u65e5\u63d0\u9192",
+	riskReminder: "\u98ce\u9669\u63d0\u9192",
+	infoSupplement: "\u4fe1\u606f\u8865\u5145\u5efa\u8bae",
+	analysisItem: "\u5206\u6790\u9879\u76ee",
+	aiSuggestion: "AI\u5efa\u8bae\u5185\u5bb9",
 	title: "AI\u9500\u552e\u6307\u5bfc",
 	code: "\u5173\u952e\u4eba\u7f16\u53f7",
 	codePlaceholder: "\u4fdd\u5b58\u540e\u81ea\u52a8\u751f\u6210",
@@ -170,6 +163,7 @@ const TEXT = {
 	phone: "\u624b\u673a\u53f7",
 	wechat: "\u5fae\u4fe1",
 	email: "\u90ae\u7bb1",
+	birthday: "\u751f\u65e5",
 	influence: "\u5f71\u54cd\u529b\u7b49\u7ea7",
 	lastContact: "\u6700\u8fd1\u8054\u7cfb\u65f6\u95f4",
 	nextFollow: "\u4e0b\u6b21\u8ddf\u8fdb\u65f6\u95f4",
@@ -232,6 +226,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138001",
 		wechat: "zhanggong01",
 		email: "zhang.gong@example.com",
+		birthday: "1988-06-18",
 		influenceLevel: "high",
 		relationStatus: "following",
 		lastContactDate: "2026-04-18",
@@ -255,6 +250,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138002",
 		wechat: "lizong02",
 		email: "li.zong@example.com",
+		birthday: "1980-09-12",
 		influenceLevel: "high",
 		relationStatus: "vip",
 		lastContactDate: "2026-04-16",
@@ -278,6 +274,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138003",
 		wechat: "zhoucaigou",
 		email: "zhou.purchase@example.com",
+		birthday: "1991-03-26",
 		influenceLevel: "medium",
 		relationStatus: "connected",
 		lastContactDate: "2026-04-12",
@@ -299,23 +296,27 @@ const searchForm = reactive({
 	relationStatus: "",
 });
 
+const difyApi = useDifyApi();
+const analysisLabels = [
+	TEXT.personality,
+	TEXT.salesSuggestion,
+	TEXT.talkingPoints,
+	TEXT.birthdayReminder,
+	TEXT.riskReminder,
+	TEXT.infoSupplement,
+];
+
 const analysisDialog = reactive<{
 	visible: boolean;
 	title: string;
-	personalityAnalysis: string;
-	salesSuggestion: string;
-	talkingPoints: string;
-	birthdayReminder: string;
+	rows: { label: string; content: string }[];
 	roleTypeLabel: string;
 	loading: boolean;
 	row: KeyPersonItem | null;
 }>({
 	visible: false,
 	title: TEXT.title,
-	personalityAnalysis: "",
-	salesSuggestion: "",
-	talkingPoints: "",
-	birthdayReminder: "",
+	rows: analysisLabels.map(label => ({ label, content: "" })),
 	roleTypeLabel: "",
 	loading: false,
 	row: null,
@@ -340,21 +341,164 @@ function relationStatusLabel(value: string) {
 }
 
 function resetAnalysisDialog() {
-	analysisDialog.personalityAnalysis = "";
-	analysisDialog.salesSuggestion = "";
-	analysisDialog.talkingPoints = "";
-	analysisDialog.birthdayReminder = "";
+	analysisDialog.rows = analysisLabels.map(label => ({ label, content: "" }));
 }
 
-function formatLineTemplate(template: string, row: KeyPersonItem) {
-	return template
-		.replace("{name}", row.name)
-		.replace("{position}", row.position)
-		.replace("{influence}", influenceLevelLabel(row.influenceLevel))
-		.replace("{status}", relationStatusLabel(row.relationStatus));
+function extractDifyData(response: any) {
+	return response?.data ?? response;
 }
 
-function openAiGuide(row: KeyPersonItem) {
+function getFieldValue(data: any, keys: string[]) {
+	for (const key of keys) {
+		if (data && typeof data === "object" && data[key]) {
+			return String(data[key]);
+		}
+	}
+	return "";
+}
+
+function escapeRegExp(value: string) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeAiText(value: any) {
+	return String(value || "")
+		.replace(/\r\n/g, "\n")
+		.replace(/\r/g, "\n")
+		.trim();
+}
+
+function getAiText(data: any) {
+	if (typeof data === "string") {
+		return normalizeAiText(data);
+	}
+
+	if (!data || typeof data !== "object") {
+		return "";
+	}
+
+	for (const key of ["rawText", "text", "result", "output", "answer"]) {
+		if (typeof data[key] === "string") {
+			return normalizeAiText(data[key]);
+		}
+	}
+
+	return "";
+}
+
+function mergeRowContent(rows: { label: string; content: string }[], label: string, content: string) {
+	const row = rows.find(e => e.label === label);
+	const text = normalizeAiText(content);
+
+	if (!row || !text) return;
+
+	row.content = row.content ? `${row.content}\n${text}` : text;
+}
+
+function splitRiskAndInfo(content: string) {
+	const text = normalizeAiText(content);
+	const infoMatch = text.match(/(?:^|\n)\s*(?:信息补充建议|信息补充|补充建议)\s*[：:]\s*/);
+
+	if (!infoMatch || infoMatch.index === undefined) {
+		return {
+			risk: "",
+			info: text,
+		};
+	}
+
+	const risk = text
+		.slice(0, infoMatch.index)
+		.replace(/^\s*(?:风险提醒)\s*[：:]\s*/, "")
+		.trim();
+	const info = text.slice(infoMatch.index + infoMatch[0].length).trim();
+
+	return { risk, info };
+}
+
+function parseTextAiGuide(text: string) {
+	const rows = analysisLabels.map(label => ({ label, content: "" }));
+	const titleMap: Record<string, string> = {
+		性格分析: TEXT.personality,
+		销售建议: TEXT.salesSuggestion,
+		话术建议: TEXT.talkingPoints,
+		生日提醒: TEXT.birthdayReminder,
+		风险提醒: TEXT.riskReminder,
+		信息补充建议: TEXT.infoSupplement,
+		关键人基本判断: TEXT.personality,
+		性格与沟通风格分析: TEXT.personality,
+		销售推进建议: TEXT.salesSuggestion,
+		推荐沟通话术: TEXT.talkingPoints,
+		生日与关系维护提醒: TEXT.birthdayReminder,
+		风险提醒与信息补充建议: TEXT.infoSupplement,
+	};
+	const titles = Object.keys(titleMap).sort((a, b) => b.length - a.length);
+	const titlePattern = titles.map(escapeRegExp).join("|");
+	const headingReg = new RegExp(
+		`(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:(?:[一二三四五六七八九十]|[1-9])\\s*[、.．)]\\s*)?(${titlePattern})\\s*[：:]?\\s*`,
+		"g"
+	);
+	const matches = Array.from(text.matchAll(headingReg));
+
+	if (!matches.length) {
+		mergeRowContent(rows, TEXT.salesSuggestion, text);
+		return rows;
+	}
+
+	matches.forEach((match, index) => {
+		const title = match[1];
+		const start = (match.index || 0) + match[0].length;
+		const end = matches[index + 1]?.index ?? text.length;
+		const content = text.slice(start, end).trim();
+
+		if (!content) return;
+
+		if (title === "风险提醒与信息补充建议") {
+			const { risk, info } = splitRiskAndInfo(content);
+			mergeRowContent(rows, TEXT.riskReminder, risk);
+			mergeRowContent(rows, TEXT.infoSupplement, info || content);
+			return;
+		}
+
+		mergeRowContent(rows, titleMap[title], content);
+	});
+
+	if (!rows.some(row => row.content)) {
+		mergeRowContent(rows, TEXT.salesSuggestion, text);
+	}
+
+	return rows;
+}
+
+function parseAiGuideResult(result: any) {
+	const data = extractDifyData(result);
+	const rows = analysisLabels.map(label => ({ label, content: "" }));
+
+	if (data && typeof data === "object") {
+		const valueMap: Record<string, string[]> = {
+			[TEXT.personality]: ["personalityAnalysis", "personality", "性格分析"],
+			[TEXT.salesSuggestion]: ["salesSuggestion", "salesAdvice", "销售建议"],
+			[TEXT.talkingPoints]: ["talkingPoints", "scriptSuggestion", "话术建议"],
+			[TEXT.birthdayReminder]: ["birthdayReminder", "birthday", "生日提醒"],
+			[TEXT.riskReminder]: ["riskReminder", "risk", "风险提醒"],
+			[TEXT.infoSupplement]: ["infoSupplement", "informationSupplement", "信息补充建议"],
+		};
+
+		rows.forEach(row => {
+			row.content = getFieldValue(data, valueMap[row.label]);
+		});
+
+		if (rows.some(row => row.content)) {
+			return rows;
+		}
+	}
+
+	const text = getAiText(data);
+
+	if (!text) return rows;
+	return parseTextAiGuide(text);
+}
+
+async function openAiGuide(row: KeyPersonItem) {
 	analysisDialog.row = row;
 	analysisDialog.title = `${TEXT.dialogTitlePrefix}${row.name}`;
 	analysisDialog.roleTypeLabel = roleTypeLabel(row.roleType);
@@ -362,25 +506,22 @@ function openAiGuide(row: KeyPersonItem) {
 	resetAnalysisDialog();
 	analysisDialog.loading = true;
 
-	const birthdayText = row.nextFollowDate
-		? `${TEXT.birthdayPromptPrefix}${row.nextFollowDate}${TEXT.birthdayPromptSuffix}`
-		: TEXT.birthdayEmpty;
-
-	window.setTimeout(() => {
-		analysisDialog.personalityAnalysis = [
-			formatLineTemplate(TEXT.personalityLineTemplate, row),
-			row.remark || TEXT.personalityFallback,
-		].join("\n");
-
-		analysisDialog.salesSuggestion = [
-			TEXT.salesGuide1,
-			row.lastContactContent || TEXT.salesGuide2,
-		].join("\n");
-
-		analysisDialog.talkingPoints = [TEXT.talk1, TEXT.talk2].join("\n");
-		analysisDialog.birthdayReminder = birthdayText;
+	try {
+		const result = await difyApi.getKeyPersonGuide({
+			customerName: row.customerName,
+			name: row.name,
+			position: row.position,
+			roleType: row.roleType,
+			lastContactContent: row.lastContactContent,
+			remark: row.remark,
+			birthday: row.birthday,
+		});
+		analysisDialog.rows = parseAiGuideResult(result);
+	} catch (error: any) {
+		ElMessage.error(error?.message || "AI\u9500\u552e\u6307\u5bfc\u83b7\u53d6\u5931\u8d25");
+	} finally {
 		analysisDialog.loading = false;
-	}, 300);
+	}
 }
 
 function closeAiGuide() {
@@ -460,6 +601,7 @@ const keyPersonService = {
 			phone: String(data.phone || ""),
 			wechat: String(data.wechat || ""),
 			email: String(data.email || ""),
+			birthday: String(data.birthday || ""),
 			influenceLevel: String(data.influenceLevel || "medium"),
 			relationStatus: String(data.relationStatus || "new"),
 			lastContactDate: String(data.lastContactDate || ""),
@@ -578,6 +720,19 @@ const Upsert = useUpsert<KeyPersonItem>({
 			prop: "email",
 			span: 12,
 			component: { name: "el-input", props: { clearable: true } },
+		},
+		{
+			label: TEXT.birthday,
+			prop: "birthday",
+			span: 12,
+			component: {
+				name: "el-date-picker",
+				props: {
+					type: "date",
+					"value-format": "YYYY-MM-DD",
+					clearable: true,
+				},
+			},
 		},
 		{
 			label: TEXT.influence,
@@ -713,6 +868,7 @@ const Table = useTable<KeyPersonItem>({
 		},
 		{ label: TEXT.phone, prop: "phone", minWidth: 140 },
 		{ label: TEXT.wechat, prop: "wechat", minWidth: 140 },
+		{ label: TEXT.birthday, prop: "birthday", minWidth: 120 },
 		{
 			label: TEXT.influence,
 			prop: "influenceLevel",
