@@ -16,6 +16,7 @@ backend/src/modules/company/dify.config.ts
 
 !.env.example
 !.env.*.example
+!.env.*
 
 # --- Runtime and Temporary Files ---
 temp/
