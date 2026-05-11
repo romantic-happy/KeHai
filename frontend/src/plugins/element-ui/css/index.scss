@@ -105,6 +105,14 @@ $border-radius: () !default;
 	}
 }
 
+.el-checkbox__input.is-indeterminate .el-checkbox__inner {
+	background-color: transparent !important;
+	border-color: #d9d9d9 !important;
+}
+.el-checkbox__input.is-indeterminate .el-checkbox__inner::after {
+	display: none !important;
+}
+
 .el-popper {
 	border-radius: 6px;
 

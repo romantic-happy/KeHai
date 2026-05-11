@@ -1,7 +1,6 @@
 <template>
 	<cl-crud ref="Crud">
 		<cl-row>
-			<cl-refresh-btn />
 			<cl-add-btn />
 			<cl-multi-delete-btn />
 			<el-button
@@ -11,7 +10,6 @@
 			>
 				合并采购
 			</el-button>
-			<el-button @click="resetSearch">重置筛选</el-button>
 			<cl-flex1 />
 			<div class="search-wrapper">
 				<el-select
@@ -219,7 +217,6 @@ import type { TagProps } from 'element-plus';
 import { useCool } from '/@/cool';
 
 const { service } = useCool();
-const requirementService: any = service.company?.purchaseRequirement;
 
 interface PurchaseRequirementRow {
 	id: number;
@@ -852,26 +849,6 @@ function refresh(params?: any) {
 	Crud.value?.refresh({
 		...buildFilterParams(),
 		...params
-	});
-}
-
-function resetSearch() {
-	search.keyWord = '';
-	search.searchField = '';
-	search.sourceType = undefined;
-	search.purchaseStatus = undefined;
-	search.ownerName = '';
-	search.deliveryDateRange = [];
-
-	refresh({
-		page: 1,
-		keyWord: undefined,
-		searchField: undefined,
-		sourceType: undefined,
-		purchaseStatus: undefined,
-		ownerName: undefined,
-		deliveryStartDate: undefined,
-		deliveryEndDate: undefined
 	});
 }
 
