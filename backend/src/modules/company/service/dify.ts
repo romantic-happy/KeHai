@@ -68,7 +68,7 @@ export class DifyService {
 
     try {
       const response = await axios.post(
-        this.DIFY_API_URL,
+        this.DIFY_API_URL!,
         { inputs, response_mode: this.RESPONSE_MODE, user: this.DIFY_USER },
         {
           headers: {
@@ -168,6 +168,28 @@ export class DifyService {
     if (!result.success) throw new Error(result.error);
     return {
       text: result.data?.text,
+    };
+  }
+
+  async supplierBackgroundCheck(params: {
+    supplierName: string;
+    supplierType: string;
+    supplierSource?: string;
+    contactName: string;
+    contactInfo?: string;
+    supplierNature?: string;
+    businessCategory?: string;
+    paymentTerm?: string;
+    cooperationRelation?: string;
+    managementStatus?: string;
+    remark?: string;
+  }) {
+    const result = await this.runWorkflow('supplierBackgroundCheck', params);
+    if (!result.success) throw new Error(result.error);
+    // console.info(result.data);
+    return {
+      message: result.data?.message || result.data?.result || '背调完成',
+      prompt: result.data,
     };
   }
 }

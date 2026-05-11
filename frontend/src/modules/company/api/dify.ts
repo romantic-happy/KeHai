@@ -74,6 +74,26 @@ export function useDifyApi() {
 		});
 	}
 
+	async function supplierBackgroundCheck(params: {
+		supplierName: string;
+		supplierType: string;
+		supplierSource?: string;
+		contactName: string;
+		contactInfo?: string;
+		supplierNature?: string;
+		businessCategory?: string;
+		paymentTerm?: string;
+		cooperationRelation?: string;
+		managementStatus?: string;
+		remark?: string;
+	}) {
+		return service.request({
+			url: 'admin/company/supplier/aiBackgroundCheck',
+			method: 'POST',
+			data: params
+		});
+	}
+
 	return {
 		queryMaterialPrice,
 		getCustomerInfo,
@@ -82,6 +102,7 @@ export function useDifyApi() {
 		analyzeLead,
 		analyzeFollowUp,
 		analyzePortrait,
-		analyzeCustomerOrder
+		analyzeCustomerOrder,
+		supplierBackgroundCheck
 	};
 }

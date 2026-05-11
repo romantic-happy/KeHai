@@ -108,6 +108,31 @@
                 ]
               },
               {
+                "name": "合同生成",
+                "router": "/company/business/contractGenerate",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 2,
+                "viewPath": "modules/company/views/contract.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
                 "name": "开票管理",
                 "router": "/company/business/invoice",
                 "perms": null,

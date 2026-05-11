@@ -83,4 +83,22 @@ export default [
       { name: 'Unclosed_Order_Records', required: true, type: 'string' },
     ],
   },
+  {
+    key: 'supplierBackgroundCheck',
+    name: '供应商背调',
+    apiKey: getDifyApiKey('supplierBackgroundCheck', 'TODO_REPLACE'),
+    inputs: [
+      { name: 'supplierName', required: true, type: 'string' },
+      { name: 'supplierType', required: true, type: 'string' },
+      { name: 'supplierSource', required: false, type: 'string' },
+      { name: 'contactName', required: true, type: 'string' },
+      { name: 'contactInfo', required: false, type: 'string' },
+      { name: 'supplierNature', required: false, type: 'string' },
+      { name: 'businessCategory', required: false, type: 'string' },
+      { name: 'paymentTerm', required: false, type: 'string' },
+      { name: 'cooperationRelation', required: false, type: 'string' },
+      { name: 'managementStatus', required: false, type: 'string' },
+      { name: 'remark', required: false, type: 'string' },
+    ],
+  },
 ] as DifyWorkflowConfig[];
