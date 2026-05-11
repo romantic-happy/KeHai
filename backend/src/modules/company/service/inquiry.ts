@@ -5,6 +5,8 @@ import * as moment from 'moment';
 import { In, QueryRunner, Repository } from 'typeorm';
 import { CompanyInquiryEntity } from '../entity/inquiry';
 import { CompanyQuoteEntity } from '../entity/quote';
+import { CompanyContractOrderEntity } from '../entity/contractOrder';
+import { CompanyPurchaseRequirementEntity } from '../entity/purchaseRequirement';
 import { BaseSysUserEntity } from '../../base/entity/sys/user';
 import { BaseSysMenuEntity } from '../../base/entity/sys/menu';
 import { BaseSysRoleMenuEntity } from '../../base/entity/sys/role_menu';
@@ -24,6 +26,12 @@ export class CompanyInquiryService extends BaseService {
 
   @InjectEntityModel(CompanyQuoteEntity)
   companyQuoteEntity: Repository<CompanyQuoteEntity>;
+
+  @InjectEntityModel(CompanyContractOrderEntity)
+  companyContractOrderEntity: Repository<CompanyContractOrderEntity>;
+
+  @InjectEntityModel(CompanyPurchaseRequirementEntity)
+  companyPurchaseRequirementEntity: Repository<CompanyPurchaseRequirementEntity>;
 
   @InjectEntityModel(BaseSysMenuEntity)
   baseSysMenuEntity: Repository<BaseSysMenuEntity>;
@@ -501,18 +509,76 @@ export class CompanyInquiryService extends BaseService {
       throw new Error('询价不存在');
     }
 
-    // TODO: 后续接入 AI 生成/回填流程后，再放开这些字段的业务写入。
-    // TODO: 合同订单创建逻辑待完善
-    // TODO: 成单记录归档逻辑待完善（部分内容流转到成单记录中）
-    // TODO: 供应链报价转采购报价，销售增加利润与客户议价的流转逻辑待完善
+    const contractOrderNo = param?.contractOrderNo || inquiry.contractOrderNo || null;
 
     await inquiryRepo.update(inquiryId, {
       dealStatus: 2,
-      contractOrderNo: param?.contractOrderNo || null,
+      contractOrderNo,
       salesQuote: salesQuoteNum,
     });
 
+    await this.autoGeneratePurchaseRequirements(inquiry, contractOrderNo, queryRunner);
+
     return { id: inquiryId, dealStatus: 2 };
+  }
+
+  /**
+   * 自动按产品明细生成采购需求
+   */
+  private async autoGeneratePurchaseRequirements(
+    inquiry: CompanyInquiryEntity,
+    contractOrderNo: string,
+    queryRunner?: QueryRunner
+  ) {
+    const requirementRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyPurchaseRequirementEntity)
+      : this.companyPurchaseRequirementEntity;
+    const contractOrderRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyContractOrderEntity)
+      : this.companyContractOrderEntity;
+
+    let contractOrder: CompanyContractOrderEntity | null = null;
+    if (contractOrderNo) {
+      contractOrder = await contractOrderRepo.findOne({
+        where: { orderNo: contractOrderNo },
+      });
+    }
+
+    const productItems = inquiry?.productItems || [];
+    if (!productItems.length) {
+      return;
+    }
+
+    const dateStr = moment().format('YYYYMMDD');
+    const prefix = `CGXQ-${dateStr}`;
+    const count = await requirementRepo
+      .createQueryBuilder('a')
+      .where('a.requirementNo like :prefix', { prefix: `${prefix}-%` })
+      .getCount();
+
+    const requirements = productItems.map((item, index) => {
+      const seq = String(count + index + 1).padStart(4, '0');
+      return {
+        requirementNo: `${prefix}-${seq}`,
+        sourceType: 0,
+        sourceBizId: inquiry.id,
+        sourceItemIndex: index,
+        sourceBizNo: inquiry.inquiryNo,
+        contractOrderNo: contractOrderNo || undefined,
+        customerName: inquiry.customer || undefined,
+        ownerName: inquiry.ownerName || undefined,
+        deliveryDate: contractOrder?.deliveryDate || inquiry.projectEndDate || undefined,
+        deliveryStandard: contractOrder?.deliverStandard || inquiry.deliverStandard || undefined,
+        productName: item.productName || '-',
+        productBrand: item.brand || undefined,
+        productModel: item.model || undefined,
+        inventoryQty: item.quantity || 0,
+        quoteNo: inquiry.inquiryNo || undefined,
+        purchaseStatus: 0,
+      };
+    });
+
+    await requirementRepo.save(requirements);
   }
 
   /**
@@ -783,4 +849,5 @@ export class CompanyInquiryService extends BaseService {
       perms: requiredPerms,
     };
   }
+
 }
