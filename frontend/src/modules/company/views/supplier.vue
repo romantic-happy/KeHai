@@ -213,7 +213,6 @@
 
 	<el-dialog v-model="ai.visible" :title="ai.title" width="760px">
 		<el-alert :title="ai.message" type="warning" show-icon :closable="false" class="mb-3" />
-		<el-input v-model="ai.prompt" type="textarea" :rows="14" readonly />
 	</el-dialog>
 
 	<el-dialog v-model="quote.visible" title="报价记录" width="900px">

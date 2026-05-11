@@ -159,4 +159,31 @@ export class DifyController {
       return { code: 500, message: error.message };
     }
   }
+
+  @Post('/supplierBackgroundCheck')
+  async supplierBackgroundCheck(
+    @Body() body: {
+      supplierName: string;
+      supplierType: string;
+      supplierSource?: string;
+      contactName: string;
+      contactInfo?: string;
+      supplierNature?: string;
+      businessCategory?: string;
+      paymentTerm?: string;
+      cooperationRelation?: string;
+      managementStatus?: string;
+      remark?: string;
+    }
+  ) {
+    if (!body.supplierName || !body.supplierType || !body.contactName) {
+      return { code: 400, message: '供应商名称、类型、联系人姓名均为必填项' };
+    }
+    try {
+      const result = await this.difyService.supplierBackgroundCheck(body);
+      return { code: 1000, data: result };
+    } catch (error: any) {
+      return { code: 500, message: error.message };
+    }
+  }
 }

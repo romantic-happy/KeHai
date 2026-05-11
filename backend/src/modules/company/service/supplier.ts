@@ -4,11 +4,15 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyQuoteEntity } from '../entity/quote';
 import { CompanySupplierEntity } from '../entity/supplier';
+import { DifyService } from './dify';
 
 @Provide()
 export class CompanySupplierService extends BaseService {
   @Inject()
   ctx;
+
+  @Inject()
+  difyService: DifyService;
 
   @InjectEntityModel(CompanySupplierEntity)
   companySupplierEntity: Repository<CompanySupplierEntity>;
@@ -187,22 +191,19 @@ export class CompanySupplierService extends BaseService {
 
   async aiBackgroundCheck(param: any) {
     const supplier = await this.getSupplierForAi(param);
-    const prompt = [
-      '供应商AI背调占位请求，后续可接入Dify、DeepSeek或其他AI服务。',
-      `供应商名称：${supplier.supplierName || ''}`,
-      `供应商来源：${supplier.supplierSource || ''}`,
-      `联系人：${supplier.contactName || ''}`,
-      `联系方式：${supplier.contactInfo || ''}`,
-      `供应商性质：${supplier.supplierNature || ''}`,
-      `业务类别：${(supplier.businessCategory || []).join('、')}`,
-      '需要核验：主体合法性、经营状况、履约能力、社保信息、历史项目与风险提示。',
-    ].join('\n');
-
-    return {
-      configured: false,
-      message: 'AI接口暂未配置',
-      prompt,
-    };
+    return await this.difyService.supplierBackgroundCheck({
+      supplierName: supplier.supplierName,
+      supplierType: supplier.supplierType,
+      supplierSource: supplier.supplierSource,
+      contactName: supplier.contactName,
+      contactInfo: supplier.contactInfo,
+      supplierNature: supplier.supplierNature,
+      businessCategory: (supplier.businessCategory || []).join('、'),
+      paymentTerm: supplier.paymentTerm?.toString(),
+      cooperationRelation: supplier.cooperationRelation,
+      managementStatus: supplier.manageStatus,
+      remark: supplier.remark,
+    });
   }
 
   async aiSupplierProfile(param: any) {
