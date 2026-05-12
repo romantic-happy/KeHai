@@ -13,9 +13,10 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = process.env.DIFY_API_URL;
-  private readonly RESPONSE_MODE = 'blocking';
-  private readonly DIFY_USER = process.env.DIFY_USER;
+  private readonly DIFY_API_URL =
+    process.env.DIFY_API_URL || 'http://119.146.180.66:6859/v1/workflows/run';
+  private readonly RESPONSE_MODE = process.env.DIFY_RESPONSE_MODE || 'blocking';
+  private readonly DIFY_USER = process.env.DIFY_USER || 'kehai-supplier-user';
 
   private workflowMap: Map<string, DifyWorkflowConfig> = new Map();
 
