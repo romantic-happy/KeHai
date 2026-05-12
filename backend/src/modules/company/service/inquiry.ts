@@ -5,6 +5,9 @@ import * as moment from 'moment';
 import { In, QueryRunner, Repository } from 'typeorm';
 import { CompanyInquiryEntity } from '../entity/inquiry';
 import { CompanyQuoteEntity } from '../entity/quote';
+import { CompanyClosedDealEntity } from '../entity/closedDeal';
+import { CompanyLostDealEntity } from '../entity/lostDeal';
+import { CompanyContractMgmtEntity } from '../entity/contractMgmt';
 import { BaseSysUserEntity } from '../../base/entity/sys/user';
 import { BaseSysMenuEntity } from '../../base/entity/sys/menu';
 import { BaseSysRoleMenuEntity } from '../../base/entity/sys/role_menu';
@@ -24,6 +27,15 @@ export class CompanyInquiryService extends BaseService {
 
   @InjectEntityModel(CompanyQuoteEntity)
   companyQuoteEntity: Repository<CompanyQuoteEntity>;
+
+  @InjectEntityModel(CompanyClosedDealEntity)
+  companyClosedDealEntity: Repository<CompanyClosedDealEntity>;
+
+  @InjectEntityModel(CompanyLostDealEntity)
+  companyLostDealEntity: Repository<CompanyLostDealEntity>;
+
+  @InjectEntityModel(CompanyContractMgmtEntity)
+  companyContractMgmtEntity: Repository<CompanyContractMgmtEntity>;
 
   @InjectEntityModel(BaseSysMenuEntity)
   baseSysMenuEntity: Repository<BaseSysMenuEntity>;
@@ -466,20 +478,45 @@ export class CompanyInquiryService extends BaseService {
       throw new Error('询价不存在');
     }
 
-    // TODO: 后续接入 AI 生成/回填流程后，再放开这些字段的业务写入。
-    // TODO: 未成单记录归档逻辑待完善
-
     await inquiryRepo.update(inquiryId, {
       dealStatus: 1,
       lostReason: String(lostReason),
       salesQuote: salesQuoteNum,
     });
 
+    const lostDealRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyLostDealEntity)
+      : this.companyLostDealEntity;
+
+    const existing = await lostDealRepo.findOne({ where: { inquiryId } });
+    if (existing) {
+      await lostDealRepo.update(existing.id, {
+        customerName: inquiry.customer,
+        quoteNo: inquiry.inquiryNo,
+        projectName: inquiry.projectName,
+        quoteAmount: salesQuoteNum,
+        lostTime: new Date(),
+        contactPerson: inquiry.contactPerson || null,
+        lostReason: String(lostReason),
+      });
+    } else {
+      await lostDealRepo.save({
+        customerName: inquiry.customer,
+        quoteNo: inquiry.inquiryNo,
+        projectName: inquiry.projectName,
+        quoteAmount: salesQuoteNum,
+        lostTime: new Date(),
+        contactPerson: inquiry.contactPerson || null,
+        lostReason: String(lostReason),
+        inquiryId,
+      });
+    }
+
     return { id: inquiryId, dealStatus: 1 };
   }
 
   /**
-   * 已成单：转换合同订单，部分内容流转到成单记录中
+   * 已成单：先创建合同，再归档成单记录
    */
   @CoolTransaction({ isolation: 'SERIALIZABLE' })
   async convertToContractOrder(param: any, queryRunner?: QueryRunner) {
@@ -501,18 +538,95 @@ export class CompanyInquiryService extends BaseService {
       throw new Error('询价不存在');
     }
 
-    // TODO: 后续接入 AI 生成/回填流程后，再放开这些字段的业务写入。
-    // TODO: 合同订单创建逻辑待完善
-    // TODO: 成单记录归档逻辑待完善（部分内容流转到成单记录中）
-    // TODO: 供应链报价转采购报价，销售增加利润与客户议价的流转逻辑待完善
+    const contractMgmtRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyContractMgmtEntity)
+      : this.companyContractMgmtEntity;
+
+    const inquiryTypeToContractCategory: Record<number, number> = {
+      0: 1,
+      1: 1,
+      2: 1,
+      3: 0,
+      4: 4,
+    };
+    const contractCategory = inquiryTypeToContractCategory[inquiry.inquiryType] ?? 0;
+
+    const contractNoPrefixMap: Record<number, string> = {
+      0: 'XM',
+      1: 'JX',
+      2: 'TS',
+      3: 'DQ',
+      4: 'BP',
+    };
+    const dateStr = moment().format('YYYYMMDD');
+    const prefix = `HT-${contractNoPrefixMap[contractCategory] || 'HT'}-${dateStr}`;
+    const count = await contractMgmtRepo
+      .createQueryBuilder('a')
+      .where('a.contractNo like :p', { p: `${prefix}-%` })
+      .getCount();
+    const seq = String(count + 1).padStart(4, '0');
+    const contractNo = `${prefix}-${seq}`;
+
+    const currentUserName =
+      this.ctx?.admin?.name ||
+      this.ctx?.admin?.nickName ||
+      this.ctx?.admin?.username ||
+      null;
+
+    const contract = await contractMgmtRepo.save({
+      contractNo,
+      contractName: param?.contractName || inquiry.projectName || inquiry.customer,
+      contractCategory,
+      customerId: null,
+      customerName: inquiry.customer,
+      contractAmount: salesQuoteNum,
+      contractStatus: 0,
+      startDate: param?.projectDate || null,
+      endDate: param?.deliveryDate || null,
+      signDate: new Date(),
+      remark: param?.remark || null,
+      createUserId: param?.ownerUserId || this.ctx?.admin?.userId || null,
+      createUserName: currentUserName,
+      isDeleted: 0,
+      version: 1,
+      inquiryId,
+    });
 
     await inquiryRepo.update(inquiryId, {
       dealStatus: 2,
-      contractOrderNo: param?.contractOrderNo || null,
+      contractOrderNo: contractNo,
       salesQuote: salesQuoteNum,
     });
 
-    return { id: inquiryId, dealStatus: 2 };
+    const closedDealRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyClosedDealEntity)
+      : this.companyClosedDealEntity;
+
+    const existing = await closedDealRepo.findOne({ where: { inquiryId } });
+    if (existing) {
+      await closedDealRepo.update(existing.id, {
+        customerName: inquiry.customer,
+        contractNo,
+        projectName: inquiry.projectName,
+        contractAmount: salesQuoteNum,
+        dealTime: new Date(),
+        contactPerson: inquiry.contactPerson || null,
+        dealKey: param?.dealKey || null,
+      });
+    } else {
+      await closedDealRepo.save({
+        customerName: inquiry.customer,
+        contractNo,
+        projectName: inquiry.projectName,
+        contractAmount: salesQuoteNum,
+        dealTime: new Date(),
+        contactPerson: inquiry.contactPerson || null,
+        dealKey: param?.dealKey || null,
+        inquiryId,
+      });
+    }
+
+    return { id: inquiryId, dealStatus: 2, contractNo };
   }
 
   /**

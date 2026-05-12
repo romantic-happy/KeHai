@@ -42,7 +42,7 @@ export class CompanyContractMgmtEntity extends BaseEntity {
   @Index()
   @Column({
     comment: '合同状态',
-    dict: ['草稿', '审批中', '已生效', '已完结', '已作废'],
+    dict: ['编辑中', '未审核', '已审核'],
     type: 'tinyint',
     default: 0,
   })
@@ -94,4 +94,8 @@ export class CompanyContractMgmtEntity extends BaseEntity {
 
   @Column({ comment: '版本号', default: 1 })
   version: number;
+
+  @Index()
+  @Column({ comment: '关联询价ID', nullable: true })
+  inquiryId: number;
 }
