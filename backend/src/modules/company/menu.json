@@ -359,6 +359,31 @@
                 "childMenus": []
               }
             ]
+          },
+          {
+            "name": "采购",
+            "router": null,
+            "perms": null,
+            "type": 0,
+            "icon": "icon-menu",
+            "orderNum": 3,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": [
+              {
+                "name": "采购需求",
+                "router": "/company/purchase/requirement",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 1,
+                "viewPath": "modules/company/views/purchase/requirement.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": []
+              }
+            ]
           }
         ]
       },

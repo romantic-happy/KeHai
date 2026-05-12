@@ -1298,6 +1298,103 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
+	interface CompanyPurchaseRequirementEntity {
+		/**
+		 * ID
+		 */
+		id?: number;
+
+		/**
+		 * 采购需求编号
+		 */
+		requirementNo?: string;
+
+		/**
+		 * 来源类型 0-合同订单 1-储备采购
+		 */
+		sourceType?: number;
+
+		/**
+		 * 来源业务ID
+		 */
+		sourceBizId?: number;
+
+		/**
+		 * 来源单据号
+		 */
+		sourceBizNo?: string;
+
+		/**
+		 * 合同订单号
+		 */
+		contractOrderNo?: string;
+
+		/**
+		 * 客户名称
+		 */
+		customerName?: string;
+
+		/**
+		 * 负责人
+		 */
+		ownerName?: string;
+
+		/**
+		 * 交付日期
+		 */
+		deliveryDate?: Date;
+
+		/**
+		 * 交付标准
+		 */
+		deliveryStandard?: string;
+
+		/**
+		 * 产品名称
+		 */
+		productName?: string;
+
+		/**
+		 * 品牌
+		 */
+		productBrand?: string;
+
+		/**
+		 * 型号
+		 */
+		productModel?: string;
+
+		/**
+		 * 库存数量
+		 */
+		inventoryQty?: number;
+
+		/**
+		 * 关联报价单号
+		 */
+		quoteNo?: string;
+
+		/**
+		 * 采购状态 0-未采购 1-已采购
+		 */
+		purchaseStatus?: number;
+
+		/**
+		 * 创建时间
+		 */
+		createTime?: string;
+
+		/**
+		 * 更新时间
+		 */
+		updateTime?: string;
+
+		/**
+		 * 任意键值
+		 */
+		[key: string]: any;
+	}
+
 	interface CompanyQuoteEntity {
 		/**
 		 * ID
@@ -2252,6 +2349,11 @@ declare namespace Eps {
 	interface CompanyLeadPageResponse {
 		pagination: PagePagination;
 		list: CompanyLeadEntity[];
+	}
+
+	interface CompanyPurchaseRequirementPageResponse {
+		pagination: PagePagination;
+		list: CompanyPurchaseRequirementEntity[];
 	}
 
 	interface CompanyQuotePageResponse {
@@ -3352,6 +3454,64 @@ declare namespace Eps {
 		request: Request;
 	}
 
+	interface CompanyPurchaseRequirement {
+		/**
+		 * 合并采购
+		 */
+		generatePurchaseOrder(data?: any): Promise<any>;
+
+		/**
+		 * 删除
+		 */
+		delete(data?: any): Promise<any>;
+
+		/**
+		 * 修改
+		 */
+		update(data?: any): Promise<any>;
+
+		/**
+		 * 单个信息
+		 */
+		info(data?: any): Promise<CompanyPurchaseRequirementEntity>;
+
+		/**
+		 * 分页查询
+		 */
+		page(data?: any): Promise<CompanyPurchaseRequirementPageResponse>;
+
+		/**
+		 * 新增
+		 */
+		add(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: {
+			generatePurchaseOrder: string;
+			delete: string;
+			update: string;
+			info: string;
+			page: string;
+			add: string;
+		};
+
+		/**
+		 * 权限状态
+		 */
+		_permission: {
+			generatePurchaseOrder: boolean;
+			delete: boolean;
+			update: boolean;
+			info: boolean;
+			page: boolean;
+			add: boolean;
+		};
+
+		request: Request;
+	}
+
 	interface CompanyQuote {
 		/**
 		 * 销售询价需求分页（默认待报价）
@@ -4161,6 +4321,7 @@ declare namespace Eps {
 			inquiry: CompanyInquiry;
 			invoice: CompanyInvoice;
 			lead: CompanyLead;
+			purchaseRequirement: CompanyPurchaseRequirement;
 			quote: CompanyQuote;
 			supplier: CompanySupplier;
 		};
