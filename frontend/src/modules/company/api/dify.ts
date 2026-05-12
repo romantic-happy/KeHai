@@ -74,17 +74,21 @@ export function useDifyApi() {
 		});
 	}
 
-	async function getKeyPersonGuide(params: {
-		customerName: string;
-		name: string;
-		position: string;
-		roleType: string;
-		lastContactContent: string;
-		remark: string;
-		birthday: string;
+	async function supplierBackgroundCheck(params: {
+		supplierName: string;
+		supplierType: string;
+		supplierSource?: string;
+		contactName: string;
+		contactInfo?: string;
+		supplierNature?: string;
+		businessCategory?: string;
+		paymentTerm?: string;
+		cooperationRelation?: string;
+		managementStatus?: string;
+		remark?: string;
 	}) {
 		return service.request({
-			url: 'company/dify/keyPersonGuide',
+			url: 'admin/company/supplier/aiBackgroundCheck',
 			method: 'POST',
 			data: params
 		});
@@ -99,6 +103,6 @@ export function useDifyApi() {
 		analyzeFollowUp,
 		analyzePortrait,
 		analyzeCustomerOrder,
-		getKeyPersonGuide
+		supplierBackgroundCheck
 	};
 }

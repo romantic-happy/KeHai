@@ -108,6 +108,31 @@
                 ]
               },
               {
+                "name": "合同生成",
+                "router": "/company/business/contractGenerate",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 2,
+                "viewPath": "modules/company/views/contract.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
                 "name": "开票管理",
                 "router": "/company/business/invoice",
                 "perms": null,
@@ -336,7 +361,7 @@
             ]
           },
           {
-            "name": "采购管理",
+            "name": "采购",
             "router": "/company/purchase",
             "perms": null,
             "type": 0,
@@ -347,12 +372,24 @@
             "isShow": true,
             "childMenus": [
               {
+                "name": "采购需求",
+                "router": "/company/purchase/requirement",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 1,
+                "viewPath": "modules/company/views/purchase/requirement.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": []
+              },
+              {
                 "name": "采购合同",
                 "router": "/company/purchase/contract",
                 "perms": null,
                 "type": 1,
                 "icon": "icon-menu",
-                "orderNum": 1,
+                "orderNum": 2,
                 "viewPath": "modules/company/views/purchase-contract.vue",
                 "keepAlive": true,
                 "isShow": true,

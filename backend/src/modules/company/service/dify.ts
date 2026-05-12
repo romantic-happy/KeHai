@@ -33,14 +33,14 @@ export class DifyService {
   private validateInput(config: DifyInputConfig, value: any): string | null {
     const { name, required, type } = config;
     if (required && (value === undefined || value === null || value === '')) {
-      return `参数 "${name}" 为必填项`;
+      return `Parameter "${name}" is required`;
     }
     if (value === undefined || value === null || value === '') {
       return null;
     }
     const actualType = typeof value;
     if (actualType !== type) {
-      return `参数 "${name}" 类型错误，期望 ${type}，实际 ${actualType}`;
+      return `Parameter "${name}" type error, expected ${type}, actual ${actualType}`;
     }
     return null;
   }
@@ -58,12 +58,9 @@ export class DifyService {
 
   private getMissingApiKeyMessage(workflowKey: string) {
     if (workflowKey === 'supplierBackgroundCheck') {
-      return '供应商 AI 背调未配置 Dify API Key';
+      return 'Supplier AI background check Dify API Key is not configured';
     }
-    if (workflowKey === 'supplierProfile') {
-      return '供应商 AI 画像未配置 Dify API Key';
-    }
-    return `工作流 ${workflowKey} 未配置 Dify API Key`;
+    return `Workflow ${workflowKey} Dify API Key is not configured`;
   }
 
   private normalizeWorkflowOutput(data: any) {
@@ -96,7 +93,7 @@ export class DifyService {
   ): Promise<DifyResponse> {
     const config = this.workflowMap.get(workflowKey);
     if (!config)
-      return { success: false, error: `未找到工作流: ${workflowKey}` };
+      return { success: false, error: `Workflow not found: ${workflowKey}` };
 
     if (!config.apiKey) {
       return {
@@ -110,7 +107,7 @@ export class DifyService {
 
     try {
       const response = await axios.post(
-        this.DIFY_API_URL,
+        this.DIFY_API_URL!,
         { inputs, response_mode: this.RESPONSE_MODE, user: this.DIFY_USER },
         {
           headers: {
@@ -125,7 +122,7 @@ export class DifyService {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'Dify 调用失败',
+          error.response?.data?.message || error.message || 'Dify call failed',
       };
     }
   }
@@ -213,42 +210,25 @@ export class DifyService {
     };
   }
 
-  async getKeyPersonGuide(inputs: {
-    customerName: string;
-    name: string;
-    position: string;
-    roleType: string;
-    lastContactContent: string;
-    remark: string;
-    birthday: string;
+  async supplierBackgroundCheck(params: {
+    supplierName: string;
+    supplierType: string;
+    supplierSource?: string;
+    contactName: string;
+    contactInfo?: string;
+    supplierNature?: string;
+    businessCategory?: string;
+    paymentTerm?: string;
+    cooperationRelation?: string;
+    managementStatus?: string;
+    remark?: string;
   }) {
-    const config = this.workflowMap.get('keyPersonGuide');
-    if (!config?.apiKey || /todo/i.test(config.apiKey)) {
-      throw new Error('keyPersonGuide 未配置真实 Dify API Key');
-    }
-
-    const result = await this.runWorkflow('keyPersonGuide', {
-      customerName: inputs.customerName,
-      name: inputs.name,
-      position: inputs.position,
-      roleType: inputs.roleType,
-      lastContactContent: inputs.lastContactContent || '',
-      remark: inputs.remark || '',
-      birthday: inputs.birthday || '',
-    });
+    const result = await this.runWorkflow('supplierBackgroundCheck', params);
     if (!result.success) throw new Error(result.error);
-    return this.normalizeWorkflowOutput(result.data);
-  }
-
-  async analyzeSupplierBackground(inputs: Record<string, any>) {
-    const result = await this.runWorkflow('supplierBackgroundCheck', inputs);
-    if (!result.success) throw new Error(result.error);
-    return this.normalizeWorkflowOutput(result.data);
-  }
-
-  async analyzeSupplierProfile(inputs: Record<string, any>) {
-    const result = await this.runWorkflow('supplierProfile', inputs);
-    if (!result.success) throw new Error(result.error);
-    return this.normalizeWorkflowOutput(result.data);
+    // console.info(result.data);
+    return {
+      message: result.data?.message || result.data?.result || 'Background check completed',
+      prompt: result.data,
+    };
   }
 }

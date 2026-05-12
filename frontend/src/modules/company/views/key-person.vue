@@ -73,38 +73,6 @@
 		<cl-upsert ref="Upsert" />
 	</cl-crud>
 
-	<el-dialog
-		v-model="analysisDialog.visible"
-		:title="analysisDialog.title"
-		width="760px"
-		@closed="closeAiGuide"
-	>
-		<div v-loading="analysisDialog.loading" class="analysis-dialog">
-			<el-descriptions border :column="2" class="analysis-dialog__summary">
-				<el-descriptions-item :label="TEXT.customer">
-					{{ analysisDialog.row?.customerName || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.keyPerson">
-					{{ analysisDialog.row?.name || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.position">
-					{{ analysisDialog.row?.position || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.role">
-					{{ analysisDialog.roleTypeLabel || "-" }}
-				</el-descriptions-item>
-			</el-descriptions>
-
-			<el-table :data="analysisDialog.rows" border class="analysis-dialog__result">
-				<el-table-column prop="label" :label="TEXT.analysisItem" width="160" />
-				<el-table-column prop="content" :label="TEXT.aiSuggestion">
-					<template #default="{ row }">
-						<div class="analysis-dialog__text">{{ row.content || "-" }}</div>
-					</template>
-				</el-table-column>
-			</el-table>
-		</div>
-	</el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -113,9 +81,8 @@ defineOptions({
 });
 
 import { useCrud, useTable, useUpsert } from "@cool-vue/crud";
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 import { ElMessage } from "element-plus";
-import { useDifyApi } from "../api/dify";
 
 type KeyPersonItem = {
 	id: number;
@@ -191,7 +158,6 @@ const TEXT = {
 		"\u53ef\u4ee5\u5148\u95ee\u5bf9\u65b9\u73b0\u9636\u6bb5\u6700\u5173\u6ce8\u7684\u6307\u6807\u662f\u4ec0\u4e48\u3002",
 	talk2:
 		"\u518d\u8865\u5145\u540c\u7c7b\u5ba2\u6237\u6210\u529f\u6848\u4f8b\uff0c\u5e76\u5f15\u5bfc\u5230\u4e0b\u4e00\u6b65\u8ddf\u8fdb\u5b89\u6392\u3002",
-	buttonAiGuide: "AI\u9500\u552e\u6307\u5bfc",
 };
 
 const roleTypeOptions = [
@@ -296,33 +262,7 @@ const searchForm = reactive({
 	relationStatus: "",
 });
 
-const difyApi = useDifyApi();
-const analysisLabels = [
-	TEXT.personality,
-	TEXT.salesSuggestion,
-	TEXT.talkingPoints,
-	TEXT.birthdayReminder,
-	TEXT.riskReminder,
-	TEXT.infoSupplement,
-];
-
-const analysisDialog = reactive<{
-	visible: boolean;
-	title: string;
-	rows: { label: string; content: string }[];
-	roleTypeLabel: string;
-	loading: boolean;
-	row: KeyPersonItem | null;
-}>({
-	visible: false,
-	title: TEXT.title,
-	rows: analysisLabels.map(label => ({ label, content: "" })),
-	roleTypeLabel: "",
-	loading: false,
-	row: null,
-});
-
-const customerOptions = Array.from(new Set(mockRows.map(e => e.customerName)));
+const customerOptions = computed(() => Array.from(new Set(mockRows.map(e => e.customerName))));
 
 function normalizeKeyword(value: any) {
 	return String(value || "").trim().toLowerCase();
@@ -338,194 +278,6 @@ function influenceLevelLabel(value: string) {
 
 function relationStatusLabel(value: string) {
 	return relationStatusOptions.find(e => e.value === value)?.label || value;
-}
-
-function resetAnalysisDialog() {
-	analysisDialog.rows = analysisLabels.map(label => ({ label, content: "" }));
-}
-
-function extractDifyData(response: any) {
-	return response?.data ?? response;
-}
-
-function getFieldValue(data: any, keys: string[]) {
-	for (const key of keys) {
-		if (data && typeof data === "object" && data[key]) {
-			return String(data[key]);
-		}
-	}
-	return "";
-}
-
-function escapeRegExp(value: string) {
-	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function normalizeAiText(value: any) {
-	return String(value || "")
-		.replace(/\r\n/g, "\n")
-		.replace(/\r/g, "\n")
-		.trim();
-}
-
-function getAiText(data: any) {
-	if (typeof data === "string") {
-		return normalizeAiText(data);
-	}
-
-	if (!data || typeof data !== "object") {
-		return "";
-	}
-
-	for (const key of ["rawText", "text", "result", "output", "answer"]) {
-		if (typeof data[key] === "string") {
-			return normalizeAiText(data[key]);
-		}
-	}
-
-	return "";
-}
-
-function mergeRowContent(rows: { label: string; content: string }[], label: string, content: string) {
-	const row = rows.find(e => e.label === label);
-	const text = normalizeAiText(content);
-
-	if (!row || !text) return;
-
-	row.content = row.content ? `${row.content}\n${text}` : text;
-}
-
-function splitRiskAndInfo(content: string) {
-	const text = normalizeAiText(content);
-	const infoMatch = text.match(/(?:^|\n)\s*(?:信息补充建议|信息补充|补充建议)\s*[：:]\s*/);
-
-	if (!infoMatch || infoMatch.index === undefined) {
-		return {
-			risk: "",
-			info: text,
-		};
-	}
-
-	const risk = text
-		.slice(0, infoMatch.index)
-		.replace(/^\s*(?:风险提醒)\s*[：:]\s*/, "")
-		.trim();
-	const info = text.slice(infoMatch.index + infoMatch[0].length).trim();
-
-	return { risk, info };
-}
-
-function parseTextAiGuide(text: string) {
-	const rows = analysisLabels.map(label => ({ label, content: "" }));
-	const titleMap: Record<string, string> = {
-		性格分析: TEXT.personality,
-		销售建议: TEXT.salesSuggestion,
-		话术建议: TEXT.talkingPoints,
-		生日提醒: TEXT.birthdayReminder,
-		风险提醒: TEXT.riskReminder,
-		信息补充建议: TEXT.infoSupplement,
-		关键人基本判断: TEXT.personality,
-		性格与沟通风格分析: TEXT.personality,
-		销售推进建议: TEXT.salesSuggestion,
-		推荐沟通话术: TEXT.talkingPoints,
-		生日与关系维护提醒: TEXT.birthdayReminder,
-		风险提醒与信息补充建议: TEXT.infoSupplement,
-	};
-	const titles = Object.keys(titleMap).sort((a, b) => b.length - a.length);
-	const titlePattern = titles.map(escapeRegExp).join("|");
-	const headingReg = new RegExp(
-		`(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:(?:[一二三四五六七八九十]|[1-9])\\s*[、.．)]\\s*)?(${titlePattern})\\s*[：:]?\\s*`,
-		"g"
-	);
-	const matches = Array.from(text.matchAll(headingReg));
-
-	if (!matches.length) {
-		mergeRowContent(rows, TEXT.salesSuggestion, text);
-		return rows;
-	}
-
-	matches.forEach((match, index) => {
-		const title = match[1];
-		const start = (match.index || 0) + match[0].length;
-		const end = matches[index + 1]?.index ?? text.length;
-		const content = text.slice(start, end).trim();
-
-		if (!content) return;
-
-		if (title === "风险提醒与信息补充建议") {
-			const { risk, info } = splitRiskAndInfo(content);
-			mergeRowContent(rows, TEXT.riskReminder, risk);
-			mergeRowContent(rows, TEXT.infoSupplement, info || content);
-			return;
-		}
-
-		mergeRowContent(rows, titleMap[title], content);
-	});
-
-	if (!rows.some(row => row.content)) {
-		mergeRowContent(rows, TEXT.salesSuggestion, text);
-	}
-
-	return rows;
-}
-
-function parseAiGuideResult(result: any) {
-	const data = extractDifyData(result);
-	const rows = analysisLabels.map(label => ({ label, content: "" }));
-
-	if (data && typeof data === "object") {
-		const valueMap: Record<string, string[]> = {
-			[TEXT.personality]: ["personalityAnalysis", "personality", "性格分析"],
-			[TEXT.salesSuggestion]: ["salesSuggestion", "salesAdvice", "销售建议"],
-			[TEXT.talkingPoints]: ["talkingPoints", "scriptSuggestion", "话术建议"],
-			[TEXT.birthdayReminder]: ["birthdayReminder", "birthday", "生日提醒"],
-			[TEXT.riskReminder]: ["riskReminder", "risk", "风险提醒"],
-			[TEXT.infoSupplement]: ["infoSupplement", "informationSupplement", "信息补充建议"],
-		};
-
-		rows.forEach(row => {
-			row.content = getFieldValue(data, valueMap[row.label]);
-		});
-
-		if (rows.some(row => row.content)) {
-			return rows;
-		}
-	}
-
-	const text = getAiText(data);
-
-	if (!text) return rows;
-	return parseTextAiGuide(text);
-}
-
-async function openAiGuide(row: KeyPersonItem) {
-	analysisDialog.row = row;
-	analysisDialog.title = `${TEXT.dialogTitlePrefix}${row.name}`;
-	analysisDialog.roleTypeLabel = roleTypeLabel(row.roleType);
-	analysisDialog.visible = true;
-	resetAnalysisDialog();
-	analysisDialog.loading = true;
-
-	try {
-		const result = await difyApi.getKeyPersonGuide({
-			customerName: row.customerName,
-			name: row.name,
-			position: row.position,
-			roleType: row.roleType,
-			lastContactContent: row.lastContactContent,
-			remark: row.remark,
-			birthday: row.birthday,
-		});
-		analysisDialog.rows = parseAiGuideResult(result);
-	} catch (error: any) {
-		ElMessage.error(error?.message || "AI\u9500\u552e\u6307\u5bfc\u83b7\u53d6\u5931\u8d25");
-	} finally {
-		analysisDialog.loading = false;
-	}
-}
-
-function closeAiGuide() {
-	analysisDialog.loading = false;
 }
 
 const keyPersonService = {
@@ -670,7 +422,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			required: true,
 			component: {
 				name: "el-select",
-				options: customerOptions.map(e => ({ label: e, value: e })),
+				options: customerOptions.value.map(e => ({ label: e, value: e })),
 				props: {
 					filterable: true,
 					clearable: true,
@@ -909,13 +661,6 @@ const Table = useTable<KeyPersonItem>({
 			buttons: [
 				"edit",
 				"delete",
-				{
-					label: TEXT.buttonAiGuide,
-					type: "success",
-					onClick({ scope }: any) {
-						openAiGuide(scope.row);
-					},
-				},
 			],
 		},
 	],

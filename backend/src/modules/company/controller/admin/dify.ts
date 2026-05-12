@@ -160,32 +160,27 @@ export class DifyController {
     }
   }
 
-  @Post('/keyPersonGuide')
-  async keyPersonGuide(
-    @Body()
-    body: {
-      customerName: string;
-      name: string;
-      position: string;
-      roleType: string;
-      lastContactContent: string;
-      remark: string;
-      birthday: string;
+  @Post('/supplierBackgroundCheck')
+  async supplierBackgroundCheck(
+    @Body() body: {
+      supplierName: string;
+      supplierType: string;
+      supplierSource?: string;
+      contactName: string;
+      contactInfo?: string;
+      supplierNature?: string;
+      businessCategory?: string;
+      paymentTerm?: string;
+      cooperationRelation?: string;
+      managementStatus?: string;
+      remark?: string;
     }
   ) {
-    if (!body.customerName || !body.name || !body.position || !body.roleType) {
-      return { code: 400, message: 'customerName、name、position、roleType 均为必填项' };
+    if (!body.supplierName || !body.supplierType || !body.contactName) {
+      return { code: 400, message: '供应商名称、类型、联系人姓名均为必填项' };
     }
     try {
-      const result = await this.difyService.getKeyPersonGuide({
-        customerName: body.customerName,
-        name: body.name,
-        position: body.position,
-        roleType: body.roleType,
-        lastContactContent: body.lastContactContent || '',
-        remark: body.remark || '',
-        birthday: body.birthday || '',
-      });
+      const result = await this.difyService.supplierBackgroundCheck(body);
       return { code: 1000, data: result };
     } catch (error: any) {
       return { code: 500, message: error.message };
