@@ -71,6 +71,15 @@ const routes: RouteRecordRaw[] = [
 				}
 			},
 			{
+				path: 'company/business/planRepay',
+				name: 'company-business-planRepay',
+				component: () => import('/$/company/views/business/planRepay.vue'),
+				meta: {
+					keepAlive: true,
+					label: '计划回款'
+				}
+			},
+			{
 				path: 'company/key-person',
 				name: 'company-key-person',
 				component: () => import('/$/company/views/key-person.vue'),

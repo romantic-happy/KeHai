@@ -1,5 +1,3 @@
-/** 与后端 company_invoice / 明细 JSON 对齐的前端类型 */
-
 export type InvoiceDetailRow = {
 	orderId: number;
 	customerName: string;
@@ -20,10 +18,12 @@ export type InvoiceRecord = {
 	expectedPaybackDate: string;
 	invoiceAmount?: number;
 	invoiceType?: string;
+	invoiceStatus?: number;
 	ownerUserId?: number;
 	collaboratorUserIds?: number[];
 	remark?: string;
 	detailRows: InvoiceDetailRow[];
+	attachmentUrls?: string[];
 	taxNo?: string;
 	bankName?: string;
 	bankAccount?: string;
@@ -36,4 +36,9 @@ export function invoiceTypeLabel(v?: string) {
 	if (v === 'vat_special') return '增值税专用发票';
 	if (v === 'vat_normal') return '增值税普通发票';
 	return '-';
+}
+
+export function invoiceStatusLabel(v?: number) {
+	if (v === 1) return '已开票';
+	return '未开票';
 }

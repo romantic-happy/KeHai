@@ -17,6 +17,7 @@ import { createReadStream, existsSync } from 'fs';
     keyWordLikeFields: ['a.contractNo', 'a.contractName', 'a.customerName'],
     fieldEq: ['a.contractCategory', 'a.contractStatus'],
     select: ['a.*'],
+    where: async () => [['a.isDeleted = :isDeleted', { isDeleted: 0 }]],
   },
   serviceApis: [
     { method: 'contractPage', summary: '合同高级分页查询' },
@@ -39,10 +40,11 @@ export class AdminCompanyContractMgmtController extends BaseController {
 
   @Post('/delete', { summary: '逻辑删除合同' })
   async softDelete(@Body() body: { id?: number; ids?: number[] }) {
-    if (!body.id && !body.ids?.length) {
+    const targetIds = body.ids?.length ? body.ids : body.id ? [body.id] : [];
+    if (!targetIds.length) {
       throw new CoolCommException('缺少合同ID');
     }
-    await this.contractMgmtService.logicDelete(body.id || body.ids);
+    await this.contractMgmtService.logicDelete(targetIds);
     return this.ok();
   }
 

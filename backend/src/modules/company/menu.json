@@ -96,7 +96,7 @@
                   {
                     "name": "权限",
                     "router": null,
-                    "perms": "company:contract:generate,company:contract:poll,company:contract:download",
+                    "perms": "company:contractMgmt:list,company:contractMgmt:add,company:contractMgmt:update,company:contractMgmt:delete",
                     "type": 2,
                     "icon": null,
                     "orderNum": 0,
@@ -146,7 +146,32 @@
                   {
                     "name": "权限",
                     "router": null,
-                    "perms": "company:invoice:page,company:invoice:list,company:invoice:info,company:invoice:add,company:invoice:update,company:invoice:delete",
+                    "perms": "company:invoice:page,company:invoice:list,company:invoice:info,company:invoice:add,company:invoice:update,company:invoice:delete,company:invoice:confirm",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
+              },
+              {
+                "name": "计划回款",
+                "router": "/company/business/planRepay",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 5,
+                "viewPath": "modules/company/views/business/planRepay.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:planRepay:page,company:planRepay:list,company:planRepay:info,company:planRepay:add,company:planRepay:update,company:planRepay:delete,company:planRepay:confirmRepay",
                     "type": 2,
                     "icon": null,
                     "orderNum": 0,

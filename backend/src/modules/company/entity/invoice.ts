@@ -86,6 +86,21 @@ export class CompanyInvoiceEntity extends BaseEntity {
   @Column({ comment: '开户行行号', length: 50, nullable: true })
   bankBranchCode: string;
 
+  @Column({
+    comment: '开票状态 0-未开票 1-已开票',
+    type: 'tinyint',
+    default: 0,
+  })
+  invoiceStatus: number;
+
+  @Column({
+    comment: '附件URL列表',
+    type: 'json',
+    nullable: true,
+    transformer: transformerJson,
+  })
+  attachmentUrls: string[];
+
   @Column({ comment: '创建人ID', nullable: true })
   createUserId: number;
 }

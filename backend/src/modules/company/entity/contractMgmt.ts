@@ -48,6 +48,12 @@ export class CompanyContractMgmtEntity extends BaseEntity {
   })
   contractStatus: number;
 
+  @Column({ comment: '成单关键', length: 500, nullable: true })
+  dealKey: string;
+
+  @Column({ comment: '交付日期', type: 'date', nullable: true })
+  deliveryDate: Date;
+
   @Column({ comment: '合同详情', type: 'text', nullable: true })
   contractDetails: string;
 
@@ -66,8 +72,36 @@ export class CompanyContractMgmtEntity extends BaseEntity {
   @Column({ comment: '模板文件路径', length: 500, nullable: true })
   templatePath: string;
 
+  @Column({
+    comment: '合同附件',
+    type: 'json',
+    nullable: true,
+    transformer: transformerJson,
+  })
+  contractAttachments: string[];
+
   @Column({ comment: '备注', type: 'text', nullable: true })
   remark: string;
+
+  @Index()
+  @Column({ comment: '来源询价ID', nullable: true })
+  inquiryId: number;
+
+  @Column({
+    comment: '产品明细',
+    type: 'json',
+    nullable: true,
+    transformer: transformerJson,
+  })
+  productItems: {
+    productName: string;
+    brand?: string;
+    model?: string;
+    quantity?: number;
+    unit?: string;
+    price?: number;
+    remark?: string;
+  }[];
 
   @Index()
   @Column({ comment: '创建人ID', nullable: true })
@@ -94,8 +128,4 @@ export class CompanyContractMgmtEntity extends BaseEntity {
 
   @Column({ comment: '版本号', default: 1 })
   version: number;
-
-  @Index()
-  @Column({ comment: '关联询价ID', nullable: true })
-  inquiryId: number;
 }

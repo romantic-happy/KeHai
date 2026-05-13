@@ -1,10 +1,8 @@
+import { Body, Inject, Post } from '@midwayjs/core';
 import { BaseController, CoolController } from '@cool-midway/core';
 import { CompanyInvoiceEntity } from '../../entity/invoice';
 import { CompanyInvoiceService } from '../../service/invoice';
 
-/**
- * 公司目录-销售部-开票管理
- */
 @CoolController({
   api: ['add', 'delete', 'update', 'info', 'list', 'page'],
   entity: CompanyInvoiceEntity,
@@ -26,8 +24,20 @@ import { CompanyInvoiceService } from '../../service/invoice';
   },
   pageQueryOp: {
     keyWordLikeFields: ['a.invoiceNo', 'a.customerName', 'a.contractOrderLabels'],
-    fieldEq: ['a.customerId'],
+    fieldEq: ['a.customerId', 'a.invoiceStatus'],
     select: ['a.*'],
   },
 })
-export class AdminCompanyInvoiceController extends BaseController {}
+export class AdminCompanyInvoiceController extends BaseController {
+  @Inject()
+  invoiceService: CompanyInvoiceService;
+
+  @Post('/confirm', { summary: '确认开票' })
+  async confirm(@Body() body: { id: number }) {
+    if (!body?.id) {
+      throw new Error('缺少开票ID');
+    }
+    const result = await this.invoiceService.confirmInvoice({ id: body.id });
+    return this.ok(result);
+  }
+}

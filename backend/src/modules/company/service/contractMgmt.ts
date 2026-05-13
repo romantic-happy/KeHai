@@ -2,7 +2,7 @@ import { BaseService, CoolTransaction } from '@cool-midway/core';
 import { Inject, Provide } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import * as moment from 'moment';
-import { QueryRunner, Repository } from 'typeorm';
+import { QueryRunner, Repository, In } from 'typeorm';
 import { CompanyContractMgmtEntity } from '../entity/contractMgmt';
 import { CompanyInquiryEntity } from '../entity/inquiry';
 import { CompanyFollowUpRecordEntity } from '../entity/followUpRecord';
@@ -118,10 +118,10 @@ export class CompanyContractMgmtService extends BaseService {
       }
     }
 
-    if (type === 'delete' && data.id) {
-      const idNum = Number(data.id);
-      if (idNum) {
-        await this.contractMgmtEntity.update(idNum, { isDeleted: 1 });
+    if (type === 'delete' && (data.id || data.ids)) {
+      const ids = data.ids?.length ? data.ids : [Number(data.id)];
+      if (ids.length) {
+        await this.contractMgmtEntity.update({ id: In(ids) }, { isDeleted: 1 });
       }
     }
   }
@@ -195,9 +195,8 @@ export class CompanyContractMgmtService extends BaseService {
     return { contract, inquiry };
   }
 
-  async logicDelete(id: number | number[]) {
-    const ids = Array.isArray(id) ? id : [id];
-    return this.contractMgmtEntity.delete(ids);
+  async logicDelete(ids: number[]) {
+    return this.contractMgmtEntity.update({ id: In(ids) }, { isDeleted: 1 });
   }
 
   async getCategories() {
@@ -246,10 +245,6 @@ export class CompanyContractMgmtService extends BaseService {
   async getCustomerRecordsByName(customerName: string) {
     const contractRepo = this.contractMgmtEntity;
     const followUpRepo = contractRepo.manager.getRepository(CompanyFollowUpRecordEntity);
-
-    const qb = contractRepo.createQueryBuilder('a');
-    qb.where('a.isDeleted = 0');
-    qb.andWhere('a.customerName LIKE :name', { name: `%${customerName}%` });
 
     const wonContracts = await contractRepo
       .createQueryBuilder('a')

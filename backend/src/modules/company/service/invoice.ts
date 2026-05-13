@@ -6,10 +6,8 @@ import { QueryRunner, Repository } from 'typeorm';
 import { CompanyContractOrderEntity } from '../entity/contractOrder';
 import { CompanyCustomerEntity } from '../entity/customer';
 import { CompanyInvoiceEntity } from '../entity/invoice';
+import { CompanyPlanRepayEntity } from '../entity/planRepay';
 
-/**
- * 公司目录-开票管理
- */
 @Provide()
 export class CompanyInvoiceService extends BaseService {
   @Inject()
@@ -24,9 +22,9 @@ export class CompanyInvoiceService extends BaseService {
   @InjectEntityModel(CompanyContractOrderEntity)
   companyContractOrderEntity: Repository<CompanyContractOrderEntity>;
 
-  /**
-   * 新增：生成开票单号；编辑：带 id 更新
-   */
+  @InjectEntityModel(CompanyPlanRepayEntity)
+  companyPlanRepayEntity: Repository<CompanyPlanRepayEntity>;
+
   @CoolTransaction({ isolation: 'SERIALIZABLE' })
   async add(param: any, queryRunner?: QueryRunner) {
     const invRepo = queryRunner.manager.getRepository(CompanyInvoiceEntity);
@@ -48,6 +46,7 @@ export class CompanyInvoiceService extends BaseService {
       const collaboratorUserIds = this.normalizeIdArray(
         param.collaboratorUserIds
       );
+      const attachmentUrls = this.normalizeStringArray(param.attachmentUrls);
 
       await invRepo.update(idNum, {
         customerId,
@@ -64,6 +63,7 @@ export class CompanyInvoiceService extends BaseService {
           : null,
         remark: param.remark ?? null,
         detailRows,
+        attachmentUrls: attachmentUrls.length ? attachmentUrls : null,
         taxNo: param.taxNo ?? null,
         bankName: param.bankName ?? null,
         bankAccount: param.bankAccount ?? null,
@@ -86,6 +86,7 @@ export class CompanyInvoiceService extends BaseService {
     const collaboratorUserIds = this.normalizeIdArray(
       param.collaboratorUserIds
     );
+    const attachmentUrls = this.normalizeStringArray(param.attachmentUrls);
 
     const saved = await invRepo.save({
       invoiceNo,
@@ -102,10 +103,12 @@ export class CompanyInvoiceService extends BaseService {
         : null,
       remark: param.remark ?? null,
       detailRows,
+      attachmentUrls: attachmentUrls.length ? attachmentUrls : null,
       taxNo: param.taxNo ?? null,
       bankName: param.bankName ?? null,
       bankAccount: param.bankAccount ?? null,
       bankBranchCode: param.bankBranchCode ?? null,
+      invoiceStatus: 0,
       createUserId: this.ctx?.admin?.userId ?? null,
     });
 
@@ -120,12 +123,27 @@ export class CompanyInvoiceService extends BaseService {
     await this.add(param, queryRunner);
   }
 
-  /**
-   * 按客户分页查询合同订单（开票时多选）
-   */
   async contractOrderPage(query: any) {
     const customerId = Number(query?.customerId);
     const qb = this.companyContractOrderEntity.createQueryBuilder('a');
+    qb.select([
+      'a.id as id',
+      'a.customerId as customerId',
+      'a.customerName as customerName',
+      'a.orderNo as orderNo',
+      'a.title as title',
+      'a.contractAmount as contractAmount',
+      'a.planRepayLabel as planRepayLabel',
+      'a.actualRepayLabel as actualRepayLabel',
+      'a.inquiryId as inquiryId',
+      'a.ownerName as ownerName',
+      'a.deliveryDate as deliveryDate',
+      'a.quoteId as quoteId',
+      'a.quoteNo as quoteNo',
+      'a.productItems as productItems',
+      'a.createTime as createTime',
+      'a.updateTime as updateTime',
+    ]);
     qb.where('1=1');
     if (customerId) {
       qb.andWhere('a.customerId = :cid', { cid: customerId });
@@ -140,9 +158,6 @@ export class CompanyInvoiceService extends BaseService {
     return this.entityRenderPage(qb, query);
   }
 
-  /**
-   * 读取该客户最近一次开票的发票抬头信息（税号、开户行等），用于老客户自动带出
-   */
   async invoiceProfileByCustomer(query: any) {
     const customerId = Number(query?.customerId);
     if (!customerId) {
@@ -163,14 +178,59 @@ export class CompanyInvoiceService extends BaseService {
     };
   }
 
+  @CoolTransaction({ isolation: 'SERIALIZABLE' })
+  async confirmInvoice(param: any, queryRunner?: QueryRunner) {
+    const id = Number(param?.id);
+    if (!id) {
+      throw new Error('缺少开票ID');
+    }
+
+    const invRepo = queryRunner.manager.getRepository(CompanyInvoiceEntity);
+    const planRepo = queryRunner.manager.getRepository(CompanyPlanRepayEntity);
+
+    const invoice = await invRepo.findOne({ where: { id } });
+    if (!invoice) {
+      throw new Error('开票记录不存在');
+    }
+    if (invoice.invoiceStatus === 1) {
+      throw new Error('该开票申请已确认，请勿重复操作');
+    }
+
+    await invRepo.update(id, {
+      invoiceStatus: 1,
+      updateTime: new Date() as any,
+    });
+
+    const detailRows: any[] = invoice.detailRows || [];
+    for (const row of detailRows) {
+      await planRepo.save({
+        invoiceId: invoice.id,
+        invoiceNo: invoice.invoiceNo,
+        customerId: invoice.customerId,
+        customerName: invoice.customerName,
+        contractOrderId: row.orderId || null,
+        contractOrderNo: row.orderNo || '',
+        expectedPaybackDate: invoice.expectedPaybackDate,
+        invoiceAmount: Number(row.invoiceAmount) || 0,
+        currency: row.currency || '人民币',
+        repayStatus: 0,
+      });
+    }
+
+    return { id };
+  }
+
   private async nextInvoiceNo(invRepo: Repository<CompanyInvoiceEntity>) {
     const dateStr = moment().format('YYYYMMDD');
     const prefix = `KP-${dateStr}-`;
-    const count = await invRepo
+    const row = await invRepo
       .createQueryBuilder('a')
+      .select('MAX(a.invoiceNo) as maxNo')
       .where('a.invoiceNo like :p', { p: `${prefix}%` })
-      .getCount();
-    const seq = String(count + 1).padStart(4, '0');
+      .getRawOne();
+    const maxNo: string = row?.maxNo || '';
+    const lastSeq = maxNo ? parseInt(maxNo.replace(prefix, ''), 10) || 0 : 0;
+    const seq = String(lastSeq + 1).padStart(4, '0');
     return `${prefix}${seq}`;
   }
 
@@ -205,5 +265,20 @@ export class CompanyInvoiceService extends BaseService {
       return [];
     }
     return arr.map(e => Number(e)).filter(e => !Number.isNaN(e));
+  }
+
+  private normalizeStringArray(raw: any): string[] {
+    if (raw == null) {
+      return [];
+    }
+    if (typeof raw === 'string') {
+      try {
+        const p = JSON.parse(raw);
+        return Array.isArray(p) ? p : [];
+      } catch {
+        return [];
+      }
+    }
+    return Array.isArray(raw) ? raw : [];
   }
 }
