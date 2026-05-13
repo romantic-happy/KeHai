@@ -23,6 +23,9 @@ export class CompanyInquiryEntity extends BaseEntity {
   @Column({ comment: '客户', length: 100 })
   customer: string;
 
+  @Column({ comment: '联系人', length: 100, nullable: true })
+  contactPerson: string;
+
   @Column({
     comment: '协作人ID列表',
     nullable: true,

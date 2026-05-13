@@ -21,8 +21,10 @@ import { createReadStream, existsSync } from 'fs';
   serviceApis: [
     { method: 'contractPage', summary: '合同高级分页查询' },
     { method: 'contractInfo', summary: '合同详情查询' },
+    { method: 'contractInfoWithInquiry', summary: '合同详情（含关联询价）' },
     { method: 'logicDelete', summary: '逻辑删除合同' },
     { method: 'getCategories', summary: '获取合同类别列表' },
+    { method: 'convertInquiryToContract', summary: '从询价单转换为合同' },
   ],
 })
 export class AdminCompanyContractMgmtController extends BaseController {

@@ -20,5 +20,9 @@ import { CompanyCustomerService } from '../../service/customer';
     // 默认查询字段
     select: ['a.*'],
   },
+  serviceApis: [
+    { method: 'closedDealPage', summary: '已成单记录分页' },
+    { method: 'lostDealPage', summary: '未成单记录分页' },
+  ],
 })
 export class AdminCompanyCustomerController extends BaseController {}
