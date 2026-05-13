@@ -733,6 +733,14 @@
 													>
 														{{ $t('智能询价') }}
 													</el-button>
+													<el-button
+														type="warning"
+														size="small"
+														@click="handleRecommendAndAdd(row, scope)"
+													>
+														{{ $t('供应商推荐') }}
+													</el-button>
+
 												</template>
 											</el-table-column>
 										</el-table>
@@ -1464,6 +1472,22 @@ async function handleIntelligentInquiry(row: any) {
 		successText: t('询价成功'),
 		errorText: t('询价失败')
 	});
+}
+
+// 供应商推荐按钮：自动新增一行并运行推荐供应商
+async function handleRecommendAndAdd(row: any, scope: any) {
+	// 自动新增一行物料
+	addSpareMaterial(scope);
+	// 获取刚添加的行索引（最后一行）
+	const mIndex = (scope.spareQuoteItems?.length || 1) - 1;
+	const m = scope.spareQuoteItems?.[mIndex];
+	if (m) {
+		// 自动带出物料名称和规格型号
+		m.materialName = row.name;
+		m.spec = row.spec;
+		// 运行推荐供应商
+		await handleRecommendSupplier(m, mIndex, scope);
+	}
 }
 
 // 生成物料的缓存 key，用于推荐供应商的 loading 状态
