@@ -122,6 +122,72 @@
 			</template>
 		</el-dialog>
 
+		<!-- 成单弹窗 -->
+		<el-dialog v-model="dealDialogVisible" :title="$t('成单')" width="700px" :close-on-click-modal="false">
+			<el-form label-position="top" label-width="100px">
+				<el-row :gutter="16">
+					<el-col :span="12">
+						<el-form-item :label="$t('合同名称')">
+							<el-input v-model="dealForm.contractName" :placeholder="$t('与报价单名称一致，可编辑')" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item :label="$t('客户')">
+							<el-input v-model="dealForm.customer" disabled />
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-form-item :label="$t('成单关键')" required>
+					<el-input v-model="dealForm.dealKey" type="textarea" :rows="3" :placeholder="$t('请输入成单关键')" />
+				</el-form-item>
+				<el-row :gutter="16">
+					<el-col :span="12">
+						<el-form-item :label="$t('立项日期')" required>
+							<el-date-picker v-model="dealForm.projectDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item :label="$t('交付日期')" required>
+							<el-date-picker v-model="dealForm.deliveryDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row :gutter="16">
+					<el-col :span="12">
+						<el-form-item :label="$t('负责人')" required>
+							<el-select v-model="dealForm.ownerUserId" :placeholder="$t('默认为填写人')" filterable style="width: 100%">
+								<el-option v-for="u in userList" :key="u.id" :label="u.name" :value="u.id" />
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item :label="$t('协作人')">
+							<el-select v-model="dealForm.collaboratorUserIds" :placeholder="$t('选择协作人')" filterable multiple style="width: 100%">
+								<el-option v-for="u in userList" :key="u.id" :label="u.name" :value="u.id" />
+							</el-select>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-form-item :label="$t('合同附件')" required>
+					<cl-upload v-model="dealForm.attachments" type="file" multiple :text="$t('上传附件')" />
+				</el-form-item>
+				<el-row :gutter="16">
+					<el-col :span="12">
+						<el-form-item :label="$t('合同金额')" required>
+							<el-input v-model="dealForm.contractAmount" :placeholder="$t('请输入合同金额')" />
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-form-item :label="$t('备注')">
+					<el-input v-model="dealForm.remark" type="textarea" :rows="2" :placeholder="$t('关键信息')" />
+				</el-form-item>
+			</el-form>
+			<template #footer>
+				<el-button @click="dealDialogVisible = false">{{ $t('取消') }}</el-button>
+				<el-button type="primary" @click="confirmDealDialog">{{ $t('确定') }}</el-button>
+			</template>
+		</el-dialog>
+
 		<cl-upsert ref="Upsert">
 			<!-- 产品明细 -->
 			<template #slot-productItems="{ scope }">
@@ -365,6 +431,12 @@ const Upsert = useUpsert({
 					return undefined;
 				}
 			}
+		},
+		{
+			label: t('联系人'),
+			prop: 'contactPerson',
+			component: { name: 'el-input', props: { clearable: true } },
+			span: 12
 		},
 		{
 			label: t('负责人姓名'),
@@ -1080,6 +1152,81 @@ async function confirmLostDialog() {
 	}
 }
 
+const dealDialogVisible = ref(false);
+const dealForm = reactive({
+	contractName: '',
+	customer: '',
+	dealKey: '',
+	projectDate: '',
+	deliveryDate: '',
+	ownerUserId: null as number | null,
+	collaboratorUserIds: [] as number[],
+	attachments: [] as string[],
+	contractAmount: '',
+	remark: ''
+});
+let dealTargetRow: any = null;
+const userList = ref<any[]>([]);
+
+function openDealSuccessDialog(row: any) {
+	dealTargetRow = row;
+	dealForm.contractName = row.projectName || row.customer || '';
+	dealForm.customer = row.customer || '';
+	dealForm.dealKey = '';
+	dealForm.projectDate = '';
+	dealForm.deliveryDate = '';
+	dealForm.ownerUserId = null;
+	dealForm.collaboratorUserIds = [];
+	dealForm.attachments = [];
+	dealForm.contractAmount = row.salesQuote ?? '';
+	dealForm.remark = '';
+	dealDialogVisible.value = true;
+}
+
+async function confirmDealDialog() {
+	if (!dealForm.dealKey || dealForm.dealKey.trim() === '') {
+		ElMessage.error(t('请填写成单关键'));
+		return;
+	}
+	if (!dealForm.projectDate) {
+		ElMessage.error(t('请选择立项日期'));
+		return;
+	}
+	if (!dealForm.deliveryDate) {
+		ElMessage.error(t('请选择交付日期'));
+		return;
+	}
+	if (!dealForm.ownerUserId) {
+		ElMessage.error(t('请选择负责人'));
+		return;
+	}
+	const amount = Number(dealForm.contractAmount);
+	if (!dealForm.contractAmount || dealForm.contractAmount.trim() === '' || !Number.isFinite(amount) || amount < 0) {
+		ElMessage.error(t('请输入有效的合同金额'));
+		return;
+	}
+	try {
+		await service.company.inquiry.convertToContractOrder({
+			inquiryId: dealTargetRow.id,
+			contractName: dealForm.contractName,
+			dealKey: dealForm.dealKey.trim(),
+			projectDate: dealForm.projectDate,
+			deliveryDate: dealForm.deliveryDate,
+			ownerUserId: dealForm.ownerUserId,
+			collaboratorUserIds: dealForm.collaboratorUserIds,
+			attachments: dealForm.attachments,
+			contractAmount: amount,
+			salesQuote: amount,
+			remark: dealForm.remark
+		});
+		ElMessage.success(t('已成单，已转换合同订单'));
+		dealDialogVisible.value = false;
+		refresh();
+	} catch (e: any) {
+		ElMessage.error(e?.message || t('操作失败'));
+	}
+}
+
 const Table = useTable({
 	columns: [
 		{ type: 'selection', width: 60 },
@@ -1092,6 +1239,7 @@ const Table = useTable({
 			dict: options.inquiryType
 		},
 		{ label: t('客户'), prop: 'customer', minWidth: 140 },
+		{ label: t('联系人'), prop: 'contactPerson', minWidth: 100 },
 		{
 			label: t('报价截止日期'),
 			prop: 'deadlineDate',
@@ -1202,20 +1350,23 @@ const Table = useTable({
 				}
 
 				if (quoteBizStatus === 2) {
-					buttons.push(
-						{
-							label: t('成单'),
-							type: 'success',
-							size: 'small',
-							onClick: () => onDealSuccess(scope.row)
-						},
-						{
-							label: t('拒单'),
-							type: 'danger',
-							size: 'small',
-							onClick: () => openLostDialog(scope.row)
-						}
-					);
+					const dealStatus = Number(scope.row.dealStatus) || 0;
+					if (dealStatus === 0) {
+						buttons.push(
+							{
+								label: t('成单'),
+								type: 'success',
+								size: 'small',
+								onClick: () => openDealSuccessDialog(scope.row)
+							},
+							{
+								label: t('拒单'),
+								type: 'danger',
+								size: 'small',
+								onClick: () => openLostDialog(scope.row)
+							}
+						);
+					}
 				}
 
 				return buttons;
@@ -1387,38 +1538,6 @@ async function showRejectDialog(scope: any) {
 	}
 }
 
-async function onDealSuccess(scope: any) {
-	try {
-		const { value: salesQuote } = await ElMessageBox.prompt(
-			t('请输入销售报价'),
-			t('成单'),
-			{
-				confirmButtonText: t('确定'),
-				cancelButtonText: t('取消'),
-				inputPlaceholder: t('请输入销售报价'),
-				inputValidator: (value: string) => {
-					const num = Number(value);
-					if (!value || value.trim() === '' || !Number.isFinite(num) || num < 0) {
-						return t('请输入有效的销售报价');
-					}
-					return true;
-				}
-			}
-		);
-
-		await service.company.inquiry.convertToContractOrder({
-			inquiryId: scope.id,
-			salesQuote: Number(salesQuote)
-		});
-		ElMessage.success(t('已成单，已转换合同订单'));
-		refresh();
-	} catch (e: any) {
-		if (e !== 'cancel' && e !== 'close') {
-			ElMessage.error(e?.message || t('操作失败'));
-		}
-	}
-}
-
 onMounted(() => {
 	syncQuoteActionPerms();
 	(service as any).company.customer.list().then((res: any) => {
@@ -1429,6 +1548,11 @@ onMounted(() => {
 				value: e.customerName
 			});
 		});
+	});
+	(service as any).base.sys.user.list().then((res: any) => {
+		userList.value = res || [];
+	}).catch(() => {
+		userList.value = [];
 	});
 });
 </script>

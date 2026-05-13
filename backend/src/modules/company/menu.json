@@ -362,7 +362,7 @@
           },
           {
             "name": "采购",
-            "router": null,
+            "router": "/company/purchase",
             "perms": null,
             "type": 0,
             "icon": "icon-menu",
@@ -382,6 +382,31 @@
                 "keepAlive": true,
                 "isShow": true,
                 "childMenus": []
+              },
+              {
+                "name": "采购合同",
+                "router": "/company/purchase/contract",
+                "perms": null,
+                "type": 1,
+                "icon": "icon-menu",
+                "orderNum": 2,
+                "viewPath": "modules/company/views/purchase-contract.vue",
+                "keepAlive": true,
+                "isShow": true,
+                "childMenus": [
+                  {
+                    "name": "权限",
+                    "router": null,
+                    "perms": "company:purchaseContract:page,company:purchaseContract:list,company:purchaseContract:info,company:purchaseContract:add,company:purchaseContract:update,company:purchaseContract:delete,company:purchaseContract:quoteProductOptions",
+                    "type": 2,
+                    "icon": null,
+                    "orderNum": 0,
+                    "viewPath": null,
+                    "keepAlive": true,
+                    "isShow": true,
+                    "childMenus": []
+                  }
+                ]
               }
             ]
           }

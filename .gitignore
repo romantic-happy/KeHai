@@ -46,3 +46,9 @@ pnpm-lock.yaml
 Thumbs.db
 *.swp
 *.log
+
+.vs/
+docker/
+*.patch
+
+backend/.env.development

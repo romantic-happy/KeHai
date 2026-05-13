@@ -4,6 +4,8 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import * as moment from 'moment';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyCustomerEntity } from '../entity/customer';
+import { CompanyClosedDealEntity } from '../entity/closedDeal';
+import { CompanyLostDealEntity } from '../entity/lostDeal';
 
 /**
  * 公司目录-客户
@@ -15,6 +17,12 @@ export class CompanyCustomerService extends BaseService {
 
   @InjectEntityModel(CompanyCustomerEntity)
   companyCustomerEntity: Repository<CompanyCustomerEntity>;
+
+  @InjectEntityModel(CompanyClosedDealEntity)
+  companyClosedDealEntity: Repository<CompanyClosedDealEntity>;
+
+  @InjectEntityModel(CompanyLostDealEntity)
+  companyLostDealEntity: Repository<CompanyLostDealEntity>;
 
   /**
    * 分页查询（实现客户编号自然排序）
@@ -93,5 +101,69 @@ export class CompanyCustomerService extends BaseService {
     });
 
     return { id: saved.id };
+  }
+
+  async closedDealPage(query: any) {
+    const qb = this.companyClosedDealEntity.createQueryBuilder('a');
+    qb.select(['a.*']);
+
+    if (query.keyWord) {
+      qb.andWhere(
+        '(a.customerName LIKE :keyWord OR a.contractNo LIKE :keyWord OR a.projectName LIKE :keyWord)',
+        { keyWord: `%${query.keyWord}%` }
+      );
+      delete query.keyWord;
+    }
+
+    return this.entityRenderPage(qb, query);
+  }
+
+  async lostDealPage(query: any) {
+    const qb = this.companyLostDealEntity.createQueryBuilder('a');
+    qb.select(['a.*']);
+
+    if (query.keyWord) {
+      qb.andWhere(
+        '(a.customerName LIKE :keyWord OR a.quoteNo LIKE :keyWord OR a.projectName LIKE :keyWord)',
+        { keyWord: `%${query.keyWord}%` }
+      );
+      delete query.keyWord;
+    }
+
+    return this.entityRenderPage(qb, query);
+  }
+
+  async createClosedDeal(param: any, queryRunner?: QueryRunner) {
+    const repo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyClosedDealEntity)
+      : this.companyClosedDealEntity;
+
+    return repo.save({
+      customerName: param.customerName,
+      contractNo: param.contractNo,
+      projectName: param.projectName,
+      contractAmount: param.contractAmount,
+      dealTime: param.dealTime || new Date(),
+      contactPerson: param.contactPerson || null,
+      dealKey: param.dealKey || null,
+      inquiryId: param.inquiryId || null,
+    });
+  }
+
+  async createLostDeal(param: any, queryRunner?: QueryRunner) {
+    const repo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyLostDealEntity)
+      : this.companyLostDealEntity;
+
+    return repo.save({
+      customerName: param.customerName,
+      quoteNo: param.quoteNo,
+      projectName: param.projectName,
+      quoteAmount: param.quoteAmount,
+      lostTime: param.lostTime || new Date(),
+      contactPerson: param.contactPerson || null,
+      lostReason: param.lostReason || null,
+      inquiryId: param.inquiryId || null,
+    });
   }
 }

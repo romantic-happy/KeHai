@@ -13,9 +13,10 @@ export interface DifyResponse {
 
 @Provide()
 export class DifyService {
-  private readonly DIFY_API_URL = process.env.DIFY_API_URL;
-  private readonly RESPONSE_MODE = 'blocking';
-  private readonly DIFY_USER = process.env.DIFY_USER;
+  private readonly DIFY_API_URL =
+    process.env.DIFY_API_URL || 'http://119.146.180.66:6859/v1/workflows/run';
+  private readonly RESPONSE_MODE = process.env.DIFY_RESPONSE_MODE || 'blocking';
+  private readonly DIFY_USER = process.env.DIFY_USER || 'kehai-supplier-user';
 
   private workflowMap: Map<string, DifyWorkflowConfig> = new Map();
 
@@ -32,14 +33,14 @@ export class DifyService {
   private validateInput(config: DifyInputConfig, value: any): string | null {
     const { name, required, type } = config;
     if (required && (value === undefined || value === null || value === '')) {
-      return `参数 "${name}" 为必填项`;
+      return `Parameter "${name}" is required`;
     }
     if (value === undefined || value === null || value === '') {
       return null;
     }
     const actualType = typeof value;
     if (actualType !== type) {
-      return `参数 "${name}" 类型错误，期望 ${type}，实际 ${actualType}`;
+      return `Parameter "${name}" type error, expected ${type}, actual ${actualType}`;
     }
     return null;
   }
@@ -55,13 +56,51 @@ export class DifyService {
     return null;
   }
 
+  private getMissingApiKeyMessage(workflowKey: string) {
+    if (workflowKey === 'supplierBackgroundCheck') {
+      return 'Supplier AI background check Dify API Key is not configured';
+    }
+    return `Workflow ${workflowKey} Dify API Key is not configured`;
+  }
+
+  private normalizeWorkflowOutput(data: any) {
+    const parseText = (text: string) => {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { rawText: text };
+      }
+    };
+
+    if (typeof data === 'string') {
+      return parseText(data);
+    }
+
+    if (data && typeof data === 'object') {
+      for (const key of ['text', 'result', 'output', 'answer']) {
+        if (typeof data[key] === 'string') {
+          return parseText(data[key]);
+        }
+      }
+    }
+
+    return data;
+  }
+
   async runWorkflow(
     workflowKey: string,
     inputs: Record<string, any>
   ): Promise<DifyResponse> {
     const config = this.workflowMap.get(workflowKey);
     if (!config)
-      return { success: false, error: `未找到工作流: ${workflowKey}` };
+      return { success: false, error: `Workflow not found: ${workflowKey}` };
+
+    if (!config.apiKey) {
+      return {
+        success: false,
+        error: this.getMissingApiKeyMessage(workflowKey),
+      };
+    }
 
     const validationError = this.validateInputs(config, inputs);
     if (validationError) return { success: false, error: validationError };
@@ -83,7 +122,7 @@ export class DifyService {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'Dify 调用失败',
+          error.response?.data?.message || error.message || 'Dify call failed',
       };
     }
   }
@@ -188,7 +227,7 @@ export class DifyService {
     if (!result.success) throw new Error(result.error);
     // console.info(result.data);
     return {
-      message: result.data?.message || result.data?.result || '背调完成',
+      message: result.data?.message || result.data?.result || 'Background check completed',
       prompt: result.data,
     };
   }

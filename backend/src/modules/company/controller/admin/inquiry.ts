@@ -169,6 +169,7 @@ export class AdminCompanyInquiryController extends BaseController {
       inquiryId: number;
       contractOrderNo?: string;
       salesQuote: number;
+      dealKey?: string;
     }
   ) {
     const inquiryIdNum = Number(body?.inquiryId);

@@ -4,6 +4,7 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import * as moment from 'moment';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyContractMgmtEntity } from '../entity/contractMgmt';
+import { CompanyInquiryEntity } from '../entity/inquiry';
 import { CompanyFollowUpRecordEntity } from '../entity/followUpRecord';
 import * as path from 'path';
 import { pUploadPath } from '../../../comm/path';
@@ -175,6 +176,23 @@ export class CompanyContractMgmtService extends BaseService {
       return null;
     }
     return contract;
+  }
+
+  async contractInfoWithInquiry(id: number) {
+    const contract = await this.contractMgmtEntity.findOne({
+      where: { id, isDeleted: 0 },
+    });
+    if (!contract) {
+      return null;
+    }
+
+    let inquiry: any = null;
+    if (contract.inquiryId) {
+      const inquiryRepo = this.contractMgmtEntity.manager.getRepository(CompanyInquiryEntity);
+      inquiry = await inquiryRepo.findOne({ where: { id: contract.inquiryId } });
+    }
+
+    return { contract, inquiry };
   }
 
   async logicDelete(id: number | number[]) {

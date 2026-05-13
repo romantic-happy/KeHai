@@ -19,10 +19,6 @@ import { CompanySupplierService } from '../../service/supplier';
       summary: 'AI background check placeholder',
     },
     {
-      method: 'aiSupplierProfile',
-      summary: 'AI supplier profile placeholder',
-    },
-    {
       method: 'quoteRecords',
       summary: 'Supplier quote records placeholder',
     },
