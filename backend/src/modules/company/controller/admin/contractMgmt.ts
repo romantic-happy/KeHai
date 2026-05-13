@@ -7,7 +7,7 @@ import { CompanyContractService } from '../../service/contract';
 import { createReadStream, existsSync } from 'fs';
 
 @CoolController({
-  api: ['add', 'delete', 'update', 'info', 'list', 'page'],
+  api: ['add', 'update', 'info', 'list', 'page'],
   entity: CompanyContractMgmtEntity,
   service: CompanyContractMgmtService,
   insertParam: ctx => {
