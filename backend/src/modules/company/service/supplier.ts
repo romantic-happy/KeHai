@@ -4,11 +4,15 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { CompanyQuoteEntity } from '../entity/quote';
 import { CompanySupplierEntity } from '../entity/supplier';
+import { DifyService } from './dify';
 
 @Provide()
 export class CompanySupplierService extends BaseService {
   @Inject()
   ctx;
+
+  @Inject()
+  difyService: DifyService;
 
   @InjectEntityModel(CompanySupplierEntity)
   companySupplierEntity: Repository<CompanySupplierEntity>;
@@ -23,7 +27,7 @@ export class CompanySupplierService extends BaseService {
 
   private normalize(data: any, type: 'add' | 'update' | 'transfer') {
     if (!data) {
-      throw new Error('缺少供应商信息');
+      throw new Error('Invalid supplier data');
     }
 
     if (data.supplierName !== undefined) {
@@ -51,7 +55,7 @@ export class CompanySupplierService extends BaseService {
     if (data.manageStatus === 'invalid') {
       const reason = String(data.invalidReason || '').trim();
       if (!reason) {
-        throw new Error('管理状态为失效时必须填写失效原因');
+        throw new Error('Invalid supplier data');
       }
       data.invalidReason = reason;
     } else if (data.manageStatus === 'valid') {
@@ -68,22 +72,22 @@ export class CompanySupplierService extends BaseService {
     for (const key of required) {
       if (data[key] === undefined) continue;
       if (data[key] === null || data[key] === '') {
-        throw new Error('供应商名称、来源、联系人、联系方式、管理状态为必填');
+        throw new Error('Invalid supplier data');
       }
     }
 
     if (data.supplierType === 'formal') {
       if (!data.supplierNature) {
-        throw new Error('正式供应商必须填写供应商性质');
+        throw new Error('Invalid supplier data');
       }
       if (
         !Array.isArray(data.businessCategory) ||
         data.businessCategory.length === 0
       ) {
-        throw new Error('正式供应商必须选择业务类别');
+        throw new Error('Invalid supplier data');
       }
       if (!data.cooperationRelation) {
-        throw new Error('正式供应商必须填写合作关系');
+        throw new Error('Invalid supplier data');
       }
     }
 
@@ -159,13 +163,13 @@ export class CompanySupplierService extends BaseService {
   async transfer(param: any, queryRunner?: QueryRunner) {
     const id = Number(param?.id);
     if (!Number.isFinite(id) || id <= 0) {
-      throw new Error('缺少有效的供应商ID');
+      throw new Error('Invalid supplier id');
     }
 
     const repo = queryRunner.manager.getRepository(CompanySupplierEntity);
     const supplier = await repo.findOne({ where: { id } });
     if (!supplier) {
-      throw new Error('供应商不存在');
+      throw new Error('Invalid supplier data');
     }
 
     const data = this.normalize(
@@ -187,54 +191,40 @@ export class CompanySupplierService extends BaseService {
 
   async aiBackgroundCheck(param: any) {
     const supplier = await this.getSupplierForAi(param);
-    const prompt = [
-      '供应商AI背调占位请求，后续可接入Dify、DeepSeek或其他AI服务。',
-      `供应商名称：${supplier.supplierName || ''}`,
-      `供应商来源：${supplier.supplierSource || ''}`,
-      `联系人：${supplier.contactName || ''}`,
-      `联系方式：${supplier.contactInfo || ''}`,
-      `供应商性质：${supplier.supplierNature || ''}`,
-      `业务类别：${(supplier.businessCategory || []).join('、')}`,
-      '需要核验：主体合法性、经营状况、履约能力、社保信息、历史项目与风险提示。',
-    ].join('\n');
-
-    return {
-      configured: false,
-      message: 'AI接口暂未配置',
-      prompt,
-    };
-  }
-
-  async aiSupplierProfile(param: any) {
-    const supplier = await this.getSupplierForAi(param);
-    const prompt = [
-      '供应商AI画像占位请求，后续根据历史报价记录总结。',
-      `供应商名称：${supplier.supplierName || ''}`,
-      `业务类别：${(supplier.businessCategory || []).join('、')}`,
-      '需要总结：主营品类、价格水平、合作稳定性、质量与质保表现、风险提示。',
-    ].join('\n');
-
-    return {
-      configured: false,
-      message: 'AI接口暂未配置',
-      prompt,
-    };
+    return await this.difyService.supplierBackgroundCheck({
+      supplierName: supplier.supplierName,
+      supplierType: supplier.supplierType,
+      supplierSource: supplier.supplierSource,
+      contactName: supplier.contactName,
+      contactInfo: supplier.contactInfo,
+      supplierNature: supplier.supplierNature,
+      businessCategory: Array.isArray(supplier.businessCategory)
+        ? supplier.businessCategory.join(',')
+        : supplier.businessCategory,
+      paymentTerm: supplier.paymentTerm?.toString(),
+      cooperationRelation: supplier.cooperationRelation,
+      managementStatus: supplier.manageStatus,
+      remark: supplier.remark,
+    });
   }
 
   async quoteRecords(param: any) {
     const supplier = await this.getSupplierForAi(param);
+    const list = await this.getQuoteRecordsBySupplier(supplier);
+
+    return {
+      supplierName: supplier.supplierName,
+      list,
+      placeholder: list.length === 0,
+    };
+  }
+
+  private async getQuoteRecordsBySupplier(supplier: CompanySupplierEntity) {
     const qb = this.companyQuoteEntity.createQueryBuilder('a');
     qb.where('a.supplier = :name', { name: supplier.supplierName });
     qb.orderBy('a.createTime', 'DESC');
     qb.limit(20);
-    const list = await qb.getMany();
-
-    return {
-      supplierName: supplier.supplierName,
-      aiSupplierProfile: supplier.aiSupplierProfile,
-      list,
-      placeholder: list.length === 0,
-    };
+    return qb.getMany();
   }
 
   private async getSupplierForAi(param: any) {
@@ -247,7 +237,7 @@ export class CompanySupplierService extends BaseService {
       where: { id },
     });
     if (!supplier) {
-      throw new Error('供应商不存在');
+      throw new Error('Invalid supplier data');
     }
     return supplier;
   }

@@ -73,52 +73,6 @@
 		<cl-upsert ref="Upsert" />
 	</cl-crud>
 
-	<el-dialog
-		v-model="analysisDialog.visible"
-		:title="analysisDialog.title"
-		width="760px"
-		@closed="closeAiGuide"
-	>
-		<div v-loading="analysisDialog.loading" class="analysis-dialog">
-			<el-descriptions border :column="2" class="analysis-dialog__summary">
-				<el-descriptions-item :label="TEXT.customer">
-					{{ analysisDialog.row?.customerName || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.keyPerson">
-					{{ analysisDialog.row?.name || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.position">
-					{{ analysisDialog.row?.position || "-" }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.role">
-					{{ analysisDialog.roleTypeLabel || "-" }}
-				</el-descriptions-item>
-			</el-descriptions>
-
-			<el-descriptions border :column="1" class="analysis-dialog__result">
-				<el-descriptions-item :label="TEXT.personality">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.personalityAnalysis || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.salesSuggestion">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.salesSuggestion || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.talkingPoints">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.talkingPoints || "-" }}
-					</div>
-				</el-descriptions-item>
-				<el-descriptions-item :label="TEXT.birthdayReminder">
-					<div class="analysis-dialog__text">
-						{{ analysisDialog.birthdayReminder || "-" }}
-					</div>
-				</el-descriptions-item>
-			</el-descriptions>
-		</div>
-	</el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -127,7 +81,8 @@ defineOptions({
 });
 
 import { useCrud, useTable, useUpsert } from "@cool-vue/crud";
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
+import { ElMessage } from "element-plus";
 
 type KeyPersonItem = {
 	id: number;
@@ -139,6 +94,7 @@ type KeyPersonItem = {
 	phone: string;
 	wechat: string;
 	email: string;
+	birthday: string;
 	influenceLevel: string;
 	relationStatus: string;
 	lastContactDate: string;
@@ -163,6 +119,10 @@ const TEXT = {
 	salesSuggestion: "\u9500\u552e\u5efa\u8bae",
 	talkingPoints: "\u8bdd\u672f\u5efa\u8bae",
 	birthdayReminder: "\u751f\u65e5\u63d0\u9192",
+	riskReminder: "\u98ce\u9669\u63d0\u9192",
+	infoSupplement: "\u4fe1\u606f\u8865\u5145\u5efa\u8bae",
+	analysisItem: "\u5206\u6790\u9879\u76ee",
+	aiSuggestion: "AI\u5efa\u8bae\u5185\u5bb9",
 	title: "AI\u9500\u552e\u6307\u5bfc",
 	code: "\u5173\u952e\u4eba\u7f16\u53f7",
 	codePlaceholder: "\u4fdd\u5b58\u540e\u81ea\u52a8\u751f\u6210",
@@ -170,6 +130,7 @@ const TEXT = {
 	phone: "\u624b\u673a\u53f7",
 	wechat: "\u5fae\u4fe1",
 	email: "\u90ae\u7bb1",
+	birthday: "\u751f\u65e5",
 	influence: "\u5f71\u54cd\u529b\u7b49\u7ea7",
 	lastContact: "\u6700\u8fd1\u8054\u7cfb\u65f6\u95f4",
 	nextFollow: "\u4e0b\u6b21\u8ddf\u8fdb\u65f6\u95f4",
@@ -197,7 +158,6 @@ const TEXT = {
 		"\u53ef\u4ee5\u5148\u95ee\u5bf9\u65b9\u73b0\u9636\u6bb5\u6700\u5173\u6ce8\u7684\u6307\u6807\u662f\u4ec0\u4e48\u3002",
 	talk2:
 		"\u518d\u8865\u5145\u540c\u7c7b\u5ba2\u6237\u6210\u529f\u6848\u4f8b\uff0c\u5e76\u5f15\u5bfc\u5230\u4e0b\u4e00\u6b65\u8ddf\u8fdb\u5b89\u6392\u3002",
-	buttonAiGuide: "AI\u9500\u552e\u6307\u5bfc",
 };
 
 const roleTypeOptions = [
@@ -232,6 +192,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138001",
 		wechat: "zhanggong01",
 		email: "zhang.gong@example.com",
+		birthday: "1988-06-18",
 		influenceLevel: "high",
 		relationStatus: "following",
 		lastContactDate: "2026-04-18",
@@ -255,6 +216,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138002",
 		wechat: "lizong02",
 		email: "li.zong@example.com",
+		birthday: "1980-09-12",
 		influenceLevel: "high",
 		relationStatus: "vip",
 		lastContactDate: "2026-04-16",
@@ -278,6 +240,7 @@ const mockRows = reactive<KeyPersonItem[]>([
 		phone: "13800138003",
 		wechat: "zhoucaigou",
 		email: "zhou.purchase@example.com",
+		birthday: "1991-03-26",
 		influenceLevel: "medium",
 		relationStatus: "connected",
 		lastContactDate: "2026-04-12",
@@ -299,29 +262,7 @@ const searchForm = reactive({
 	relationStatus: "",
 });
 
-const analysisDialog = reactive<{
-	visible: boolean;
-	title: string;
-	personalityAnalysis: string;
-	salesSuggestion: string;
-	talkingPoints: string;
-	birthdayReminder: string;
-	roleTypeLabel: string;
-	loading: boolean;
-	row: KeyPersonItem | null;
-}>({
-	visible: false,
-	title: TEXT.title,
-	personalityAnalysis: "",
-	salesSuggestion: "",
-	talkingPoints: "",
-	birthdayReminder: "",
-	roleTypeLabel: "",
-	loading: false,
-	row: null,
-});
-
-const customerOptions = Array.from(new Set(mockRows.map(e => e.customerName)));
+const customerOptions = computed(() => Array.from(new Set(mockRows.map(e => e.customerName))));
 
 function normalizeKeyword(value: any) {
 	return String(value || "").trim().toLowerCase();
@@ -337,54 +278,6 @@ function influenceLevelLabel(value: string) {
 
 function relationStatusLabel(value: string) {
 	return relationStatusOptions.find(e => e.value === value)?.label || value;
-}
-
-function resetAnalysisDialog() {
-	analysisDialog.personalityAnalysis = "";
-	analysisDialog.salesSuggestion = "";
-	analysisDialog.talkingPoints = "";
-	analysisDialog.birthdayReminder = "";
-}
-
-function formatLineTemplate(template: string, row: KeyPersonItem) {
-	return template
-		.replace("{name}", row.name)
-		.replace("{position}", row.position)
-		.replace("{influence}", influenceLevelLabel(row.influenceLevel))
-		.replace("{status}", relationStatusLabel(row.relationStatus));
-}
-
-function openAiGuide(row: KeyPersonItem) {
-	analysisDialog.row = row;
-	analysisDialog.title = `${TEXT.dialogTitlePrefix}${row.name}`;
-	analysisDialog.roleTypeLabel = roleTypeLabel(row.roleType);
-	analysisDialog.visible = true;
-	resetAnalysisDialog();
-	analysisDialog.loading = true;
-
-	const birthdayText = row.nextFollowDate
-		? `${TEXT.birthdayPromptPrefix}${row.nextFollowDate}${TEXT.birthdayPromptSuffix}`
-		: TEXT.birthdayEmpty;
-
-	window.setTimeout(() => {
-		analysisDialog.personalityAnalysis = [
-			formatLineTemplate(TEXT.personalityLineTemplate, row),
-			row.remark || TEXT.personalityFallback,
-		].join("\n");
-
-		analysisDialog.salesSuggestion = [
-			TEXT.salesGuide1,
-			row.lastContactContent || TEXT.salesGuide2,
-		].join("\n");
-
-		analysisDialog.talkingPoints = [TEXT.talk1, TEXT.talk2].join("\n");
-		analysisDialog.birthdayReminder = birthdayText;
-		analysisDialog.loading = false;
-	}, 300);
-}
-
-function closeAiGuide() {
-	analysisDialog.loading = false;
 }
 
 const keyPersonService = {
@@ -460,6 +353,7 @@ const keyPersonService = {
 			phone: String(data.phone || ""),
 			wechat: String(data.wechat || ""),
 			email: String(data.email || ""),
+			birthday: String(data.birthday || ""),
 			influenceLevel: String(data.influenceLevel || "medium"),
 			relationStatus: String(data.relationStatus || "new"),
 			lastContactDate: String(data.lastContactDate || ""),
@@ -528,7 +422,7 @@ const Upsert = useUpsert<KeyPersonItem>({
 			required: true,
 			component: {
 				name: "el-select",
-				options: customerOptions.map(e => ({ label: e, value: e })),
+				options: customerOptions.value.map(e => ({ label: e, value: e })),
 				props: {
 					filterable: true,
 					clearable: true,
@@ -578,6 +472,19 @@ const Upsert = useUpsert<KeyPersonItem>({
 			prop: "email",
 			span: 12,
 			component: { name: "el-input", props: { clearable: true } },
+		},
+		{
+			label: TEXT.birthday,
+			prop: "birthday",
+			span: 12,
+			component: {
+				name: "el-date-picker",
+				props: {
+					type: "date",
+					"value-format": "YYYY-MM-DD",
+					clearable: true,
+				},
+			},
 		},
 		{
 			label: TEXT.influence,
@@ -713,6 +620,7 @@ const Table = useTable<KeyPersonItem>({
 		},
 		{ label: TEXT.phone, prop: "phone", minWidth: 140 },
 		{ label: TEXT.wechat, prop: "wechat", minWidth: 140 },
+		{ label: TEXT.birthday, prop: "birthday", minWidth: 120 },
 		{
 			label: TEXT.influence,
 			prop: "influenceLevel",
@@ -753,13 +661,6 @@ const Table = useTable<KeyPersonItem>({
 			buttons: [
 				"edit",
 				"delete",
-				{
-					label: TEXT.buttonAiGuide,
-					type: "success",
-					onClick({ scope }: any) {
-						openAiGuide(scope.row);
-					},
-				},
 			],
 		},
 	],

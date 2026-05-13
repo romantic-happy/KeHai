@@ -8,20 +8,24 @@ import { TenantSubscriber } from '../modules/base/db/tenant';
 export default {
   // 本地开发可在此覆盖；生产请用环境变量
   contract: {
-    difyWebhookUrl: process.env.DIFY_CONTRACT_WEBHOOK_URL || '',
-    callbackSecret: process.env.DIFY_CONTRACT_CALLBACK_SECRET || '',
+    difyWebhookUrl:
+      'http://119.146.180.66:6859//triggers/webhook-debug/qbuu-XEXmwu0foyqZJvbdJJP',
+
+    //如此能正确触发服务器端的dify
+    callbackSecret:
+      process.env.DIFY_CONTRACT_CALLBACK_SECRET || 'dev-contract-callback-secret',
   },
   typeorm: {
     dataSource: {
       default: {
         type: 'mysql',
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT || '3306'),
-        username: process.env.DB_USERNAME || 'root',
-        password: process.env.DB_PASSWORD || 'root',
-        database: process.env.DB_DATABASE || 'cool-admin',
+        host: '119.146.180.66',
+        port: 8088,
+        username: 'root',
+        password: 'root',
+        database: 'cool-admin',
         // 自动建表 注意：线上部署的时候不要使用，有可能导致数据丢失
-        synchronize: true,
+        synchronize: false,
         // 打印日志
         logging: false,
         // 字符集

@@ -8,6 +8,8 @@ import { CompanyQuoteEntity } from '../entity/quote';
 import { CompanyClosedDealEntity } from '../entity/closedDeal';
 import { CompanyLostDealEntity } from '../entity/lostDeal';
 import { CompanyContractMgmtEntity } from '../entity/contractMgmt';
+import { CompanyContractOrderEntity } from '../entity/contractOrder';
+import { CompanyPurchaseRequirementEntity } from '../entity/purchaseRequirement';
 import { BaseSysUserEntity } from '../../base/entity/sys/user';
 import { BaseSysMenuEntity } from '../../base/entity/sys/menu';
 import { BaseSysRoleMenuEntity } from '../../base/entity/sys/role_menu';
@@ -36,6 +38,11 @@ export class CompanyInquiryService extends BaseService {
 
   @InjectEntityModel(CompanyContractMgmtEntity)
   companyContractMgmtEntity: Repository<CompanyContractMgmtEntity>;
+  @InjectEntityModel(CompanyContractOrderEntity)
+  companyContractOrderEntity: Repository<CompanyContractOrderEntity>;
+
+  @InjectEntityModel(CompanyPurchaseRequirementEntity)
+  companyPurchaseRequirementEntity: Repository<CompanyPurchaseRequirementEntity>;
 
   @InjectEntityModel(BaseSysMenuEntity)
   baseSysMenuEntity: Repository<BaseSysMenuEntity>;
@@ -630,6 +637,65 @@ export class CompanyInquiryService extends BaseService {
   }
 
   /**
+   * 自动按产品明细生成采购需求
+   */
+  private async autoGeneratePurchaseRequirements(
+    inquiry: CompanyInquiryEntity,
+    contractOrderNo: string,
+    queryRunner?: QueryRunner
+  ) {
+    const requirementRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyPurchaseRequirementEntity)
+      : this.companyPurchaseRequirementEntity;
+    const contractOrderRepo = queryRunner
+      ? queryRunner.manager.getRepository(CompanyContractOrderEntity)
+      : this.companyContractOrderEntity;
+
+    let contractOrder: CompanyContractOrderEntity | null = null;
+    if (contractOrderNo) {
+      contractOrder = await contractOrderRepo.findOne({
+        where: { orderNo: contractOrderNo },
+      });
+    }
+
+    const productItems = inquiry?.productItems || [];
+    if (!productItems.length) {
+      return;
+    }
+
+    const dateStr = moment().format('YYYYMMDD');
+    const prefix = `CGXQ-${dateStr}`;
+    const count = await requirementRepo
+      .createQueryBuilder('a')
+      .where('a.requirementNo like :prefix', { prefix: `${prefix}-%` })
+      .getCount();
+
+    const requirements = productItems.map((item, index) => {
+      const seq = String(count + index + 1).padStart(4, '0');
+      return {
+        requirementNo: `${prefix}-${seq}`,
+        sourceType: 0,
+        sourceBizId: inquiry.id,
+        sourceItemIndex: index,
+        sourceBizNo: inquiry.inquiryNo,
+        contractOrderNo: contractOrderNo || undefined,
+        customerName: inquiry.customer || undefined,
+        ownerName: inquiry.ownerName || undefined,
+        deliveryDate: contractOrder?.deliveryDate || inquiry.projectEndDate || undefined,
+        deliveryStandard: contractOrder?.deliverStandard || inquiry.deliverStandard || undefined,
+        productName: item.productName || '-',
+        productBrand: item.brand || undefined,
+        productModel: item.model || undefined,
+        inventoryQty: item.quantity || 0,
+        quoteNo: inquiry.inquiryNo || undefined,
+        purchaseStatus: 0,
+      };
+    });
+
+    await requirementRepo.save(requirements);
+  }
+
+  /**
    * 提交成单结果
    */
   @CoolTransaction({ isolation: 'SERIALIZABLE' })
@@ -897,4 +963,5 @@ export class CompanyInquiryService extends BaseService {
       perms: requiredPerms,
     };
   }
+
 }

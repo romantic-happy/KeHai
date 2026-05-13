@@ -5,79 +5,36 @@
 			<cl-add-btn />
 			<cl-multi-delete-btn />
 			<cl-flex1 />
-			<el-select
-				v-model="search.supplierType"
-				placeholder="供应商类型"
-				clearable
-				style="width: 130px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.supplierType" placeholder="供应商类型" clearable style="width: 130px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.supplierType" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<el-select
-				v-model="search.supplierSource"
-				placeholder="供应商来源"
-				clearable
-				style="width: 150px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.supplierSource" placeholder="供应商来源" clearable style="width: 150px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.supplierSource" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<el-select
-				v-model="search.infoStatus"
-				placeholder="信息状态"
-				clearable
-				style="width: 120px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.infoStatus" placeholder="信息状态" clearable style="width: 120px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.infoStatus" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<el-select
-				v-model="search.manageStatus"
-				placeholder="管理状态"
-				clearable
-				style="width: 120px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.manageStatus" placeholder="管理状态" clearable style="width: 120px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.manageStatus" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<el-select
-				v-model="search.businessCategory"
-				placeholder="业务类别"
-				clearable
-				style="width: 150px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.businessCategory" placeholder="业务类别" clearable style="width: 150px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.businessCategory" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<el-select
-				v-model="search.cooperationRelation"
-				placeholder="合作关系"
-				clearable
-				style="width: 120px"
-				@change="refresh({ page: 1 })"
-			>
+			<el-select v-model="search.cooperationRelation" placeholder="合作关系" clearable style="width: 120px" @change="refresh({ page: 1 })">
 				<el-option v-for="item in options.cooperationRelation" :key="item.value" :label="item.label" :value="item.value" />
 			</el-select>
-			<cl-search-key placeholder="搜索供应商名称/联系人/联系方式" :width="280" />
+			<cl-search-key placeholder="搜索供应商/联系人" :width="280" />
 		</cl-row>
 
 		<cl-row>
 			<cl-table ref="Table">
 				<template #column-supplierName="{ scope }">
-					<el-link type="primary" @click="openDetail(scope.row)">
-						{{ scope.row.supplierName || "-" }}
-					</el-link>
+					<el-link type="primary" @click="openDetail(scope.row)">{{ scope.row.supplierName || "-" }}</el-link>
 				</template>
 
 				<template #column-businessCategory="{ scope }">
 					<div class="tag-list">
-						<el-tag
-							v-for="item in normalizeArray(scope.row.businessCategory)"
-							:key="item"
-							size="small"
-							effect="plain"
-						>
+						<el-tag v-for="item in normalizeArray(scope.row.businessCategory)" :key="item" size="small" effect="plain">
 							{{ labelOf(options.businessCategory, item) }}
 						</el-tag>
 						<span v-if="!normalizeArray(scope.row.businessCategory).length">-</span>
@@ -87,21 +44,10 @@
 				<template #column-supplierActions="{ scope }">
 					<div class="supplier-actions">
 						<el-button size="small" plain @click="openDetail(scope.row)">详情</el-button>
-						<el-button
-							v-if="scope.row.supplierType === 'temporary'"
-							size="small"
-							type="success"
-							plain
-							@click="openTransfer(scope.row)"
-						>
-							转正
+						<el-button v-if="scope.row.supplierType === 'temporary'" size="small" type="success" plain @click="openTransfer(scope.row)">
+							转为正式供应商
 						</el-button>
-						<el-button size="small" type="primary" plain @click="openAiBackground(scope.row)">
-							AI背调
-						</el-button>
-						<el-button size="small" type="warning" plain @click="openAiProfile(scope.row)">
-							AI画像
-						</el-button>
+						<el-button size="small" type="primary" plain @click="openAiBackground(scope.row)">AI背调</el-button>
 						<el-button size="small" plain @click="openQuoteRecords(scope.row)">报价记录</el-button>
 					</div>
 				</template>
@@ -128,23 +74,21 @@
 			<el-descriptions-item label="备注" :span="2">{{ detail.row.remark || "-" }}</el-descriptions-item>
 			<template v-if="detail.row.supplierType === 'formal'">
 				<el-descriptions-item label="供应商性质">{{ labelOf(options.supplierNature, detail.row.supplierNature) }}</el-descriptions-item>
-				<el-descriptions-item label="账期">{{ detail.row.paymentTerm ? `${detail.row.paymentTerm}天` : "-" }}</el-descriptions-item>
+				<el-descriptions-item label="付款账期">{{ detail.row.paymentTerm || "-" }}</el-descriptions-item>
 				<el-descriptions-item label="合作关系">{{ labelOf(options.cooperationRelation, detail.row.cooperationRelation) }}</el-descriptions-item>
 				<el-descriptions-item label="业务类别">
 					<div class="tag-list">
 						<el-tag v-for="item in normalizeArray(detail.row.businessCategory)" :key="item" size="small" effect="plain">
 							{{ labelOf(options.businessCategory, item) }}
 						</el-tag>
+						<span v-if="!normalizeArray(detail.row.businessCategory).length">-</span>
 					</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="AI背调" :span="2">
+				<el-descriptions-item label="AI背调结果" :span="2">
 					<div class="pre-line">{{ detail.row.aiBackgroundCheck || "-" }}</div>
 				</el-descriptions-item>
-				<el-descriptions-item label="AI供应商画像" :span="2">
-					<div class="pre-line">{{ detail.row.aiSupplierProfile || "-" }}</div>
-				</el-descriptions-item>
 			</template>
-			<el-descriptions-item v-if="detail.row.manageStatus === 'invalid'" label="失效原因" :span="2">
+			<el-descriptions-item v-if="detail.row.manageStatus === 'invalid'" label="停用原因" :span="2">
 				{{ detail.row.invalidReason || "-" }}
 			</el-descriptions-item>
 		</el-descriptions>
@@ -154,7 +98,7 @@
 		</template>
 	</el-dialog>
 
-	<el-dialog v-model="transfer.visible" title="临时供应商转正" width="900px">
+	<el-dialog v-model="transfer.visible" title="转为正式供应商" width="900px">
 		<el-form ref="TransferFormRef" :model="transfer.form" label-width="130px">
 			<el-row :gutter="12">
 				<el-col :span="12">
@@ -188,7 +132,7 @@
 					</el-form-item>
 				</el-col>
 				<el-col :span="12">
-					<el-form-item label="账期(天)"><el-input-number v-model="transfer.form.paymentTerm" :min="0" :controls="false" /></el-form-item>
+					<el-form-item label="付款账期"><el-input-number v-model="transfer.form.paymentTerm" :min="0" :controls="false" /></el-form-item>
 				</el-col>
 				<el-col :span="12">
 					<el-form-item label="合作关系" required>
@@ -207,30 +151,21 @@
 		</el-form>
 		<template #footer>
 			<el-button @click="transfer.visible = false">取消</el-button>
-			<el-button type="primary" :loading="transfer.loading" @click="submitTransfer">提交转正</el-button>
+			<el-button type="primary" :loading="transfer.loading" @click="submitTransfer">确认</el-button>
 		</template>
 	</el-dialog>
 
 	<el-dialog v-model="ai.visible" :title="ai.title" width="760px">
 		<el-alert :title="ai.message" type="warning" show-icon :closable="false" class="mb-3" />
-		<el-input v-model="ai.prompt" type="textarea" :rows="14" readonly />
 	</el-dialog>
 
 	<el-dialog v-model="quote.visible" title="报价记录" width="900px">
-		<el-alert
-			v-if="quote.placeholder"
-			title="暂无已联动报价记录，已预留后续报价单关联入口。"
-			type="info"
-			show-icon
-			:closable="false"
-			class="mb-3"
-		/>
-		<el-input v-model="quote.profile" type="textarea" :rows="4" placeholder="AI供应商画像预留区域" class="mb-3" />
+		<el-alert v-if="quote.placeholder" title="暂无报价记录" type="info" show-icon :closable="false" class="mb-3" />
 		<el-table :data="quote.list" border>
 			<el-table-column prop="quoteNo" label="报价单号" min-width="150" />
-			<el-table-column prop="supplier" label="供应商名称" min-width="160" />
-			<el-table-column prop="priceExclTax" label="未税单价" min-width="120" />
-			<el-table-column prop="priceInclTax" label="含税报价" min-width="120" />
+			<el-table-column prop="supplier" label="供应商" min-width="160" />
+			<el-table-column prop="priceExclTax" label="未税价格" min-width="120" />
+			<el-table-column prop="priceInclTax" label="含税价格" min-width="120" />
 			<el-table-column prop="createTime" label="报价时间" min-width="170" />
 		</el-table>
 	</el-dialog>
@@ -259,35 +194,35 @@ const options = {
 		{ label: "线上-淘宝", value: "online_taobao" },
 		{ label: "线上-闲鱼", value: "online_xianyu" },
 		{ label: "线上-1688", value: "online_1688" },
-		{ label: "线下-公司资源", value: "offline_company" },
-		{ label: "线下-个人拓展", value: "offline_personal" },
+		{ label: "线下-公司", value: "offline_company" },
+		{ label: "线下-个人", value: "offline_personal" },
 	],
 	infoStatus: [
-		{ label: "激活", value: "active", type: "success" },
-		{ label: "待激活", value: "pending", type: "warning" },
+		{ label: "启用", value: "active", type: "success" },
+		{ label: "待完善", value: "pending", type: "warning" },
 		{ label: "休眠", value: "dormant", type: "info" },
 	],
 	manageStatus: [
 		{ label: "有效", value: "valid", type: "success" },
-		{ label: "失效", value: "invalid", type: "danger" },
+		{ label: "停用", value: "invalid", type: "danger" },
 	],
 	supplierNature: [
 		{ label: "集团", value: "group" },
-		{ label: "中小型企业", value: "sme" },
-		{ label: "个体户", value: "individual" },
+		{ label: "中小企业", value: "sme" },
+		{ label: "个人", value: "individual" },
 	],
 	businessCategory: [
-		{ label: "项目类", value: "project" },
-		{ label: "机械类-保养", value: "mechanical_maintenance" },
-		{ label: "机械类-维修", value: "mechanical_repair" },
-		{ label: "机械类", value: "mechanical" },
-		{ label: "电气类", value: "electrical" },
-		{ label: "备品备件", value: "spare_parts" },
+		{ label: "工程", value: "project" },
+		{ label: "机械维护", value: "mechanical_maintenance" },
+		{ label: "机械维修", value: "mechanical_repair" },
+		{ label: "机械", value: "mechanical" },
+		{ label: "电气", value: "electrical" },
+		{ label: "备件", value: "spare_parts" },
 	],
 	cooperationRelation: [
-		{ label: "优质", value: "good", type: "success" },
+		{ label: "良好", value: "good", type: "success" },
 		{ label: "一般", value: "normal", type: "warning" },
-		{ label: "差", value: "bad", type: "danger" },
+		{ label: "较差", value: "bad", type: "danger" },
 	],
 };
 
@@ -316,11 +251,12 @@ const ai = reactive({
 	title: "",
 	message: "",
 	prompt: "",
+	baseRows: [] as Array<{ label: string; value: string }>,
+	sections: [] as Array<{ title: string; rows: Array<{ label: string; value: string }> }>,
 });
 
 const quote = reactive({
 	visible: false,
-	profile: "",
 	list: [] as any[],
 	placeholder: true,
 });
@@ -387,7 +323,6 @@ function normalizeSupplierRow(row: any) {
 		paymentTerm: source.paymentTerm ?? source.a_paymentTerm,
 		cooperationRelation: source.cooperationRelation ?? source.a_cooperationRelation,
 		aiBackgroundCheck: source.aiBackgroundCheck ?? source.a_aiBackgroundCheck,
-		aiSupplierProfile: source.aiSupplierProfile ?? source.a_aiSupplierProfile,
 		invalidReason: source.invalidReason ?? source.a_invalidReason,
 		quoteStartTime: source.quoteStartTime ?? source.a_quoteStartTime,
 		lastQuoteTime: source.lastQuoteTime ?? source.a_lastQuoteTime,
@@ -427,21 +362,21 @@ function validateSupplier(data: any) {
 	}
 
 	if (data.manageStatus === "invalid" && !data.invalidReason) {
-		ElMessage.error("管理状态为失效时必须填写失效原因");
+		ElMessage.error("请填写停用原因");
 		return false;
 	}
 
 	if (data.supplierType === "formal") {
 		if (!data.supplierNature) {
-			ElMessage.error("正式供应商必须填写供应商性质");
+			ElMessage.error("请选择供应商性质");
 			return false;
 		}
 		if (!Array.isArray(data.businessCategory) || data.businessCategory.length === 0) {
-			ElMessage.error("正式供应商必须选择业务类别");
+			ElMessage.error("请选择业务类别");
 			return false;
 		}
 		if (!data.cooperationRelation) {
-			ElMessage.error("正式供应商必须填写合作关系");
+			ElMessage.error("请选择合作关系");
 			return false;
 		}
 	}
@@ -470,21 +405,14 @@ const Upsert = useUpsert<any>({
 			span: 12,
 			required: true,
 			value: "temporary",
-			component: {
-				name: "el-radio-group",
-				options: options.supplierType,
-			},
+			component: { name: "el-radio-group", options: options.supplierType },
 		},
 		{
 			label: "供应商来源",
 			prop: "supplierSource",
 			span: 12,
 			required: true,
-			component: {
-				name: "el-select",
-				options: options.supplierSource,
-				props: { clearable: true },
-			},
+			component: { name: "el-select", options: options.supplierSource, props: { clearable: true } },
 		},
 		{
 			label: "信息状态",
@@ -492,11 +420,7 @@ const Upsert = useUpsert<any>({
 			span: 12,
 			required: true,
 			value: "active",
-			component: {
-				name: "el-select",
-				options: options.infoStatus,
-				props: { clearable: false },
-			},
+			component: { name: "el-select", options: options.infoStatus, props: { clearable: false } },
 		},
 		{
 			label: "联系人",
@@ -510,7 +434,7 @@ const Upsert = useUpsert<any>({
 			prop: "contactInfo",
 			span: 12,
 			required: true,
-			component: { name: "el-input", props: { clearable: true, placeholder: "电话、微信优先" } },
+			component: { name: "el-input", props: { clearable: true } },
 		},
 		{
 			label: "管理状态",
@@ -518,14 +442,10 @@ const Upsert = useUpsert<any>({
 			span: 12,
 			required: true,
 			value: "valid",
-			component: {
-				name: "el-select",
-				options: options.manageStatus,
-				props: { clearable: false },
-			},
+			component: { name: "el-select", options: options.manageStatus, props: { clearable: false } },
 		},
 		{
-			label: "失效原因",
+			label: "停用原因",
 			prop: "invalidReason",
 			span: 12,
 			component: { name: "el-input", props: { clearable: true } },
@@ -542,11 +462,7 @@ const Upsert = useUpsert<any>({
 			prop: "supplierNature",
 			span: 12,
 			required: true,
-			component: {
-				name: "el-select",
-				options: options.supplierNature,
-				props: { clearable: true },
-			},
+			component: { name: "el-select", options: options.supplierNature, props: { clearable: true } },
 			hidden: ({ scope }: any) => !isFormal(scope),
 		},
 		{
@@ -554,15 +470,11 @@ const Upsert = useUpsert<any>({
 			prop: "businessCategory",
 			span: 12,
 			required: true,
-			component: {
-				name: "el-select",
-				options: options.businessCategory,
-				props: { multiple: true, clearable: true },
-			},
+			component: { name: "el-select", options: options.businessCategory, props: { multiple: true, clearable: true } },
 			hidden: ({ scope }: any) => !isFormal(scope),
 		},
 		{
-			label: "账期(天)",
+			label: "付款账期",
 			prop: "paymentTerm",
 			span: 12,
 			component: { name: "el-input-number", props: { min: 0, controls: false } },
@@ -574,11 +486,7 @@ const Upsert = useUpsert<any>({
 			span: 12,
 			required: true,
 			value: "normal",
-			component: {
-				name: "el-select",
-				options: options.cooperationRelation,
-				props: { clearable: false },
-			},
+			component: { name: "el-select", options: options.cooperationRelation, props: { clearable: false } },
 			hidden: ({ scope }: any) => !isFormal(scope),
 		},
 		{
@@ -586,13 +494,6 @@ const Upsert = useUpsert<any>({
 			prop: "aiBackgroundCheck",
 			span: 24,
 			component: { name: "el-input", props: { type: "textarea", rows: 5, clearable: true } },
-			hidden: ({ scope }: any) => !isFormal(scope),
-		},
-		{
-			label: "AI供应商画像",
-			prop: "aiSupplierProfile",
-			span: 24,
-			component: { name: "el-input", props: { type: "textarea", rows: 4, clearable: true } },
 			hidden: ({ scope }: any) => !isFormal(scope),
 		},
 	],
@@ -631,11 +532,11 @@ const Table = useTable<any>({
 		{ label: "联系方式", prop: "contactInfo", minWidth: 150 },
 		{ label: "业务类别", prop: "businessCategory", minWidth: 220 },
 		{ label: "合作关系", prop: "cooperationRelation", minWidth: 110, dict: options.cooperationRelation },
-		{ label: "账期(天)", prop: "paymentTerm", minWidth: 100 },
+		{ label: "付款账期", prop: "paymentTerm", minWidth: 100 },
 		{ label: "最近报价时间", prop: "lastQuoteTime", minWidth: 170, component: { name: "cl-date-text" } },
 		{ label: "创建时间", prop: "createTime", minWidth: 170, sortable: "desc", component: { name: "cl-date-text" } },
 		{ label: "更新时间", prop: "updateTime", minWidth: 170, sortable: "custom", component: { name: "cl-date-text" } },
-		{ label: "供应商操作", prop: "supplierActions", minWidth: 360, fixed: "right" },
+		{ label: "操作", prop: "supplierActions", minWidth: 360, fixed: "right" },
 		{ type: "op", buttons: ["edit", "delete"], width: 170, fixed: "right" },
 	],
 });
@@ -705,48 +606,180 @@ async function submitTransfer() {
 		transfer.visible = false;
 		refresh();
 	} catch (err: any) {
-		ElMessage.error(err?.message || "转正失败");
+		ElMessage.error(err?.message || "操作失败");
 	} finally {
 		transfer.loading = false;
 	}
+}
+
+function cleanAiText(text: any) {
+	if (text === undefined || text === null) return "";
+	if (typeof text === "object") {
+		text = Object.entries(text)
+			.map(([key, value]) => `${key}: ${typeof value === "object" ? cleanAiText(value) : value}`)
+			.join("\n");
+	}
+
+	return String(text)
+		.replace(/\\n/g, "\n")
+		.replace(/\\r/g, "\n")
+		.replace(/\\"/g, '"')
+		.replace(/```json/gi, "")
+		.replace(/```/g, "")
+		.replace(/`/g, "")
+		.replace(/\*\*/g, "")
+		.replace(/#/g, "")
+		.replace(/\[object Object\]/g, "")
+		.replace(/[{}\[\]]/g, "")
+		.replace(/"/g, "")
+		.split("\n")
+		.map(line => line.replace(/^\s*[-*]\s*/, "").replace(/^\s*([^:\n]+)\s*:\s*/, "$1: ").replace(/,$/, "").trim())
+		.filter(Boolean)
+		.join("\n")
+		.replace(/\n{2,}/g, "\n")
+		.trim();
+}
+
+function parseMaybeJson(value: any) {
+	if (typeof value !== "string") return value;
+	try {
+		return JSON.parse(value);
+	} catch {
+		return value;
+	}
+}
+
+function normalizeAiResponse(res: any) {
+	const prompt = parseMaybeJson(res?.prompt);
+	const data = parseMaybeJson(res?.data) || (typeof prompt === "object" ? prompt : undefined);
+	const result = parseMaybeJson(data?.result ?? data ?? prompt);
+
+	if (result?.rawText) {
+		return {
+			snapshot: data?.supplierSnapshot || {},
+			quoteRecordNote: data?.quoteRecordNote || "",
+			result: { rawText: cleanAiText(result.rawText) },
+		};
+	}
+
+	if (typeof result === "string") {
+		return {
+			snapshot: data?.supplierSnapshot || {},
+			quoteRecordNote: data?.quoteRecordNote || "",
+			result: { rawText: cleanAiText(result) },
+		};
+	}
+
+	return {
+		snapshot: data?.supplierSnapshot || {},
+		quoteRecordNote: data?.quoteRecordNote || "",
+		result: result && typeof result === "object" ? result : { rawText: cleanAiText(res) },
+	};
+}
+
+function formatAiValue(key: string, value: any) {
+	if (key === "supplierType") return labelOf(options.supplierType, value);
+	if (key === "supplierSource") return labelOf(options.supplierSource, value);
+	if (key === "supplierNature") return labelOf(options.supplierNature, value);
+	if (key === "cooperationRelation") return labelOf(options.cooperationRelation, value);
+	if (key === "managementStatus" || key === "manageStatus") return labelOf(options.manageStatus, value);
+	if (key === "businessCategory") {
+		const values = Array.isArray(value) ? value : String(value || "").split(",").filter(Boolean);
+		return values.map(item => labelOf(options.businessCategory, item)).join(", ");
+	}
+	if (key === "paymentTerm" && value !== undefined && value !== null && value !== "") return `${value}`;
+	return cleanAiText(value) || "-";
+}
+
+function buildAiRows(source: any, fields: Array<[string, string]>) {
+	return fields.map(([label, key]) => ({
+		label,
+		value: formatAiValue(key, source?.[key]),
+	}));
+}
+
+function splitLabelValue(line: string) {
+	const indexList = [line.indexOf(":")].filter(index => index >= 0);
+	const splitIndex = indexList.length ? Math.min(...indexList) : -1;
+	if (splitIndex < 0) return null;
+
+	const label = cleanAiText(line.slice(0, splitIndex));
+	const value = cleanAiText(line.slice(splitIndex + 1));
+	if (!label || !value) return null;
+	return { label, value };
+}
+
+function parseAiTextToSections(text: string) {
+	const cleaned = cleanAiText(text);
+	return [{ title: "AI分析结果", rows: [{ label: "内容", value: cleaned || "-" }] }];
+}
+
+function buildAiResultSections(result: any, fields: Array<[string, string]>, title: string) {
+	if (result?.rawText || typeof result === "string") {
+		return parseAiTextToSections(result?.rawText || result);
+	}
+
+	const rows = fields
+		.filter(([, key]) => result?.[key] !== undefined && result?.[key] !== null && result?.[key] !== "")
+		.map(([label, key]) => ({ label, value: cleanAiText(result[key]) }));
+
+	return rows.length
+		? [{ title, rows }]
+		: parseAiTextToSections(cleanAiText(result));
 }
 
 async function openAiBackground(row: any) {
 	try {
 		const target = normalizeSupplierRow(row);
 		const res = await postAction("aiBackgroundCheck", { id: target.id });
-		ai.title = "AI背调";
-		ai.message = res?.message || "AI接口暂未配置";
-		ai.prompt = res?.prompt || "";
+		const normalized = normalizeAiResponse(res);
+		const snapshot = { ...target, ...normalized.snapshot };
+		ai.title = `AI背调 - ${snapshot.supplierName || target.supplierName || "-"}`;
+		ai.message = res?.message || "AI服务未配置";
+		ai.prompt = cleanAiText(normalized.result?.rawText || normalized.result);
+		ai.baseRows = buildAiRows(snapshot, [
+			["供应商名称", "supplierName"],
+			["供应商类型", "supplierType"],
+			["供应商来源", "supplierSource"],
+			["联系人", "contactName"],
+			["联系方式", "contactInfo"],
+			["供应商性质", "supplierNature"],
+			["业务类别", "businessCategory"],
+			["付款账期", "paymentTerm"],
+			["合作关系", "cooperationRelation"],
+			["管理状态", "managementStatus"],
+		]);
+		ai.sections = buildAiResultSections(
+			normalized.result,
+			[
+				["经营范围", "businessScope"],
+				["成立时间", "establishTime"],
+				["注册资本", "registeredCapital"],
+				["地址", "address"],
+				["风险提示", "riskWarning"],
+				["历史项目", "historicalProjects"],
+				["社保人数", "socialSecurityCount"],
+				["合法性", "legitimacyCheck"],
+				["经营情况", "operationCheck"],
+				["交付能力", "deliveryAbilityCheck"],
+				["结论", "conclusion"],
+			],
+			"AI背调结果"
+		);
 		ai.visible = true;
 	} catch (err: any) {
-		ElMessage.error(err?.message || "AI背调占位接口调用失败");
+		ElMessage.error(err?.message || "操作失败");
 	}
 }
-
-async function openAiProfile(row: any) {
-	try {
-		const target = normalizeSupplierRow(row);
-		const res = await postAction("aiSupplierProfile", { id: target.id });
-		ai.title = "AI供应商画像";
-		ai.message = res?.message || "AI接口暂未配置";
-		ai.prompt = res?.prompt || "";
-		ai.visible = true;
-	} catch (err: any) {
-		ElMessage.error(err?.message || "AI画像占位接口调用失败");
-	}
-}
-
 async function openQuoteRecords(row: any) {
 	try {
 		const target = normalizeSupplierRow(row);
 		const res = await postAction("quoteRecords", { id: target.id });
-		quote.profile = res?.aiSupplierProfile || "";
 		quote.list = res?.list || [];
 		quote.placeholder = Boolean(res?.placeholder);
 		quote.visible = true;
 	} catch (err: any) {
-		ElMessage.error(err?.message || "报价记录加载失败");
+		ElMessage.error(err?.message || "操作失败");
 	}
 }
 </script>
@@ -760,6 +793,63 @@ async function openQuoteRecords(row: any) {
 }
 
 .pre-line {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.ai-result-dialog {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.ai-result-dialog__table {
+	flex-shrink: 0;
+}
+
+.ai-result-dialog__text {
+	line-height: 20px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	text-align: left;
+}
+
+.ai-result-dialog :deep(.el-descriptions__label) {
+	font-weight: 600;
+}
+
+.ai-result-table {
+	border: 1px solid var(--el-border-color);
+	border-bottom: 0;
+}
+
+.ai-result-table__section {
+	padding: 10px 12px;
+	background: var(--el-fill-color-light);
+	border-bottom: 1px solid var(--el-border-color);
+	font-weight: 600;
+	line-height: 20px;
+}
+
+.ai-result-table__row {
+	display: grid;
+	grid-template-columns: 170px minmax(0, 1fr);
+	border-bottom: 1px solid var(--el-border-color);
+}
+
+.ai-result-table__label {
+	padding: 10px 12px;
+	background: var(--el-fill-color-lighter);
+	border-right: 1px solid var(--el-border-color);
+	font-weight: 600;
+	line-height: 20px;
+	word-break: break-word;
+}
+
+.ai-result-table__value {
+	padding: 10px 12px;
+	background: #fff;
+	line-height: 20px;
 	white-space: pre-wrap;
 	word-break: break-word;
 }
